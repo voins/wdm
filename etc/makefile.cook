@@ -185,6 +185,7 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
 			install-pam-[make_var USE_PAM]
 			[configdir]/authdir];
+	[make_action install -d -m 0700 [make_var DESTDIR][make_var FAKEHOME]];
 	[make_line];
 	[make_line install-pam-no\:];
 	[make_line];
