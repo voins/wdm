@@ -55,11 +55,12 @@ WDMCheckPLBool(WMPropList *pl, Bool defval)
 
 /** @brief check if proplist is a string
  *
- * If pl is a string it will be duplicated with wstrdup
- * and returned. It's caller responsibility to wfree that
- * space.
- * In all other cases defval is returned. defval is not
- * duplicated.
+ * If pl is a string it will be duplicated with 
+ * wstrdup and returned. In all other cases defval
+ * is returned. defval is also duplicated.  It's 
+ * caller responsibility to wfree that space.
+ *
+ * If defval is NULL it is not duplicated.
  */
 char *
 WDMCheckPLString(WMPropList *pl, char *defval)
@@ -68,10 +69,10 @@ WDMCheckPLString(WMPropList *pl, char *defval)
 
 	if(pl && WMIsPLString(pl))
 	{
-		value = wstrdup(WMGetFromPLString(pl));
+		value = WMGetFromPLString(pl);
 	}
 
-	return value;
+	return value ? wstrdup(value) : value;
 }
 
 /** @brief check if proplist is array and is correct
