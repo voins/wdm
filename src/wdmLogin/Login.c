@@ -1357,6 +1357,8 @@ main(int argc, char **argv)
 		}
 	}
 #endif
+	if(cfg->animations)
+		animate = True;
 
 	screen.pos.x = 0;
 	screen.pos.y = 0;

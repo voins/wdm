@@ -32,6 +32,7 @@ typedef struct _WDMLoginConfig
 	Bool aaenabled;
 	Bool multibyte;
 #endif
+	Bool animations;
 } WDMLoginConfig;
 
 extern WDMLoginConfig *LoadConfiguration(char *configFile);

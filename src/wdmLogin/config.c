@@ -38,6 +38,8 @@ static WDMDictionaryStruct wdmLogin_config_struct[] =
 	{"multibyte", WDMCheckPLBool, True,
 		offsetof(WDMLoginConfig, multibyte)},
 #endif
+	{"animations", WDMCheckPLBool, False,
+		offsetof(WDMLoginConfig, animations)},
 	{NULL, NULL, NULL, 0}
 };
 
