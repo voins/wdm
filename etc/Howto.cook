@@ -27,39 +27,10 @@ change_files = [collect aegis -list cf -terse -p [project] -c [change]];
 project_files = [collect aegis -list pf -terse -p [project]];
 source_files = [sort [stringset [change_files] [project_files]]];
 
-
-if [not [defined cflags]] then cflags=;
-if [not [defined ldflags]] then ldflags=;
-if [not [defined libs]] then libs=;
-if [not [defined cc]] then cc=gcc;
-if [not [defined XCFLAGS]] then XCFLAGS=;
-if [not [defined GFXCFLAGS]] then GFXCFLAGS=;
-if [not [defined XLDFLAGS]] then XLDFLAGS=;
-if [not [defined XLIBS]] then XLIBS=;
-if [not [defined GFXLDFLAGS]] then GFXLDFLAGS=;
-if [not [defined GFXLIBS]] then GFXLIBS=;
-if [not [defined LIBCRYPT]] then LIBCRYPT=;
-if [not [defined LIBUCB]] then LIBUCB=;
-if [not [defined LIBUTIL]] then LIBUTIL=;
-if [not [defined PASSWDLIB]] then PASSWDLIB=;
-
 #include-cooked-nowarn etc/Howto.conf
 
 cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
 
-wdmLogin_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
-wdmLogin_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
-wdmLogin_libs = [libs] [XLIBS] [GFXLIBS];
-
-TestLogin_cflags = [cflags];
-TestLogin_ldflags = [ldflags];
-TestLogin_libs = [libs];
-
-wdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
-wdm_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
-wdm_libs = [libs] [XLIBS] [GFXLIBS] [LIBCRYPT] \
-	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
-	-lXmu -lXau -lXdmcp;
 
 wdm_config_files = src/config/wdm-config src/config/Xclients \
 	src/config/Xsetup_0 src/config/Xsession src/config/Xservers \
@@ -67,7 +38,7 @@ wdm_config_files = src/config/wdm-config src/config/Xclients \
 
 program_list = bin/wdmLogin bin/TestLogin bin/wdm;
 
-all: [wdm_config_files] include/config.h [program_list]
+all: [wdm_config_files] wdm-1.20.1.tar.gz [program_list]
 {
 }
 
@@ -134,10 +105,6 @@ etc/Howto.conf : etc/Howto.conf.in config.status
 }
 
 
-Makefile.in : etc/Howto.conf
-{
-	echo > [target];
-}
 
 Makefile : Makefile.in config.status
 {
@@ -149,6 +116,7 @@ Makefile : Makefile.in config.status
 archive_files =
 	configure
 	Makefile.in
+	include/config.h.in
 	[source_files];
 
 release = 1.20.1;
@@ -179,22 +147,22 @@ function select_c =
 
 function get_cflags =
 {
-	if [defined [@1]_cflags] then
-		return [[@1]_cflags];
+	if [defined [@1]cflags] then
+		return [[@1]cflags];
 	return [cflags];
 }
 
 function get_ldflags =
 {
-	if [defined [@1]_ldflags] then
-		return [[@1]_ldflags];
+	if [defined [@1]ldflags] then
+		return [[@1]ldflags];
 	return [ldflags];
 }
 
 function get_libs =
 {
-	if [defined [@1]_libs] then
-		return [[@1]_libs];
+	if [defined [@1]libs] then
+		return [[@1]libs];
 	return [libs];
 }
 
@@ -202,8 +170,8 @@ function get_program =
 {
 	echo [@1];
 	if [matches src/%/ [@1]] then
-		return [fromto src/%/ % [@1]];
-	return none;
+		return [fromto src/%/ % [@1]]_;
+	return;
 }
 
 %0%.o : %0%.c include/config.h
@@ -240,8 +208,42 @@ cascade include/wdmconfig.h = include/config.h;
 
 bin/% : [c_to_o [select_c %]]
 {
-	[cc] [get_cflags %] [get_ldflags %] [c_to_o [select_c %]] [get_libs %] -o [target];
+	[cc] [get_cflags %_] [get_ldflags %_] [c_to_o [select_c %]] [get_libs %_] -o [target];
 }
 
 
+%0%.c.Md: %0%.c etc/Howto.cook 
+{
+	c_incl -nc -ns -eia
+		[prepost -I /include [search_list]]
+		[resolve %0%.c]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+%0%.c.M: %0%.c.Md etc/Howto.cook
+{
+	rm -f [target];
+	echo "%0%.o: %0%.c" [collect cat %0%.c.Md] > [target];
+	echo -e "\"\\t\"" \\$\\(CC\\) -c \\$\\([get_program %0]cflags\\) %0%.c -o %0%.o >> [target];
+	echo >> [target];
+}
+
+bin/M/%.M: etc/Howto.cook
+{
+	echo "bin/%: " [c_to_o [select_c %]] > [target];
+	echo -e "\"\\t\"" mkdir -p bin >> [target];
+	echo -e "\"\\t\"" \\$\\(CC\\) \\$\\(%_ldflags\\) [c_to_o [select_c %]] \\$\\(%_libs\\) -o bin/% >> [target]; 
+	echo >> [target];
+}
+
+Makefile.in : etc/Howto.conf.in etc/Makefile.sh [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]] [fromto bin/% bin/M/%.M [program_list]]
+{
+	sh etc/Makefile.sh etc/Howto.conf.in [target];
+	echo all\: [program_list] >> [target];
+	echo >> [target];
+	cat [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]] >> [target];
+	cat [fromto bin/% bin/M/%.M [program_list]] >> [target];
+}
 

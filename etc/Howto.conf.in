@@ -25,3 +25,17 @@ cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];
 ldflags = [LDFLAGS];
 libs = [LIBS];
 
+wdmLogin_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
+wdmLogin_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
+wdmLogin_libs = [libs] [XLIBS] [GFXLIBS];
+
+TestLogin_cflags = [cflags];
+TestLogin_ldflags = [ldflags];
+TestLogin_libs = [libs];
+
+wdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
+wdm_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
+wdm_libs = [libs] [XLIBS] [GFXLIBS] [LIBCRYPT] \
+	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
+	-lXmu -lXau -lXdmcp;
+
