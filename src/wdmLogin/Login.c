@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Login.c: draw login panel ad interact with user.
+ * Login.c: draw login panel and interact with user.
  */
 
 #include <wdmconfig.h>
@@ -346,11 +346,8 @@ LoginArgs(int argc, char *argv[])
 	int c;
 
 
-	while(1)
+	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:")) != -1)
 	{
-		c = getopt(argc, argv, "asb:d:h:l:uw:c:");
-		if(c == -1)
-			break;
 		switch (c)
 		{
 		case 'a':
@@ -360,25 +357,25 @@ LoginArgs(int argc, char *argv[])
 			smoothScale = False;
 			break;
 		case 'd':	/* display */
-			displayArg = wstrdup(optarg);
+			displayArg = optarg;
 			break;
 		case 'h':	/* helpfile */
-			helpArg = wstrdup(optarg);
+			helpArg = optarg;
 			break;
 		case 'l':	/* logo */
-			logoArg = wstrdup(optarg);
+			logoArg = optarg;
 			break;
 		case 'u':	/* default user */
 			WmDefUser = True;
 			break;
 		case 'w':	/* wm list */
-			WmArg = wstrdup(optarg);
+			WmArg = optarg;
 			break;
 		case 'b':	/* background */
-			bgArg = wstrdup(optarg);
+			bgArg = optarg;
 			break;
 		case 'c':	/* configfile */
-			configFile = wstrdup(optarg);
+			configFile = optarg;
 			break;
 		default:
 			fprintf(stderr, "bad option: %c\n", c);

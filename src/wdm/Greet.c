@@ -112,6 +112,8 @@ from the X Consortium.
 #endif
 #include <limits.h>
 
+#include <WINGs/WUtil.h>
+
 extern Display  *dpy;
 
 extern char *wdmLogin;          /* X resources (see resource.c) */
@@ -200,71 +202,56 @@ static int InitGreet (struct display *d)
     int pid;
 
     Debug ("Greet display=%s\n", d->name);
-    
+
     pipe(pipe_filedes);
-    
+
     pid = fork();
-    
+
     if (pid == -1) {            /* error */
         LogError ("Greet cannot fork\n");
         exit (RESERVER_DISPLAY);
     }
     if (pid == 0) {             /* child */
-        char **env = NULL, *tmp = NULL;
-        char DisplayName[128] = "-d";
-	char Wm[256]="", Logo[256]="", HelpFile[256] = "", DefaultUser[10] = "";
-        char Bg[256]="", Animate[8]="", Cfg[256]="";
+        char **env = NULL;
+	char *argv[10];
+	int argc = 1; /* argc = 0 is for command itself */
 
         close(pipe_filedes[0]);
         dup2(pipe_filedes[1],3);
         fcntl(3, F_SETFD, 0); /* Reset close-on-exec (just in case) */
-        
+
         env = (char **)systemEnv(d, (char*)NULL, (char*)NULL);
 
-	if(wdmLocale[0] != '\0')
+	if(*wdmLocale)
 		env = setEnv(env, "LANG", wdmLocale);
-	printEnv(env);
-        tmp = strrchr(wdmLogin,'/');
-        if (tmp==NULL)
-            tmp=wdmLogin;
-        else
-            tmp++;
-        strncat(DisplayName,d->name,120);
-        if (wdmWm[0]!='\0') {
-           strcpy(Wm,"-w");
-           strncat(Wm,wdmWm,250);
-        }
-        if (wdmLogo[0]!='\0') {
-           strcpy(Logo,"-l");
-           strncat(Logo,wdmLogo,250);
-        }
-        if (wdmHelpFile[0]!='\0') {
-           strcpy(HelpFile,"-h");
-           strncat(HelpFile,wdmHelpFile,250);
-        }
-        if (wdmDefaultUser[0]!='\0') {
-           strcpy(DefaultUser,"-u");
-        }
-        if (wdmBg[0]!='\0') {
-           strcpy(Bg,"-b");
-           strncat(Bg,wdmBg,250);
-        }
-	if (wdmLoginConfig[0]!='\0') {
-	   strcpy(Cfg,"-c");
-	   strncat(Cfg,wdmLoginConfig,250);
-	}
-        if (wdmAnimations) {
-            strcpy(Animate,"-a");
-        }
-        
-        execle(wdmLogin, tmp, DisplayName, 
-			 Wm, Logo, HelpFile, DefaultUser, Bg, Animate, Cfg,
-                         NULL, env);
-        
-        LogError ("Greet cannot exec %s\n", wdmLogin);
-        exit (RESERVER_DISPLAY);
+
+	if((argv[0] = strrchr(wdmLogin, '/')) == NULL)
+		argv[0] = wdmLogin;
+	else
+		argv[0]++;
+
+	argv[argc++] = wstrconcat("-d", d->name);
+	if(*wdmWm)
+		argv[argc++] = wstrconcat("-w", wdmWm);
+	if(*wdmLogo)
+		argv[argc++] = wstrconcat("-l", wdmLogo);
+	if(*wdmHelpFile)
+		argv[argc++] = wstrconcat("-h", wdmHelpFile);
+	if(*wdmDefaultUser)
+		argv[argc++] = "-u";
+	if(*wdmBg)
+		argv[argc++] = wstrconcat("-b", wdmBg);
+	if(*wdmLoginConfig)
+		argv[argc++] = wstrconcat("-c", wdmLoginConfig);
+	if(wdmAnimations)
+		argv[argc++] = "-a";
+
+        execve(wdmLogin, argv, env);
+
+        LogError("Greet cannot exec %s\n", wdmLogin);
+        exit(RESERVER_DISPLAY);
     }
-    
+
     close(pipe_filedes[1]);
     return pid;
 }
