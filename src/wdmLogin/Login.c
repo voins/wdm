@@ -180,6 +180,7 @@ static char *logoArg	   = NULL;
 static char *bgArg	   = NULL;
 static char *bgOption	   = NULL;
 static int   animate = False;
+static int   smoothScale = True;
 
 char *ProgName= "Login";
 
@@ -326,12 +327,15 @@ static void LoginArgs(int argc, char *argv[])
 
 
     while(1) {
-	c = getopt(argc, argv, "ab:d:h:l:uw:");
+	c = getopt(argc, argv, "asb:d:h:l:uw:");
 	if (c == -1)
 	    break;
 	switch (c) {
 	    case 'a':
 		animate = True;
+	    break;
+	    case 's':
+		smoothScale = False;
 	    break;
 	    case 'd':				/* display */
 		tmp = strchr(optarg,'=');
@@ -657,11 +661,11 @@ static void CreateLogo(LoginPanel *panel)
 #if 0
     fprintf(stderr,"new: ratio=%.5f,width=%i,heigth=%i\n",ratio,w,h);/*DEBUG*/
 #endif
-#ifdef HAVE_SMOOTH_SCALE
-    image2 = RSmoothScaleImage(image1, w, h);
-#else
-    image2 = RScaleImage(image1, w, h);
-#endif
+    if(smoothScale)
+        image2 = RSmoothScaleImage(image1, w, h);
+    else
+        image2 = RScaleImage(image1, w, h);
+
     RReleaseImage(image1);
     if (image2==NULL)
 	return;
