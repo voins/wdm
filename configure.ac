@@ -69,53 +69,48 @@ AC_CHECK_FUNC(mkstemp,
 		[Define if you have mkstemp function to use it instead of mktemp.])])
 
 dnl Password processing options
+AC_ARG_ENABLE(pam,
+	AC_HELP_STRING([--disable-pam], [don't use of PAM for authentication]))
+
+AC_ARG_ENABLE(shadow,
+	AC_HELP_STRING([--disable-shadow], [don't use of shadow for authentication]))
+
 AC_ARG_WITH(pamdir,
 	AC_HELP_STRING([--with-pamdir],[specify where pam directory is]),
 	[PAMDIR="$withval"],
 	[PAMDIR="/etc/pam.d"])
 AC_SUBST(PAMDIR)
 
-USE_PAM=
-AC_MSG_CHECKING(for pam being enabled)
-AC_ARG_ENABLE(pam,
-	AC_HELP_STRING([--enable-pam], [enable PAM]), 
-	[
-		USE_PAM=yes
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(USE_PAM, 1, [Define if you want wdm  to be compiiled with pam support])
-		AC_CHECK_LIB(pam, main, [PASSWDLIB="-lpam -ldl"
+USE_PAM=no
+if test "$enable_pam" != "no" -a "$enable_shadow" != "yes" \
+	|| test "$enable_pam" = "yes" -a "$enable_shadow" = "yes"; then
+
+	AC_CHECK_LIB(pam, main,
+		[
+			USE_PAM=yes
+			PASSWDLIB="-lpam -ldl"
 			AC_DEFINE_UNQUOTED(HAVE_PAM_LIB, 1, [Define if libpam is installed])],
-			[],-ldl)
+			AC_DEFINE(USE_PAM, 1, [Define if you want wdm to use pam for auth])
+		,-ldl)
 
-		AC_MSG_CHECKING(for pam directory $PAMDIR)
-		if test -d "$PAMDIR"; then
-			AC_MSG_RESULT(exists)
-		else
-			AC_MSG_RESULT(does not exist)
-			AC_MSG_WARN([this may not be a pam system <<--------------])
-		fi
-	],
-	[
-		USE_PAM=no
-		AC_MSG_RESULT([no])
-		AC_MSG_CHECKING(for shadow being enabled)
-		AC_ARG_ENABLE(shadow,
-			AC_HELP_STRING([--enable-shadow],[enable shadow passwords]),
-			[
-				AC_MSG_RESULT(yes)
-				AC_DEFINE(USESHADOW, 1, [Define if you wand wdm to be compiled with shadow support])
-				if test -z "$PASSWDLIB"; then
-					AC_CHECK_LIB(shadow, main, [PASSWDLIB="-lshadow"
-						AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB, 1, [Define if libshadow is installed])])
-				fi
-			],
-			[
-				AC_MSG_RESULT(no)
-			])
+fi
 
-	])
+if test -z "$PASSWDLIB" \
+	&& ( test "$enable_shadow" != "no" -a "$enable_pam" != "yes" \
+	|| test "$enable_pam" = "yes" -a "$enable_shadow" = "yes" ); then
+
+	AC_CHECK_LIB(shadow, main,
+		[
+			PASSWDLIB="-lshadow"
+			AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB, 1, [Define if libshadow is installed])
+			AC_DEFINE(USESHADOW, 1, [Define if you wand wdm to use shadow for auth])
+		])
+
+fi
+
 AC_SUBST(PASSWDLIB)
 AC_SUBST(USE_PAM)
+
 
 AC_CHECK_LIB(util, main) dnl for FreeBSD
 AC_CHECK_LIB(crypt, main) dnl for BSD and RHL
