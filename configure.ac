@@ -622,6 +622,7 @@ AC_CHECK_FUNC(gettext, [HAVEGETTEXT="yes"],
 		INTLIBS=""))
 
 AC_CHECK_PROG(XGETTEXT, xgettext, xgettext)
+AC_CHECK_PROG(MSGFMT, msgfmt, msgfmt)
 
 if test "x$XGETTEXT" != "x"; then
 	if $XGETTEXT --help 2>&1 | grep illegal &> /dev/null; then
@@ -648,6 +649,7 @@ fi
 AC_DEFINE_UNQUOTED(NLSDIR, "$NLSDIR", [where to look for locale files])
 AC_SUBST(NLSDIR)
 AC_SUBST(XGETTEXT)
+AC_SUBST(MSGFMT)
 
 dnl ==========================================================
 AC_MSG_RESULT(full gfx include paths and flags are $XCFLAGS $GFXFLAGS)
