@@ -39,7 +39,7 @@ libraries_list = [filter lib% [program_list]];
 program_list = [filter_out lib% [program_list]];
 
 /* internal programs that is will not be installed */
-i_program_list = TestLogin wdmPrefs;
+i_program_list = TestLogin wdmPrefs wdmChooser;
 
 /* list of *.mo files */
 mo_files = [fromto %0%.po %0%.mo [match_mask %0%.po [source_files]]];
