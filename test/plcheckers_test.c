@@ -7,6 +7,8 @@ static WDMArraySpec array_of_bool =
 static WDMArraySpec array_of_strings =
 	{ WDMCheckPLString, "default", wfree };
 
+static WDMArraySpec array_of_strings2 =
+	{ WDMCheckPLString, NULL, wfree, False };
 
 void free_test_struct(void *data);
 
@@ -33,7 +35,6 @@ static WDMDictionarySpec test_struct_spec =
 
 static WDMArraySpec array_of_structs =
 	{WDMCheckPLDictionary, &test_struct_spec, free_test_struct};
-
 
 int check_array_of_bool(void)
 {
@@ -63,6 +64,23 @@ int check_array_of_strings(void)
 	test_assert(strcmp(WMGetFromArray(array, 1), "Yes") == 0);
 	test_assert(strcmp(WMGetFromArray(array, 2), "default") == 0);
 	test_assert(strcmp(WMGetFromArray(array, 3), "no") == 0);
+
+	WMFreeArray(array);
+	WMReleasePropList(pl);
+
+	return 1;
+}
+
+int check_array_of_strings2(void)
+{
+	WMPropList *pl = NULL;
+	WMArray *array = NULL;
+
+	pl = WMCreatePropListFromDescription("(yes, Yes, (), no)");
+	test_assert(WDMCheckPLArray(pl, &array_of_strings2, &array) == True);
+	test_assert(strcmp(WMGetFromArray(array, 0), "yes") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 1), "Yes") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 2), "no") == 0);
 
 	WMFreeArray(array);
 	WMReleasePropList(pl);
@@ -113,6 +131,7 @@ int main(void)
 {
 	if(check_array_of_bool() &&
 		check_array_of_strings() &&
+		check_array_of_strings2() &&
 		check_array_of_structs())
 			return 0;
 	return 1;

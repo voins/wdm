@@ -31,6 +31,7 @@ typedef struct _WDMArraySpec
 	WDMChecker *checker;
 	void *data;
 	WMFreeDataProc *destructor;
+	Bool addnull;
 } WDMArraySpec;
 
 typedef struct _WDMDictionaryStruct

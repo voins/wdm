@@ -100,7 +100,10 @@ WDMCheckPLArray(WMPropList *pl, void *def, void *target)
 			*array_target = NULL;
 			return False;
 		}
-		WMAddToArray(*array_target, entry);
+		if(spec->addnull == True || entry != NULL)
+		{
+			WMAddToArray(*array_target, entry);
+		}
 	}
 
 	return True;
