@@ -455,6 +455,11 @@ animations are disabled.
 .IP "\fBDisplayManager.wdmLocale\fP"
 LANG environment variable will be set to value of this resource
 before starting wdmLogin.
+.IP "\fBDisplayManger.wdmCursorTheme\fP"
+If you have recent version of XFree with support for transparent
+cursors you can select cursor theme to use on login panel.
+XCURSOR_THEME environment variable will be set to value of this
+resource before starting wdmLogin.
 .SH "CONFIGURATION FILE"
 The default location of the 
 .I wdm

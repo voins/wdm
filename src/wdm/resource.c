@@ -82,6 +82,8 @@ int	wdmAnimations;		/* if true, enable shake and rollup animations */
 				/* if false, disable animations */
 char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
 char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
+char	*wdmCursorTheme;	/* this will be XCURSOR_THEME value before starting
+				   wdmLogin */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -372,6 +374,8 @@ struct dmResources wdmResources[] = {
 				""} ,
 { "wdmLoginConfig",	"WdmLoginConfig",	DM_STRING,	&wdmLoginConfig,
 				DEF_WDMLOGIN_CONFIG} ,
+{ "wdmCursorTheme",	"WdmCursorTheme",	DM_STRING,	&wdmCursorTheme,
+				""} ,
 };
 
 # define NUM_WDM_RESOURCES	(sizeof wdmResources/\

@@ -1,4 +1,10 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.24 --
+	- added basic support for xcursor_themes (for XFree86 4.3.0,
+	  see description of wdmCursorTheme resource in wdm man page).
+	- translations fixed. now all "... failed" messages displayed
+	  correctly.
+
 wdm-1.23 -- Mar 31 2003
 	- ChangeLog is now generated from repository history.
 	  Old ChangeLog is saved as ChangeLog.old.

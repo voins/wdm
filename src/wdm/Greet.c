@@ -130,6 +130,7 @@ extern int   wdmVerify;
 extern int   wdmAnimations;
 extern char *wdmLocale;
 extern char *wdmLoginConfig;
+extern char *wdmCursorTheme;
 
 static int      pipe_filedes[2];
 static char	name[128], password[128];
@@ -224,6 +225,9 @@ static int InitGreet (struct display *d)
 
 	if(*wdmLocale)
 		env = setEnv(env, "LANG", wdmLocale);
+
+	if(*wdmCursorTheme)
+		env = setEnv(env, "XCURSOR_THEME", wdmCursorTheme);
 
 	if((argv[0] = strrchr(wdmLogin, '/')) == NULL)
 		argv[0] = wdmLogin;
