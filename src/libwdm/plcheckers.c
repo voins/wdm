@@ -23,112 +23,120 @@
 #include <stddef.h>
 #include <strings.h>
 
-/** @brief check if proplist is correct boolean value
- *
- * If pl is string and has value "yes", than True is returned
- * If pl is string and has value "no", then False is returned
- * In all other cases defval is returned.
- *
- * This function is not signalling any error.
+/*
+ * Bool bool;
+ * WDMCheckPLBool(pl, True, &bool);
  */
 Bool
-WDMCheckPLBool(WMPropList *pl, Bool defval)
+WDMCheckPLBool(WMPropList *pl, void *def, void *target)
 {
-	Bool value = defval;
+	Bool *bool_target = (Bool*)target;
 	char *text = NULL;
 
+	WDMDebug("WDMCheckPLBool(%p, %p, %p)\n", pl, def, target);
+	*bool_target = (Bool)def;
 	if(pl && WMIsPLString(pl))
 	{
 		text = WMGetFromPLString(pl);
 		if(!strcasecmp(text, "yes"))
 		{
-			value = True;
+			*bool_target = True;
 		}
 		else if(!strcasecmp(text, "no"))
 		{
-			value = False;
+			*bool_target = False;
 		}
 	}
 
-	return value;
+	return True;
 }
 
-/** @brief check if proplist is a string
- *
- * If pl is a string it will be duplicated with 
- * wstrdup and returned. In all other cases defval
- * is returned. defval is also duplicated.  It's 
- * caller responsibility to wfree that space.
- *
- * If defval is NULL it is not duplicated.
+/*
+ * char *text;
+ * WDMCheckPLString(pl, NULL, &text);
  */
-char *
-WDMCheckPLString(WMPropList *pl, char *defval)
+Bool
+WDMCheckPLString(WMPropList *pl, void *def, void *target)
 {
-	char *value = defval;
+	char **charptr_target = (char**)target;
+	char *value = (char*)def;
 
+	WDMDebug("WDMCheckPLString(%p, %p, %p)\n", pl, def, target);
 	if(pl && WMIsPLString(pl))
 	{
 		value = WMGetFromPLString(pl);
 	}
 
-	return value ? wstrdup(value) : value;
+	*charptr_target = value ? wstrdup(value) : value;
+
+	return True;
 }
 
-/** @brief check if proplist is array and is correct
- *
- * If pl is an array all elements of it will be passed
- * through check function, and appended to newly created
- * array. Note that, array being returned is not PropList
- * array, but ordinary WMArray.
- *
- * check function should check correctness of array element
- * and return value that should be stored in resulting array.
- * data is passed to check function as second parameter.
- *
- * If check function allocates space for returned data it will
- * not be freed. Use WDMCheckPLArrayWithDestructor for that.
+/*
+ * WMArray *array;
+ * WDMCheckPLArray(pl, spec, &array);
  */
-WMArray *
-WDMCheckPLArray(WMPropList *pl, void *(*check)(void *, void *), void *data)
+Bool
+WDMCheckPLArray(WMPropList *pl, void *def, void *target)
 {
-	return WDMCheckPLArrayWithDestructor(pl, NULL, check, data);
-}
-
-/** @brief check if proplist is array and is correct
- *
- * This function behaves exactly the same as WDMCheckPLArray with
- * one exception. It takes additional destructor parameter, that
- * will be used to free space allocated by check function.
- * It can help prevent memory leaks.
- */
-WMArray *
-WDMCheckPLArrayWithDestructor(
-	WMPropList *pl, WMFreeDataProc *destructor,
-	void *(*check)(void *, void *), void *data)
-{
-	WMArray *value = NULL;
+	WMArray **array_target = (WMArray**)target;
+	WDMArraySpec *spec = (WDMArraySpec*)def;
 	void *entry = NULL;
 	int i, count;
 
-	if(pl && WMIsPLArray(pl))
-	{
-		count = WMGetPropListItemCount(pl);
-		value = WMCreateArrayWithDestructor(count, destructor);
+	WDMDebug("WDMCheckPLArray(%p, %p, %p)\n", pl, def, target);
+	if(!pl || !WMIsPLArray(pl)) return False;
+	
+	count = WMGetPropListItemCount(pl);
+	*array_target = 
+		WMCreateArrayWithDestructor(count, spec->destructor);
 
-		for(i = 0; i < count; ++i)
+	for(i = 0; i < count; ++i)
+	{
+		if(!(*spec->checker)(
+			WMGetFromPLArray(pl, i), spec->data, &entry))
 		{
-			entry = (*check)(WMGetFromPLArray(pl, i), data);
-			if(!entry)
-			{
-				WMFreeArray(value);
-				value = NULL;
-				break;
-			}
-			WMAddToArray(value, entry);
+			WMFreeArray(*array_target);
+			*array_target = NULL;
+			return False;
 		}
+		WMAddToArray(*array_target, entry);
 	}
 
-	return value;
+	return True;
+}
+
+/*
+ * struct *s;
+ * WDMCheckPLDictionary(pl, spec, &s);
+ */
+Bool
+WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
+{
+	WDMDictionarySpec *spec = (WDMDictionarySpec*)def;
+	WDMDictionaryStruct *fields = spec->fields;
+	void **data = (void**)target;
+	WMPropList *key = NULL, *value = NULL;
+	void *fresult = NULL;
+
+	WDMDebug("WDMCheckPLDictionary(%p, %p, %p)\n", pl, def, target);
+	if(!pl || !WMIsPLDictionary(pl)) return False;
+	
+	*data = (void*)wmalloc(spec->size);
+	memset(*data, 0, spec->size);
+	while(fields->key)
+	{
+		key = WMCreatePLString(fields->key);
+		value = WMGetFromPLDictionary(pl, key);
+
+		if((*fields->checker)(value, fields->data, &fresult))
+			*((unsigned*)(*data + fields->offset))
+				= (unsigned)fresult;
+		
+		WMReleasePropList(key);
+		key = NULL;
+		fields++;
+	}
+	return True;
 }
 

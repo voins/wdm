@@ -1,109 +1,125 @@
 #include <runtest.h>
 #include <wdmlib.h>
 
-int check_bool(void)
+static WDMArraySpec array_of_bool =
+	{ WDMCheckPLBool, (void*)False, NULL };
+
+static WDMArraySpec array_of_strings =
+	{ WDMCheckPLString, "default", wfree };
+
+
+void free_test_struct(void *data);
+
+typedef struct _test_struct
+{
+	Bool boolval;
+	char *stringval;
+	WMArray *arrayval;
+} test_struct;
+
+static WDMDictionaryStruct test_struct_fields[] =
+{
+	{"bool", WDMCheckPLBool, False,
+		offsetof(test_struct, boolval)},
+	{"string", WDMCheckPLString, "aaa",
+		offsetof(test_struct, stringval)},
+	{"array", WDMCheckPLArray, &array_of_strings,
+		offsetof(test_struct, arrayval)},
+	{NULL, NULL, NULL, 0}
+};
+
+static WDMDictionarySpec test_struct_spec =
+	{sizeof(test_struct), test_struct_fields};
+
+static WDMArraySpec array_of_structs =
+	{WDMCheckPLDictionary, &test_struct_spec, free_test_struct};
+
+
+int check_array_of_bool(void)
 {
 	WMPropList *pl = NULL;
+	WMArray *array = NULL;
 
-	test_assert(WDMCheckPLBool(pl, True) == True
-			&& WDMCheckPLBool(pl, False) == False);
+	pl = WMCreatePropListFromDescription("(yes, Yes, no)");
+	test_assert(WDMCheckPLArray(pl, &array_of_bool, &array) == True);
+	test_assert((Bool)WMGetFromArray(array, 0) == True);
+	test_assert((Bool)WMGetFromArray(array, 1) == True);
+	test_assert((Bool)WMGetFromArray(array, 2) == False);
 
-	pl = WMCreatePropListFromDescription("YES");
-	test_assert(WDMCheckPLBool(pl, True) == True
-			&& WDMCheckPLBool(pl, False) == True);
-	WMReleasePropList(pl);
-	
-	pl = WMCreatePropListFromDescription("NO");
-	test_assert(WDMCheckPLBool(pl, True) == False 
-			&& WDMCheckPLBool(pl, False) == False);
-	WMReleasePropList(pl);
-
-	pl = WMCreatePropListFromDescription("yes");
-	test_assert(WDMCheckPLBool(pl, True) == True 
-			&& WDMCheckPLBool(pl, False) == True);
-	WMReleasePropList(pl);
-	
-	pl = WMCreatePropListFromDescription("no");
-	test_assert(WDMCheckPLBool(pl, True) == False
-			&& WDMCheckPLBool(pl, False) == False);
-	WMReleasePropList(pl);
-
-	pl = WMCreatePropListFromDescription("__");
-	test_assert(WDMCheckPLBool(pl, True) == True 
-			&& WDMCheckPLBool(pl, False) == False);
+	WMFreeArray(array);
 	WMReleasePropList(pl);
 
 	return 1;
 }
 
-int check_string(void)
+int check_array_of_strings(void)
 {
-	static char *defval = "default value";
-	static char *proper = "proper value";
-	static char *properd = "\"proper value\"";
-	char *result = NULL;
 	WMPropList *pl = NULL;
-	
-	result = WDMCheckPLString(pl, defval);
-	test_assert(strcmp(result, defval) == 0);
-	wfree(result);
+	WMArray *array = NULL;
 
-	pl = WMCreatePropListFromDescription(properd);
-	result = WDMCheckPLString(pl, defval);
-	test_assert(strcmp(result, proper) == 0);
-	wfree(result);
+	pl = WMCreatePropListFromDescription("(yes, Yes, (), no)");
+	test_assert(WDMCheckPLArray(pl, &array_of_strings, &array) == True);
+	test_assert(strcmp(WMGetFromArray(array, 0), "yes") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 1), "Yes") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 2), "default") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 3), "no") == 0);
+
+	WMFreeArray(array);
 	WMReleasePropList(pl);
 
-	pl = WMCreatePropListFromDescription("(a, b)");
-	result = WDMCheckPLString(pl, defval);
-	test_assert(strcmp(result, defval) == 0);
-	wfree(result);
-	WMReleasePropList(pl);
-	
 	return 1;
 }
 
-int check_array(void)
+void free_test_struct(void *data)
 {
-	static char *defval = "default";
-	WMPropList *pl = NULL;
-	WMArray *result = NULL;
-
-	test_assert(WDMCheckPLArray(pl, NULL, NULL) == NULL);
-	test_assert(WDMCheckPLArrayWithDestructor(pl, NULL, NULL, NULL)
-			== NULL);
-
-	pl = WMCreatePropListFromDescription("\"some string\"");
-	test_assert(WDMCheckPLArray(pl, NULL, NULL) == NULL);
-	test_assert(WDMCheckPLArrayWithDestructor(pl, NULL, NULL, NULL)
-			== NULL);
-	WMReleasePropList(pl);
-
-	pl = WMCreatePropListFromDescription("(aaa, bbb, ccc, ())");
-	result = WDMCheckPLArrayWithDestructor(pl, wfree,
-				WDMUntype(WDMCheckPLString), defval);
-	test_assert(WMGetArrayItemCount(result) == 4);
-	test_assert(strcmp(WMGetFromArray(result, 0), "aaa") == 0);
-	test_assert(strcmp(WMGetFromArray(result, 1), "bbb") == 0);
-	test_assert(strcmp(WMGetFromArray(result, 2), "ccc") == 0);
-	test_assert(strcmp(WMGetFromArray(result, 3), defval) == 0);
-	WMReleasePropList(pl);
-	
-	return 1;
+	test_struct *s = data;
+	if(s->stringval) 
+		wfree(s->stringval);
+	if(s->arrayval)
+		WMFreeArray(s->arrayval);
+	wfree(data);
 }
 
+int check_array_of_structs(void)
+{
+	WMPropList *pl = NULL;
+	WMArray *array = NULL;
+	test_struct *tst = NULL;
+
+	pl = WMCreatePropListFromDescription(
+			"({bool=yes; string=qqq; array=(bbb, ccc);},"
+			"{bool=False; array=yyy;})");
+	test_assert(WDMCheckPLArray(pl, &array_of_structs, &array) == True);
+
+	test_assert((tst = WMGetFromArray(array, 0)) != NULL);
+	test_assert(tst->boolval == True);
+	test_assert(strcmp(tst->stringval, "qqq") == 0);
+	test_assert(tst->arrayval != NULL);
+	test_assert(strcmp(WMGetFromArray(tst->arrayval, 0), "bbb") == 0);
+	test_assert(strcmp(WMGetFromArray(tst->arrayval, 1), "ccc") == 0);
+
+	test_assert((tst = WMGetFromArray(array, 1)) != NULL);
+	test_assert(tst->boolval == False);
+	test_assert(strcmp(tst->stringval, "aaa") == 0);
+	test_assert(tst->arrayval == NULL);
+
+	WMFreeArray(array);
+	WMReleasePropList(pl);
+
+	return 1;
+}
 
 int main(void)
 {
-	if(check_bool()
-		&& check_string()
-		&& check_array())
-		return 0;
+	if(check_array_of_bool() &&
+		check_array_of_strings() &&
+		check_array_of_structs())
+			return 0;
 	return 1;
 }
 
 /*
 CFLAGS=-I/usr/X11R6/include
 LDFLAGS=-L/usr/X11R6/lib
-LIBS=-lWINGs -lwdm
+LIBS=-lwdm -lWINGs
  */

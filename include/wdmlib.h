@@ -24,15 +24,33 @@
 
 #include <stdio.h>
 
-#define WDMUntype(f) ((void *(*)(void*, void*))(f))
+typedef Bool (WDMChecker)(WMPropList *, void *, void *);
 
-extern Bool WDMCheckPLBool(WMPropList *pl, Bool defval);
-extern char *WDMCheckPLString(WMPropList *pl, char *defval);
-extern WMArray *WDMCheckPLArray(
-	WMPropList *pl, void *(*check)(void *, void *), void *data);
-extern WMArray *WDMCheckPLArrayWithDestructor(
-	WMPropList *pl, WMFreeDataProc *destructor,
-	void *(*check)(void *, void *), void *data);
+typedef struct _WDMArraySpec
+{
+	WDMChecker *checker;
+	void *data;
+	WMFreeDataProc *destructor;
+} WDMArraySpec;
+
+typedef struct _WDMDictionaryStruct
+{
+	char *key;
+	WDMChecker *checker;
+	void *data;
+	size_t offset;
+} WDMDictionaryStruct;
+
+typedef struct _WDMDictionarySpec
+{
+	size_t size;
+	WDMDictionaryStruct *fields;
+} WDMDictionarySpec;
+
+extern Bool WDMCheckPLBool(WMPropList *pl, void *def, void *target);
+extern Bool WDMCheckPLString(WMPropList *pl, void *def, void *target);
+extern Bool WDMCheckPLArray(WMPropList *pl, void *def, void *target);
+extern Bool WDMCheckPLDictionary(WMPropList *pl, void *def, void *target);
 
 extern int WDMDebugLevel(int level);
 extern FILE *WDMDebugStream(FILE *debugfile);
