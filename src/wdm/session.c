@@ -562,7 +562,6 @@ StartClient (
 	/* Do system-dependent login setup here */
 
 #ifndef AIXV3
-#ifndef HAS_SETUSERCONTEXT
 	if (setgid(verify->gid) < 0)
 	{
 	    WDMError("setgid %d (user \"%s\") failed, errno=%d\n",
@@ -610,28 +609,6 @@ StartClient (
 		     verify->uid, name, errno);
 	    return (0);
 	}
-#else /* HAS_SETUSERCONTEXT */
-	/*
-	 * Set the user's credentials: uid, gid, groups,
-	 * environment variables, resource limits, and umask.
-	 */
-	pwd = getpwnam(name);
-	if (pwd)
-	{
-	    if (setusercontext(NULL, pwd, pwd->pw_uid, LOGIN_SETALL) < 0)
-	    {
-		WDMError("setusercontext for \"%s\" failed, errno=%d\n", name,
-		    errno);
-		return (0);
-	    }
-	    endpwent();
-	}
-	else
-	{
-	    WDMError("getpwnam for \"%s\" failed, errno=%d\n", name, errno);
-	    return (0);
-	}
-#endif /* HAS_SETUSERCONTEXT */
 #else /* AIXV3 */
 	/*
 	 * Set the user's credentials: uid, gid, groups,
