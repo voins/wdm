@@ -169,7 +169,6 @@ static char *Cname  = "Login Name:";
 static char *Cpswd  = "Password:";
 
 static int   OptionCode	   = 0;
-static char  OptionStr[32] = "Login";
 static char  ExitLogin[]   = "Login";
 static char  ExitReboot[]  = "Reboot";
 static char  ExitHalt[]	   = "Halt";
@@ -577,7 +576,6 @@ static void changeOption(WMPopUpButton *self, LoginPanel *panel)
     int item;
 
     item = WMGetPopUpButtonSelectedItem(self);
-    strcpy(OptionStr,ExitStr[item]);
     OptionCode = item;
     WMSetFocusToWidget(panel->entryText);
 }
@@ -1172,7 +1170,7 @@ static void SignalUsr1(int ignored)	/* oops, an error */
 {
     char msg[64];
 
-    strcpy(msg,OptionStr);
+    strcpy(msg, ExitStr[OptionCode]);
     strcat(msg," failed.");
     InitializeLoginInput(panel);
     PrintErrMsg(panel,msg);
