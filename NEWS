@@ -1,18 +1,20 @@
 See TODO, README, README.pam, and ChangeLog
-wdm-1.23 --
+wdm-1.23 -- Mar 31 2003
 	- ChangeLog is now generated from repository history.
 	  Old ChangeLog is saved as ChangeLog.old.
 	- man page fixed. There was references to xdm everywhere. :)
-	- common functions moved into library libwdm. This library is
-	  no intended to be used outside of wdm and build only
-	  statically. I would not mind if some of functions from
-	  libwdm will move into WINGs.
 	- default help message translated.
 	- started process of separation wdmLogin configuration file
 	  from wdm configuration file.
 	- lots of internal improvements in wdmLogin.
 	- german translation added
 	  (by Michael Buesch <freesoftwaredeveloper@web.de>)
+	- fixes for animations in wdmLogin
+	  (by Michael Buesch <freesoftwaredeveloper@web.de>)
+	
+	There's traces of ongoing development like libwdm. It's not
+	used now in any sources, but will be used in some of future
+	versions.
 
 wdm-1.22.1 -- Feb 20 2003
 	There was a bug. I forgot to change pam service name

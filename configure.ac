@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.53)
-AC_INIT([wdm],[1.22.1],[voins@voins.program.ru])
+AC_INIT([wdm],[1.23],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
 AC_CONFIG_HEADERS(include/config.h)
 
