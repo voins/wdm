@@ -15,28 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * debug.c: some functions to help output debug information
  */
-#ifndef _WDMLIB_H
-#define _WDMLIB_H
+#include <wdmlib.h>
+#include <stdarg.h>
 
-#include <WINGs/WINGs.h>
-#include <WINGs/WUtil.h>
+int
+WDMDebugLevel(int level)
+{
+	static int current_level = 0;
 
-#include <stdio.h>
+	if(level < 0)
+		return current_level;
 
-#define WDMUntype(f) ((void *(*)(void*, void*))(f))
+	return current_level = level;
+}
 
-extern Bool WDMCheckPLBool(WMPropList *pl, Bool defval);
-extern char *WDMCheckPLString(WMPropList *pl, char *defval);
-extern WMArray *WDMCheckPLArray(
-	WMPropList *pl, void *(*check)(void *, void *), void *data);
-extern WMArray *WDMCheckPLArrayWithDestructor(
-	WMPropList *pl, WMFreeDataProc *destructor,
-	void *(*check)(void *, void *), void *data);
+FILE *
+WDMDebugStream(FILE *debugfile)
+{
+	static FILE* current_debugfile = NULL;
 
-extern int WDMDebugLevel(int level);
-extern FILE *WDMDebugStream(FILE *debugfile);
-extern void WDMDebug(char *fmt, ...);
+	if(!current_debugfile)
+		current_debugfile = stderr;
 
-#endif
+	if(!debugfile)
+		return current_debugfile;
+
+	return current_debugfile = debugfile;
+}
+
+void
+WDMDebug(char *fmt, ...)
+{
+	if(WDMDebugLevel(-1))
+	{
+		va_list args;
+		va_start(args, fmt);
+		vfprintf(WDMDebugStream(NULL), fmt, args);
+		va_end(args);
+		fflush(WDMDebugStream(NULL));
+	}
+}
 
