@@ -1,4 +1,4 @@
 configuration_directory = "etc/config.d";
 
-create_symlinks_before_build = true;
+create_symlinks_before_build = false;
 

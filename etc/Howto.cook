@@ -26,28 +26,55 @@ wdm_config_files = src/config/wdm-config src/config/Xclients \
 
 all: [wdm_config_files]
 {
-	make;
 }
 
-config.status : configure.ac
+
+if [exists /usr/local/share/autoconf/install-sh] then
+	install-sh = /usr/local/share/autoconf/install-sh;
+else if [exists /usr/share/autoconf/install-sh] then
+	install-sh = /usr/share/autoconf/install-sh;
+if [exists /usr/local/share/automake/install-sh] then
+	install-sh = /usr/local/share/automake/install-sh;
+else 
+	install-sh = /usr/share/automake/install-sh;
+
+
+install-sh: [install-sh]
 {
+	cp [need] [target];
+	chmod 755 [target];
+}
+
+configure: configure.ac etc/Howto.cook install-sh
+{
+	if [not [exists install-sh]] then
+		ln -s [resolve install-sh] install-sh
+			set clearstat;
+
+	[autoconf] [resolve configure.ac] > [target];
+	chmod 755 [target];
 	rm -rf autom4te*.cache;
-	rm -f config.log stamp-h stamp-h.in aclocal.m4
-		configure Makefile.in doc/Makefile.in
-		src/Makefile.in src/config/Makefile.in
-		src/pixmaps/Makefile.in config.status
-		config.h.in acconfig.h;
-	[aclocal];
-	[autoheader] [resolve configure.ac] > config.h.in;
-	[autoconf] [resolve configure.ac] > configure;
-	[automake] --add-missing;
-	sh configure;
+}
+
+config.status : configure etc/Howto.cook
+{
+	[pathname [resolve configure]]
+		--no-create
+		--cache-file\=/dev/null
+		--verbose
+		--srcdir\=.;
+}
+
+config.h.in : configure.ac etc/Howto.cook
+{
+	[autoheader] [resolve configure.ac] > [target];
+	rm -rf autom4te*.cache;
 }
 
 src/config/% : src/config/%.in config.status
 {
 	rm config.log;
 	CONFIG_FILES\=[target]\:[resolve src/config/%.in] CONFIG_HEADERS\=
-		sh [resolve config.status];
+		[pathname [resolve config.status]];
 }
 

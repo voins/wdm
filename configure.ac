@@ -2,8 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.53)
 AC_INIT([wdm],[1.20.1],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
-AM_INIT_AUTOMAKE
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
@@ -112,7 +111,6 @@ AC_ARG_ENABLE(pam,
 			])
 
 	])
-AM_CONDITIONAL(INSTALLPAM, test x$enable_pam = xyes)
 AC_SUBST(PASSWDLIB)
 
 LIBUTIL=
