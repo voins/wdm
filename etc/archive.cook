@@ -3,7 +3,7 @@ archive_files =
 	Makefile.in
 	include/config.h.in
 	ChangeLog
-	[source_files];
+	[filter_out xdm/%0% [source_files]];
 
 if [not [defined PACKAGE_VERSION]] then PACKAGE_VERSION=0;
 
