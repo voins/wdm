@@ -1,6 +1,6 @@
 /*
  * wdm - WINGs display manager
- * Copyright (C) 2003 Alexey Voinov <voins@voins.program.ru>
+ * Copyright (C) 2003, 2004 Alexey Voinov <voins@voins.program.ru>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <dm.h>
+#include <signal.h>
 
 /*
  * I hate global variables. But I don't know other way to pass information to 
@@ -125,12 +126,14 @@ WDMRedirectStderr(int level)
 	int exitstatus;
 
 	if(pipe(errpipe) == -1)
-		WDMError("cannot create pipe. all stderr messages will go to stderr\n");
+		WDMError("cannot create pipe. "
+				"all stderr messages will go to stderr\n");
 
 	childpid = fork();
 	if(childpid == -1)
 	{
-		WDMError("fork failed. all stderr messages will go to stderr\n");
+		WDMError("fork failed. "
+				"all stderr messages will go to stderr\n");
 		close(errpipe[0]);
 		close(errpipe[1]);
 	}
@@ -142,7 +145,8 @@ WDMRedirectStderr(int level)
 		Signal(SIGINT, WDMRedirectSignals);
 		Signal(SIGHUP, WDMRedirectSignals);
 		close(errpipe[1]);
-		exitstatus = WDMRedirectFileToLog(WDM_LEVEL_ERROR, childpid, errpipe[0]);
+		exitstatus = WDMRedirectFileToLog(WDM_LEVEL_ERROR,
+							childpid, errpipe[0]);
 		close(errpipe[0]);
 		exit(exitstatus);
 	}
