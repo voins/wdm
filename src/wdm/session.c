@@ -129,7 +129,7 @@ static	struct dlfuncs	dlfuncs = {
 	WDMSetEnv,
 	WDMPutEnv,
 	parseArgs,
-	printEnv,
+	WDMPrintEnv,
 	systemEnv,
 	setgrent,
 	getgrent,
@@ -382,7 +382,7 @@ LoadXloginResources (struct display *d)
 	WDMDebug("Loading resource file: %s\n", d->resources);
 	(void) runAndWait (args, env);
 	freeArgs (args);
-	freeEnv (env);
+	WDMFreeEnv (env);
     }
 }
 
@@ -395,7 +395,7 @@ SetupDisplay (struct display *d)
     {
     	env = systemEnv (d, (char *) 0, (char *) 0);
     	(void) source (env, d->setup);
-    	freeEnv (env);
+    	WDMFreeEnv (env);
     }
 }
 

@@ -496,10 +496,10 @@ done:
 	verify->userEnviron = userEnv (d, p->pw_uid == 0,
 				       greet->name, home, shell);
 	WDMDebug("user environment:\n");
-	printEnv (verify->userEnviron);
+	WDMPrintEnv (verify->userEnviron);
 	verify->systemEnviron = systemEnv (d, greet->name, home);
 	WDMDebug("system environment:\n");
-	printEnv (verify->systemEnviron);
+	WDMPrintEnv (verify->systemEnviron);
 	WDMDebug("end of environments\n");
 	return 1;
 }

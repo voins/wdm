@@ -452,8 +452,6 @@ extern char *localHostname (void);
 extern char **parseArgs (char **argv, char *string);
 extern void CleanUpChild (void);
 extern void freeArgs (char **argv);
-extern void freeEnv (char **env);
-extern void printEnv (char **e);
 
 /* in verify.c */
 extern int Verify (struct display *d, struct greet_info *greet, struct verify_info *verify);

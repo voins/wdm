@@ -61,27 +61,6 @@ from The Open Group.
 
 #include <wdmlib.h>
 
-void
-printEnv (char **e)
-{
-	while (*e)
-		WDMDebug ("%s\n", *e++);
-}
-
-
-void
-freeEnv (char **env)
-{
-    char    **e;
-
-    if (env)
-    {
-    	for (e = env; *e; e++)
-	    free (*e);
-    	free (env);
-    }
-}
-
 # define isblank(c)	((c) == ' ' || c == '\t')
 
 char **
