@@ -71,3 +71,10 @@ Makefile : Makefile.in config.status
 	rm -f config.log;
 }
 
+doc/% : doc/%.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve doc/%.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+	rm -f config.log;
+}
+

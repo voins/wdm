@@ -14,7 +14,7 @@ wdm uses the same options xdm uses. Except for \fB\-config\fP, all of
 the options can be specified as resources.
 .IP "\fB\-config\fP \fIconfiguration_file\fP"
 Names the configuration file, which specifies resources to control
-the behavior of \fIxdm\fP. \fI#configdir#/wdm-config\fP is the default.
+the behavior of \fIxdm\fP. \fI@DMDIR@/wdm-config\fP is the default.
 .IP "\fB\-nodaemon\fP"
 Specifies ``false'' as the value for the
 \fBDisplayManager.daemonMode\fP resource. This suppresses the normal
