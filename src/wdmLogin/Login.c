@@ -32,11 +32,6 @@
 #include <limits.h>
 #include <locale.h>
 
-#if (WINGS_H_VERSION == 980901)
-void WMSetScrollViewLineScroll(WMScrollView *sPtr, int amount);
-void WMSetScrollViewPageScroll(WMScrollView *sPtr, int amount);
-#endif
-
 #include <gnuLogo.xpm>
 
 
@@ -449,11 +444,7 @@ static void PrintInfoMsg(LoginPanel *panel, char *msg)
 static void init_pwdfield(char *pwd)
 {
 	WMSetTextFieldText(panel->entryText, pwd);
-#if (WINGS_H_VERSION > 980722)
 	WMSetTextFieldSecure(panel->entryText, True);
-#else
-	WMResizeWidget(panel->entryText, text_width, 4); /* make invisible */
-#endif
 	WMSetLabelText(panel->entryLabel, _("Password:"));
 }
 
@@ -463,9 +454,7 @@ static void init_namefield(char *name)
     WMSetTextFieldText(panel->entryText,name);
     WMSetLabelText(panel->entryLabel, _("Login name:"));
     WMSetFocusToWidget(panel->entryText);
-#if (WINGS_H_VERSION > 980722)
-	WMSetTextFieldSecure(panel->entryText, False);
-#endif
+    WMSetTextFieldSecure(panel->entryText, False);
 }
 
 static void InitializeLoginInput(LoginPanel *panel)
@@ -749,9 +738,7 @@ static void CreateAuthFrame(LoginPanel *panel)
     WMMoveWidget(panel->entryText, 115, y);
     WMResizeWidget(panel->entryText, text_width, text_heigth);
     WMSetTextFieldText(panel->entryText,"");
-#if (WINGS_H_VERSION > 980722)
-	WMSetTextFieldSecure(panel->entryText, False);
-#endif
+    WMSetTextFieldSecure(panel->entryText, False);
 }
 
 static void CreateMsgsFrames(LoginPanel *panel)
@@ -863,9 +850,7 @@ static void CreateHelpFrames(LoginPanel *panel)
     WMSetScrollViewRelief(panel->helpSV, WRSunken);
     WMSetScrollViewHasVerticalScroller(panel->helpSV, True);
     WMSetScrollViewHasHorizontalScroller(panel->helpSV, False);
-#if (WINGS_H_VERSION >= 980901)
     WMSetScrollViewLineScroll(panel->helpSV,12);
-#endif
 
     parse_helpArg();
     nblines = countlines(HelpFile);
@@ -1250,12 +1235,8 @@ int main(int argc, char **argv)
 
     setBG();
 
-#if (WINGS_H_VERSION > 980722)
     WMInitializeApplication(ProgName, &argc, argv);
     scr = WMCreateScreen(dpy, screen_number);
-#else
-    scr = WMCreateScreen(dpy, screen_number, ProgName, NULL, NULL);
-#endif
     if (!scr) {
 	fprintf(stderr,"could not initialize Screen\n");
 	exit(2);
