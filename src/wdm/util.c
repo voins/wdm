@@ -41,24 +41,7 @@ from The Open Group.
 
 #include <X11/Xmu/SysUtil.h>	/* for XmuGetHostname */
 
-#ifdef X_POSIX_C_SOURCE
-#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
-#undef _POSIX_C_SOURCE
-#else
-#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
-#include <signal.h>
-#else
-#define _POSIX_SOURCE
-#include <signal.h>
-#undef _POSIX_SOURCE
-#endif
-#endif
-#if defined(__osf__) || defined(linux) || defined(__QNXNTO__) || defined(__GNU__) \
-	|| (defined(IRIX) && !defined(IRIX4))
-#define setpgrp setpgid
-#endif
-
 #include <wdmlib.h>
 
 # define isblank(c)	((c) == ' ' || c == '\t')
@@ -130,14 +113,8 @@ CleanUpChild (void)
 #ifdef CSRG_BASED
 	setsid();
 #else
-#if defined(SYSV) || defined(SVR4) || defined(__CYGWIN__)
-#if !(defined(SVR4) && defined(i386)) || defined(SCO325)
-	setpgrp ();
-#endif
-#else
-	setpgrp (0, getpid ());
+	setpgid (0, getpid ());
 	sigsetmask (0);
-#endif
 #endif
 #ifdef SIGCHLD
 	(void) Signal (SIGCHLD, SIG_DFL);
