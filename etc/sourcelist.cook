@@ -15,5 +15,5 @@ wdm_config_files = src/config/wdm-config src/config/Xclients \
 
 program_list = wdmLogin TestLogin wdm;
 
-all = [wdm_config_files] wdm-[PACKAGE_VERSION].tar.gz [addprefix bin/ [program_list]];
+all = [wdm_config_files] tarball [addprefix bin/ [program_list]];
 
