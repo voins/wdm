@@ -1,0 +1,73 @@
+! $XConsortium: xdm-conf.cpp /main/3 1996/01/15 15:17:26 gildea $
+!
+! wdm configuration file input (sed in Makefile)
+!
+DisplayManager.errorLogFile:    /var/log/xdm-errors.log
+DisplayManager.pidFile:         /var/run/xdm-pid
+DisplayManager.keyFile:         /usr/local/etc/wdm/xdm-keys
+DisplayManager.servers:         /usr/local/etc/wdm/Xservers
+DisplayManager.accessFile:      /usr/local/etc/wdm/Xaccess
+! All displays should use authorization, but we cannot be sure
+! X terminals will be configured that way, so by default
+! use authorization only for local displays :0, :1, etc.
+DisplayManager._0.authorize:    true
+DisplayManager._1.authorize:    true
+! The following three resources set up display :0 as the console.
+DisplayManager._0.setup:        /usr/local/etc/wdm/Xsetup_0
+DisplayManager._0.startup:      /usr/local/etc/wdm/GiveConsole
+DisplayManager._0.reset:        /usr/local/etc/wdm/TakeConsole
+!
+DisplayManager*resources:       /usr/local/etc/wdm/Xresources
+DisplayManager*session:         /usr/local/etc/wdm/Xsession
+DisplayManager*authComplain:    false
+DisplayManager*wdmLogin:        /usr/local/bin/wdmLogin
+!
+! display screen background--if not set or set to none, then the
+!                            background is not set by wdm.
+! DisplayManager*wdmBg:         none
+DisplayManager*wdmBg:           solid:RoyalBlue
+! DisplayManager*wdmBg:         dgradient:RoyalBlue,FireBrick,Black
+! DisplayManager*wdmBg:         hgradient:RoyalBlue,FireBrick,Black
+! DisplayManager*wdmBg:         vgradient:RoyalBlue,FireBrick,Black
+! DisplayManager*wdmBg:         pixmap:/usr/local/etc/wdm/pixmaps/Stars.jpg
+!
+! optional pixmap for logo
+! DisplayManager*wdmLogo:  /usr/local/etc/wdm/pixmaps/Eagle.xpm
+!
+! optional help file to display in the help panel
+! long lines may cause an ugly display 
+! DisplayManager*wdmHelpFile:   /etc/motd
+!
+! optional default username and password (in clear text)
+! which wdm should use if nothing is typed by the user.
+! it's strongly suggested that wdm-config should be
+! chmod 600 and owned by root if you want to use this
+! feature, or else you could open a huge security hole
+! in your system, letting anyone to log in as this default
+! user. In any case if you want to use this feature do
+! it with a very restricted account, and especially NOT
+! WITH THE root ACCOUNT !!! 
+!DisplayManager*wdmDefaultUser:	 nobody
+!DisplayManager*wdmDefaultPasswd: dumb_clear_text_passwd
+!
+! list of window managers which can be started
+! or 'None' if you want only NoChange to appear
+! e.g.: DisplayManager*wdmWm:   None
+DisplayManager*wdmWm:           WindowMaker:IceWm
+!
+! commands for reboot and halt 
+!       -- be sure to edit these if the
+!          system is not linux.
+DisplayManager*wdmReboot:       /sbin/shutdown -r now
+DisplayManager*wdmHalt:         /sbin/shutdown -h now
+! alternates (for Linux)
+! DisplayManager*wdmReboot:     /sbin/shutdown -t3 -r now
+! DisplayManager*wdmHalt:               /sbin/shutdown -t3 -h now
+!
+! true/false to require valid username/passwd to reboot,halt, or exit
+DisplayManager*wdmVerify:       true
+! true/false to require root as valid username/passwd to reboot,halt, or exit
+DisplayManager*wdmRoot:         false
+! true=enable, false=disable shake and rollup animations
+DisplayManager*wdmAnimations:   true
+

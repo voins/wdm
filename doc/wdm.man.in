@@ -1,0 +1,120 @@
+.TH wdm 1x "August 1998"
+.SH NAME
+wdm \- WINGs Display Manager
+.SH SYNOPSIS
+.B wdm [ options ]
+.SH DESCRIPTION
+\fBwdm\fP is an X display manager based on xdm(1). It features unique
+characteristics, like the ability to reboot or halt the machine (once
+the proper password has been supplied). The look of the login panel is
+somewhat configurable, too.
+.SH OPTIONS
+.PP
+wdm uses the same options xdm uses. Except for \fB\-config\fP, all of
+the options can be specified as resources.
+.IP "\fB\-config\fP \fIconfiguration_file\fP"
+Names the configuration file, which specifies resources to control
+the behavior of \fIxdm\fP. \fI#configdir#/wdm-config\fP is the default.
+.IP "\fB\-nodaemon\fP"
+Specifies ``false'' as the value for the
+\fBDisplayManager.daemonMode\fP resource. This suppresses the normal
+daemon behavior, which is for \fIxdm\fP to close all file descriptors,
+disassociate itself from the controlling terminal, and put itself in
+the background when it first starts up.
+.IP "\fB\-debug\fP \fIdebug_level\fP"
+Specifies the numeric value for the \fBDisplayManager.debugLevel\fP
+resource.  A non-zero value causes \fIxdm\fP to print lots of
+debugging statements to the terminal; it also disables the
+\fBDisplayManager.daemonMode\fP resource, forcing \fIxdm\fP to run
+synchronously.  To interpret these debugging messages, a copy of the
+source code for \fIxdm\fP is almost a necessity.  No attempt has been
+made to rationalize or standardize the output.
+.IP "\fB\-error\fP \fIerror_log_file\fP"
+Specifies the value for the \fBDisplayManager.errorLogFile\fP
+resource.  This file contains errors from \fIxdm\fP as well as
+anything written to stderr by the various scripts and programs run
+during the progress of the session.
+.IP "\fB\-resources\fP \fIresource_file\fP"
+Specifies the value for the \fBDisplayManager*resources\fP resource.
+This file is loaded using \fIxrdb\fP to specify configuration
+parameters for the authentication widget.
+.IP "\fB\-server\fP \fIserver_entry\fP"
+Specifies the value for the \fBDisplayManager.servers\fP resource.
+.IP "\fB\-udpPort\fP \fIport_number\fP"
+Specifies the value for the \fBDisplayManager.requestPort\fP resource.
+This sets the port-number which \fIxdm\fP will monitor for XDMCP
+requests.  As XDMCP uses the registered well-known UDP port 177, this
+resource should not be changed except for debugging.
+.IP "\fB\-session\fP \fIsession_program\fP"
+Specifies the value for the \fBDisplayManager*session\fP resource.
+This indicates the program to run as the session after the user has
+logged in.
+.IP "\fB\-xrm\fP \fIresource_specification\fP"
+Allows an arbitrary resource to be specified, as in most X Toolkit
+applications.
+.SH RESOURCES
+.PP
+wdm uses the same resources xdm does. It understands the following
+additional resources.
+.IP "\fBDisplayManager.wdmLogin\fP"
+Specifies the path to \fIwdmLogin\fP(1x)
+.IP "\fBDisplayManager.wdmWm\fP"
+Is a colon separated list of window managers to use as options in the
+login panel. Note that if you include the path to the window manager,
+it will look \fIugly\fP. You may set this resource to None if you want
+only NoChange to appear.
+.IP "\fBDisplayManager.wdmLogo\fP"
+Path to the logo pixmap, several formats are accepted, read
+\fIwdmLogin\fP(1x) to find out more.
+.IP "\fBDisplayManager.wdmHelpFile\fP"
+Path to a text file which will be displayed in the help panel, read
+\fIwdmLogin\fP(1x) to find out more.
+.IP "\fBDisplayManager.wdmDefaultUser\fP"
+a default username which will be used if no username is typed.
+.IP "\fBDisplayManager.wdmDefaultPasswd\fP" 
+the clear text password of the default user above. BE VERY CAREFUL
+when using this two resources, and don't forget to do:
+chmod 600 wdm-config ; chown root.root wdm-config
+.IP "\fBDisplayManager.wdmBg\fP"
+Background specification. Read the next section to find out about the format.
+If this is not specified, then the background is \fBnot\fP set.
+.IP "\fBDisplayManager.wdmReboot\fP"
+Reboot command.
+.IP "\fBDisplayManager.wdmHalt\fP"
+Halt command.
+.IP "\fBDisplayManager.wdmVerify\fP"
+If true, verify user's identity for reboot/halt/exit.
+.IP "\fBDisplayManager.wdmRoot\fP"
+If true, user must be root to exit.
+.IP "\fBDisplayManager.wdmAnimations\fP"
+If true, enable animations consisting of shaking the panel (if an
+error) and rolling up the panel (when closing it).  If false,
+animations are disabled.
+.SH BACKGROUND IMAGE SPECIFICATION
+There are several possible ways of specifing a background image. The
+generic format is \fItype\fP:\fIimage\fP. \fItype\fP can be any of:
+.TP
+.B none
+The backgound is \fBnot\fP set.
+.TP
+.B solid
+it renders a solid backgroud, and \fIimage\fP is a color name
+.TP
+\fBhgradient\fP, \fBvgradient\fP, \fBdgradient\fP
+a gradient (either horizontal, vertical or diagonal) will be
+rendered. \fIimage\fP is \fBcomma separated\fP of color names, and any
+number of colors can be specified.
+.TP
+\fBpixmap\fP
+a pixmap will be used for the background. \fIimage\fP is the full path
+to an image file (tiff, png, jpeg and xpm allowed) and it will be
+scaled to use the full screen.
+.SH SEE ALSO
+\fBxdm\fP(1), \fBwdmLogin\fP(1x)
+.SH AUTHOR
+wdm was written by Gene Czarcinski <genec@mindspring.com>. wdm is
+based on work by Tom Rothamel and xdm, (c) 1988 X Consortium
+.PP
+This man page was written by Marcelo Magallon
+<mmagallo@debian.org>. The \fIOptions\fP section was taken from
+xdm's manpage.

@@ -1,0 +1,412 @@
+1.20	- Feb 29 2000 - Jerome Alet
+	- Jerome Alet: Modified xdm-3.3.2-resource2.patch to allow
+	  most of wdm's configuration resources to be set on a per
+	  display basis instead of on a per display manager basis.
+	  Modified INSTALL to give more detailed information on
+	  the installation procedure for some Linux distros.
+	- Matsubayashi, 'Shaolin' Kohji and Mr. Furukawa: Modified
+	  src/config/wdm.pamd and patches/xdm-3.3.2-pamwdm.patch
+	  according to xdm-3.3.6 handling of the pam stuff
+	  correcting the problem with incorrect user permissions
+	  settings on devices when the user logged in.
+	- Alexander N. Kabaev: Modified Login.c because of signal
+	  handling problems: it appears that calling DestroyLoginPanel
+	  directly from within the SIGTERM handler could cause wdm hangs.
+	- Egmont Koblinger: Modified Login.c to center "Login authentication"
+	  and "Welcome to" one to each other.
+1.19	- Sep 21 1999 - Jerome Alet
+	  Modified Greet.c and Login.c in order to not pass at all
+	  the username and password for the default user on wdmLogin's
+	  command line. Now wdm does all the bad stuff, wdmLogin just
+	  returns an empty username+password to wdm.
+	  Modified the manpages accordingly.
+	  Modified src/config/Makefile.am in order for wdm-config to be
+	  created and installed.
+1.18	- Sep 16 1999
+	- Miod Vallat: Modified configure.in and Login.c to correctly
+	  set the maximum login name length.
+	- Jerome Alet: Modified Login.c Greet.c and resource.c to define
+	  2 new X resources: WdmDefaultUser and WdmDefaultPasswd which
+	  can be set in wdm-config to allow anyone to log in without
+	  typing neither a username nor a password. USE WITH EXTREME
+	  CAUTION. Modified wdm.man.in, wdmLogin.man.in, wdm-config.in and
+	  wdm-config too. Modified src/config/Makefile.am in order for
+	  wdm-config to be installed only root-readable because it could
+	  eventually contain a clear text password.
+1.17	- Sep 8 1999
+	- Alexander Kabaev: Modified session.c to allow the environnement
+	  settings set in /etc/login.conf to propagate correctly to the client
+	  session.
+	- Miodrag Vallat: - Modified configure.in to solve the libpng/libz problem.
+			  - Added the two Irix patches in the patches subdirectory.
+			  - Did some cleanups to the source trees, the manpages,
+			  and the code.
+1.16	- Jul 7 1999 Jerome Alet with a patch from Don Bottstein
+	- Modified configure.in to correctly set GFX_INC_PATH
+	  and GFX_LIB_PATH with the help of Don's patch to configure.
+1.15	- Jul 6 1999 Jerome Alet with help from Salman Ahmed
+	- Modified src/Makefile.am deleting the # before 'pixmaps'
+	- Modified src/config/Xsession.in moving the XRDB block
+	  before the ~user/.xsession launch
+	- Modified README to include something about the
+	  mailing list.
+1.14	- Jul 1 1999 Jerome Alet
+	- Modified TestLogin.c replacing #include <strings.h>
+	  with #include <string.h>. The compile time warning is
+	  gone.
+	- some changes to the doc (README, etc...)
+	  talking about the new maintainer.
+1.13	- Jun 30 1999 Jerome Alet
+	- modified Login.c to allow the tab key to move from
+	  the username field to password and back.
+	- modified Login.c and Greet.c to incorporate debian's patches
+	  to allow MD5 passwords.
+1.12	- Jun 18 1999 Berend De Schouwer
+	- the configure script was loosing GFXLIBS, now
+	  it seems to work fine.
+1.11	- Jun 18 1999 Jerome Alet
+	- Added a call to XSetInputFocus in order for the login
+	  panel to get the focus wherever the mouse pointer is.
+1.1	- Jun 11 1999 Jerome Alet
+	- fixed a bug in Login.c where wmStr[255] was written but wmStr was
+	  declared as being only 16 long. In fact wmStr was not the good
+	  variable, it was wmOption[255] instead.
+	- update Login.c to compile with WindowMaker 0.60
+	- modified Login.c to allow None to be set to wdmWm in order for
+	  the user to have only the NoChange choice.
+	- modified Login.c Greet.c resource.c to allow a new resource
+	  named wdmHelpFile. This resource points to a text file to be
+	  displayed in the help panel.
+	- modified CreateHelpFrames to compute the help panel size according
+	  to the text to display's number of lines.
+1.0	- Sep 13 1998 Gene Czarcinski
+	- for FreeBSD support, add check for libtiff34 in addition to
+	  libtiff; if both found, it should not hurt.
+	- update configure.in to support gif stuff (new in WindowMaker
+	  0.19.3) -- do both ungif and gif libs even though WindowMaker
+	  just uses gif for now
+	- even though there is no clear reason for it, FreeBSD requires Xt
+	  so add it (it should not hurt anyway)
+	- add xrdb -load /dev/null to the beginning of Xsession to cleaup
+	  wdm resources
+	- remove checking for a number of header files for which nothing is
+	  done and, even when not found on some systems, seems to make
+	  no difference.
+	- finalize the RollUp animation to be a diagonal ... this seems to
+	  "look" the best (but of course someone will not think so).
+	- fix bug where startkde was found but Xclients was not modified
+	  correctly
+0.90	- Sep 06 1998 Gene Czarcinski
+	- Release 1.0 "candidate"
+	- create wdmReconfig.in (wdmReconfig) for rpm post install
+	  updating of wdm-config and Xclients
+	- if WINGs == 980901, add call to WMSetScrollViewLineScroll
+	  to speed up scrolling.
+	- add closing rollup options (for now, just in src), to rollup
+	  vertical, horizontal, or diagonal.
+	- added more information on ./configure options to INSTALL
+	- add --with-local ./configure option which will appropriately
+	  usr /usr/local/{bin,include,lib}
+	- removed --enable-debugWINGs options, this is now controlled
+	  by --enable-debug
+	- changed animation slightly to make it more "Nextish" (at least,
+	  my exposure to what "Nextish" looks like).
+	- more fiddling with the size and location of the popup buttons
+	  in order to handle better "looking" window manager names
+	  (e.g., WindowMaker rather than wmaker)
+	- remove the '-t3' from the shutdown commands in wdm-config;
+	  add comments and examples for different systems in wdm-config,
+	  Xsession, and Xclients
+	- fixed configure so that if the shell for login is sh,
+	  it is invoked as '/bin/sh -' which is equivalent to
+	  '/bin/bash -login'
+	- add comment to install about reviewing and changing
+	  config files for different systems.
+	- slightly change the size and location of the help frame to
+	  make it look better.
+	- change the size and location of buttons for better symetry
+	- fixed code for go button so it works properly
+	- delete old xlogin stuff in src/config/Xresources: it was
+	  conflicting with other stuff on some(?) systems
+0.18	- Aug 29 1998 Gene Czarcinski
+	- add the capability to set the proper location for bash and sh
+	  in the XSetup_0, Xsession, and Xclients shell scripts.
+	- change configure and src/Makefile.am to use GFXLIBS and
+	  GFXFLAGS properly ... --with-gfx-libs= and --with-gfx-incs=
+	  should now work properly on more systems.
+	- change Xclients to add an arbitrarily named window manager
+	  since we cannot anticipate all of them.  ./configure is
+	  changed to specify it via --with-winmgr and (if needed)
+	  --with-winmgr_path
+	- fix src/config/Makefile.am (Xsession and Xclients not cleaned)
+	- change Xclients, etc. so that the code for window manager
+	  programs which are not found are commented out.
+	- do not compile chooser since it is not installed anyway.  This
+	  will be "fixed" in Release 2 (or something greater than 1).
+	- change Xsession to simplify it and attempt to make it more
+	  system independent.
+	- finally (?) fixed how info and error messages work (redo
+	  whole logic).	 It turned out the problem was the order of
+	  displaying the messages and doing the authentication (display
+	  MUST be first or a race condition results).  Did not have to
+	  redo msg handling itself but it did result in simpler code.
+	- add new xresource DisplayManager*wdmAnomations to enable or
+	  display the shake and rollup animations.  true=enabled,
+	  false=disabled; default if not specified is true.  [user request,
+	  too slow on some displays]
+	- change the way setting the background (root window) is specified
+	  so that if it is NOT specified or the value is the literal none,
+	  then the background is NOT set.  The user can still set the
+	  background via other means [user request].
+	- New look for the login panel (supposedly more Nextish).
+	  Whether is is or not, I like the new look.
+	- Change help to use a ScrollView (this may be 0.18.x dependent) but
+	  that is the way it goes.
+	- Shuffle the library order to put -lWINGs and -lwraster in front of
+	  the other libraries (makes a difference on some systems)
+
+0.12	- Aug 24 1998 Gene Czarcinski
+	- add more wdm/Xsession examples
+	- make Xclients.in more configurable and add stuff to
+	  configure.in so that we locate the various window
+	  manager paths and then "build" a wmlist based on
+	  what is found
+	- updated README and INSTALL
+	- add --with-wmlist=< > to specify a list of optional
+	  window managers to start
+	- add --with-Logo=< > to specify Logo pixmap filename (can be
+	  any file since this is used in the wdm-config file)
+	- Add code to Login to attempt to keep the same aspect ratio
+	  in the Logo image as was in the original image.  If the image
+	  is smaller that 200x130, keep it as is.  The image will
+	  be cenetered in the Logo display area.
+	- add examples of options to wd-config (as comments)
+	- make lower case in configure: --with-wdmdir=,
+	  --with-defuserpath= and --with-defsystempath=
+	- bugfix: configure.in so --with-WDMDIR works properly
+
+0.11	- Aug 20 1998 Gene Czarcinski
+	- use two levels of versioning and add a third level for
+	  internal stuff only.
+	- With the WINGs in WindowMaker 0.18.0 some interfaces changes ...
+	  The new WINGs uses WINGS_H_VERSION 980730.
+	- WMCreateScreen is different.	If WINGs > 980722, use
+	  WMInitializeApplication; WMCreateScreen;
+	- configure for -lPropList (I wonder how everthing worked
+	  before?)
+	- add code to select PopUp item (required > 980722)
+	- Thank you Alfredo: if WINGs >980722, use the new
+	  WMSetTextFieldSecure function, otherwise continue
+	  to resize the area to almost invisible.
+	- change the distributed setting of wdmVerify to true --
+	  this means that the default for using Reboot, Halt, or
+	  Exit is to require the user to enter a valid userid/password.
+
+0.10.4 - Aug 18 1998 Gene Czarcinski
+	- man pages for wdm and wdmLogin courtesy Marcelo Magallon
+	  <mmagallo@debian.org>.  Now I just have to get them to
+	  install properly.  These may need to be changed to _.in
+	  files so that they can be "configured" properly to
+	  reflect the system on which it is being installed.
+	- fix configure.in so looking for wraster (and WINGs) will
+	  look in the added paths (should fix debian problem).
+	- to be consistant, wdm/config is now named wdm/wdm-config
+	- Marcelo's man pages now install
+	- Login.c help updated to document ExitLogin's operation ...
+	  it terminates the xserver but the daemon must be
+	  terminated by other means.
+	- apparently, some systems put lots of libraries under
+	  /usr/X11R6/lib rather than /usr/lib so lets make it
+	  easier for them ... for most libchecks, add  $XLFLAGS $XLIBS
+	- fixup how we create the wd._.spec file so versioning is done
+	  automagically.
+
+0.10.3 - Aug 16 1998 Gene Czarcinski
+	- fix install bug in src/config/Makefile.am on non-pam
+	  systems where install-data-local not defined on such systems
+	- add --with-pamdir=<xxx> option for use if pam's directory
+	  is not /etc/pam.d
+	- modified Makefiles to support DESTDIR for all installs ...
+	  DESTDIR useful for testing install but especially
+	  useful to specify BuildRoot for rpm
+	- Add checking for existance of the pam directory and
+	  warn user if it does not (but is OK if using rpm BuildRoot)
+	- add code to Login to adjust the font size of the name is too
+	  long (currently, this is a kluge)
+	- add/change code in src/Greet.c so that SessionExit() is called
+	  if there is a pipe i/o read error -- this means that the external
+	  Login program has failed.  SessionExit will terminate rather
+	  than getting into a startup loop. This fixes the "known bug"
+	  below.
+	- fixup code in src/Login.c so messages (info and error) are
+	  displayed properly -- unmap both frames before maping either
+	  new one (Clear does unconditional unmap).
+	- replace some of the logo and pixmap artwork in src/pixmaps
+	- add checking to configure for where WINGs.h is and
+	  change how the -lWINGs and -lwraster are defined
+
+BETA 3:
+
+DONE - add more testing for pam
+
+DONE - add test to make sure the Login process has started properly
+  so wdm does not loop attempting to start it.	If it does not,
+  need to exit wdm.
+
+DONE - create the rpm spec file
+
+DONE - make rpms as well as tarball
+
+DONE - test to make sure that exit verification works
+
+DONE - fix Login code so error messages are displayed properly
+
+work in progress - create README/INSTALL/AUTHORS/?? documentation
+
+
+
+0.10.2 - Aug 15 1998 Gene Czarcinski <genec@mindspring.com>
+	- add test for xdm source and try to untar if not present
+	- second public beta (beta2)
+
+	- Known serious bug: if the fork/exec of wdmLogin fails
+	  because it does not exist or is not executable, the
+	  wdm will get into an unbreakable loop trying to
+	  start it.
+
+BETA 2:
+
+DONE HOPEFULLY - fix automake/autoconf files so this package can be used on other
+  systems such as FreeBSD (a big change) ... and it still works
+  on RedHat Linux (tested on multiple systems)
+
+DONE - eliminate getopt_long from Login.c ... replace it with getopt
+  which is defined in unistd.h and should be available on "most"
+  systems ... since getopt only supports simple parameter options
+  (no long one), the definitions in the wdm/config file has to change
+  ... it is not just data.
+
+DONE - put pam files into the src/config directory
+
+DONE - install the DisplayMaker pam control file into /etc/pam.d
+  if --enable-pam is specified
+
+work in progress - create README/INSTALL/AUTHORS/?? documentation
+
+DONE -- DisplayMaker -> wdm
+  - finalize the name of this package and fixup any changes.
+
+DONE - during configuration, test if xdm has been untared;
+  automatically untar xdm if not; else error (installer goof
+  prevention)
+
+0.10.1 - Aug 14 1998 Gene Czarcinski <genec@mindspring.com>
+	- fix minor bug in wdm/config
+	- put wdm.pamd into src/config and change Makefiles so wdm.pamd
+	  is installed as /etc/pam.d/wdm
+
+
+
+0.10.0 - Aug 14 1998 Gene Czarcinski <genec@mindspring.com>
+	- rename the package/program from DisplayMaker to wdm
+	- redo the whole set of configuration files and Makerfiles
+	  in an attempt to make this less dependent on Linux so it
+	  can compile and run on systems such as FreeBSD.  The approach
+	  used was patterned after the one used by kde for kdm.
+
+0.9.0 - Aug 13 1998 Gene Czarcinski <genec@mindspring.com>
+	- first public beta
+
+BETA 1:
+
+DONE - create the xdm/Greet.c (xdm/greeter/greet.c) replacement which
+  implements the external Login interface.
+
+DONE - ?? automate application of the PAM patch .. patches are applied
+  by Makefile
+
+DONE - pam .. the pam definition .. is pam realy enabled/working??
+
+DONE - change service name to DisplayMaker and create pam control file
+
+DONE - move pixmaps under src and add README
+
+DONE - are configs correct for authdir
+
+DONE - update resources.c for specifying Gdm parameters
+
+DONE - rename to DisplayMaker: dmaker and dmakerLogin
+
+DONE - the LoginPanel "look" may need some work
+
+DONE - make reboot and halt work.
+
+DONE - add code to put halt/reboot info into system logs
+  ... who did it and any other info
+
+DONE - change resources so only wm, logo, and bg instead of Arg1...Arg9
+
+DONE - make sure (or fix) that we have good Xresources for the user
+  ... need to figure out a good Xsession, xinitrc, Xclient set
+  ... just doing xinitrc is not good enough .. I wonder just which
+  program does load ~/.Xdefaults
+
+DONE - Makefile.am for xdm/config
+
+DONE - configuration files
+
+DONE - fixup cursor so it is a pointer
+
+DONE - add setting of the background in GLogin
+
+DONE - add lots of background setting args
+
+DONE - add a help panel in Login
+
+DONE - add getting the pixmap from a file in GLogin
+
+DONE - add tests of the args passed to Login in LoginTest
+
+DONE - add arg to Login for specifying a pixmap file
+
+DONE - fix in/out so they compile clean
+
+work in progress - create README/INSTALL/AUTHORS/?? documentation
+
+DONE - fix the Makefile.am and configure.in files so they are "more correct"
+
+DONE - ?? is xdm-extgreet tarball needed or just documentation and in/out
+  (ask the author??)
+
+DONE - create clean patches
+
+DONE - check with author on logo artwork
+
+
+
+0.8.15 - Aug 13 1998 - Gene Czarcinski
+
+	- nearing the first beta
+	- pam works (see README.pam)
+	- LoginPanel graphics a bit better
+	- chooser still the old stuff and not installed
+	- no man documentation yet
+	- ping not coded
+	- DisplayMaker will work with remote system (testing)
+
+0.8.10 - Aug 12 1998 - Gene Czarcinski
+
+	- restructured directories and Makefiles so there is a single
+	  source tree, the XFree86 sources are used as a base,
+	  and patches are applied in src to create DisplayMaker
+
+0.8.9 - Aug 11 1998 - Gene Czarcinski <genec@mindspring.com>
+
+	- all code working, need to finish some documentation and pull
+	  a distribution package together.
+
+	Status of code:
+		- chooser still the old code and not installed
+		- ping (test if connection is still alive) not implemented yet
+		- xdm man page needs lots of work
+		- better README documentation

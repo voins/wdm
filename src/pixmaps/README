@@ -1,0 +1,20 @@
+The files in this directory can be used the "logo" for
+the login panel.  "gnuLogo.xpm" is the "default" included
+by Login.  The alternates can be used by specifying
+DisplayManager*wdmLogo  /.../pixmaps/<file> at runtime.
+
+The Eagle is my work.
+
+Source of this artwork: most of it came from NASA (see the file
+NASA_image_guideline.html)
+
+The star shots were taken by the Hubble Space Telescope (see 
+http://nssdc.gsfc.nasa.gov/photo_gallery/photodallery-astro-nebula.html
+and the FAQ: http://nssdc.gsfc.nasa.gov/photo_gallery/photogallery-faq.html).
+The Earth picture was taken by GOES8.
+
+
+
+See the file README.newGnulogo for info from Largo on the
+use of his artwork.
+

@@ -1,0 +1,97 @@
+--- xdm/resource.c	Sat May 10 09:03:03 1997
++++ src/resource.c	Thu Feb 24 12:17:02 2000
+@@ -61,6 +61,24 @@
+ char	*greeterLib;
+ int	choiceTimeout;	/* chooser choice timeout */
+ 
++/* wdm additions */
++#define DEF_WDMLOGIN "/usr/X11R6/bin/wdmLogin"
++char *wdmLogin;         /* full path to external program Login */
++char *wdmWm,            /* list of optional window managers to start */
++     *wdmLogo,          /* points to optional Logo pixmap */
++     *wdmHelpFile,      /* points to optional help text file */
++     *wdmDefaultUser,   /* points to optional default user name */
++     *wdmDefaultPasswd, /* points to optional default passwd */
++     *wdmBg;            /* pixmap or color(s) for background */
++char *wdmReboot,        /* command for Reboot */
++     *wdmHalt;          /* command for halt */
++int   wdmVerify;        /* if true, require name & password for Exit, */
++                        /* reboot, or halt. */
++int   wdmRoot;          /* if true, only username=root and verified   */
++                        /* password can fo Exit, reboot, or halt. */
++int   wdmAnimations;    /* if true, enable shake and rollup animations */
++                        /* if false, disable animations */
++
+ # define DM_STRING	0
+ # define DM_INT		1
+ # define DM_BOOL	2
+@@ -224,10 +242,39 @@
+ 				"15",
+ "sourceAddress","SourceAddress",DM_BOOL,	(char **) &sourceAddress,
+ 				"false",
++"wdmLogin",     "WdmLogin",     DM_STRING,      &wdmLogin,
++                                DEF_WDMLOGIN,
++"wdmReboot",    "WdmReboot",    DM_STRING,      &wdmReboot,
++                                "reboot",
++"wdmHalt",      "WdmHalt",      DM_STRING,      &wdmHalt,
++                                "halt",
++"wdmVerify",    "WdmVerify",    DM_BOOL,        (char **) &wdmVerify,
++                                "false",
++"wdmRoot",      "WdmRoot",      DM_BOOL,        (char **) &wdmRoot,
++                                "false",
+ };
+ 
+ # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
+ 
++struct dmResources serverResourcesPlus[] = {
++"wdmWm",        "WdmWm",        DM_STRING,      &wdmWm,
++                                "",
++"wdmLogo",      "WdmLogo",      DM_STRING,      &wdmLogo,
++                                "",
++"wdmHelpFile",  "WdmHelpFile",  DM_STRING,      &wdmHelpFile,
++                                "",
++"wdmBg",        "WdmBg",        DM_STRING,      &wdmBg,
++                                "",
++"wdmDefaultUser",  "WdmDefaultUser",  DM_STRING,      &wdmDefaultUser,
++                                "",
++"wdmDefaultPasswd",  "WdmDefaultPasswd",  DM_STRING,      &wdmDefaultPasswd,
++                                "",
++"wdmAnimations","WdmAnimations",DM_BOOL,        (char **) &wdmAnimations,
++                                "true",
++        };
++        
++# define NUM_SERVER_RESOURCES_PLUS       (sizeof serverResourcesPlus / sizeof serverResourcesPlus[0])
++
+ # define boffset(f)	XtOffsetOf(struct display, f)
+ 
+ struct displayResource {
+@@ -523,10 +570,29 @@
+     }
+ }
+ 
++LoadServerResourcesPlus (d)
++    struct display  *d;
++{
++    int i;
++    char        name[1024], class[1024];
++    char        dpyName[512], dpyClass[512];
++
++    CleanUpName (d->name, dpyName, sizeof (dpyName));
++    CleanUpName (d->class ? d->class : d->name, dpyClass, sizeof (dpyClass));
++    for (i = 0; i < NUM_SERVER_RESOURCES_PLUS; i++) {
++            sprintf (name, "DisplayManager.%s.%s", dpyName, serverResourcesPlus[i].name);
++            sprintf (class, "DisplayManager.%s.%s", dpyClass, serverResourcesPlus[i].class);
++            GetResource (name, class, serverResourcesPlus[i].type,
++                          (char **) serverResourcesPlus[i].dm_value,
++                          serverResourcesPlus[i].default_value);
++    }
++}
++
+ LoadServerResources (d)
+     struct display  *d;
+ {
+     LoadDisplayResources (d, serverResources, NUM_SERVER_RESOURCES);
++    LoadServerResourcesPlus (d);
+ }
+ 
+ LoadSessionResources (d)

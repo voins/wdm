@@ -1,0 +1,12 @@
+--- xdm/daemon.c	Sat Jun 29 11:10:31 1996
++++ xdm.updated/daemon.c	Fri Aug 20 23:51:01 1999
+@@ -42,7 +42,8 @@
+ #else
+ #include <sys/ioctl.h>
+ #endif
+-#if defined(__osf__) || defined(linux) || defined(MINIX)
++#if defined(__osf__) || defined(linux) || defined(MINIX) || \
++	(defined(IRIX) && !defined(_IRIX4))
+ #define setpgrp setpgid
+ #endif
+ #ifdef hpux

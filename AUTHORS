@@ -1,0 +1,77 @@
+Actual maintainer: Jerome Alet <alet@unice.fr>
+
+Primary developer/packager: Gene Czarcinski <genec@mindspring.com>
+
+See file COPYING for license and warranty information.
+
+Thanks to the following people for their contributions
+to wdm (formally called DisplayMaker):
+
+Largo <largo@gnu.net>
+For the "logo" artwork: The standard/default DisplayMaker logo
+is based on the GnuLinux-logo artwork.
+
+Tom Rothamel <tom-xdm@tr.ml.org>
+Original creator of the idea of using an external program for
+the Login Panel as well as the basic protocol for communication
+between greet and the external program (using a pipe to send the
+username and password ext->xdm and signals xdm->ext.
+Tom created the "xdm-extgreet" package using this idea.
+The pip I/O routines are based on Tom's in.c, out.c.
+
+David Reviejo <dreviejo@arrakis.es>
+Created a new look for the login panel.	 Cleaner and also made the
+help information a scroll view.
+
+Marcelo Magallon <mmagallo@debian.org>
+For the man pages and debugging.
+
+Alfredo K Kojima <kojima@windowmaker.org> and
+Dan Pascu <dan@windowmaker.org>
+for creating WindowMaker and WINGs.  Without WINGs, wdm
+would not have happened.
+
+Thanks to the folks working on kde for their automake/autoconf
+stuff which they did for kdm.
+
+Please see the README file in src/pixmaps (or the WDMDIR/pixmaps
+directory for information about the source of the images.
+
+Gene Czarcinski <genec@mindspring.com>
+
+--------------------
+
+New maintainer: Jerome Alet <alet@unice.fr>
+
+Thanks to the following people for their contributions
+to wdm-1.1 and higher:
+
+Bevan Broun <bevanb@ee.uwa.edu.au> for telling me
+how he finally had compiled it successfully on an SGI Indy
+under Irix 6.5.2
+
+Berend De Schouwer <bds@ucs.co.za> for having corrected the
+configure.in file to allow people to compile wdm easily
+without needing any ugly hack into the configure script.
+
+Salman Ahmed <salman.ahmed@leitch.com> for his installation
+bug report and Xsession patch.
+
+Don Bottstein <donb@mapquest.com> for his patch to configure.
+
+Alexander Kabaev <kabaev@mail.ru> for his patch to session.c
+
+Miodrag Vallat <miodrag@multimania.com> for his various ideas, patches,
+and general help.
+
+Matsubayashi, 'Shaolin' Kohji <shaolin@rins.st.ryukoku.ac.jp> and Mr. Furukawa
+for their patch to the pam code.
+
+Alexander N. Kabaev <kabaev@mail.ru> for his patch to correct some
+hanging problems under at least FreeBSD.
+
+Egmont Koblinger <egmont@fazekas.hu> for his patch to center some
+messages one to each other on the login panel, and for his
+bug/wishes report which I haven't forgotten at all...
+
+Jerome Alet <alet@unice.fr>

@@ -1,0 +1,135 @@
+#!/bin/bash -login
+
+########################################################################
+# -*- sh -*-                                                           #
+#                                                                      #
+# ~/.Xclients: used by startx (xinit) to start up a window manager and #
+# any other clients you always want to start an X session with.        #
+#                                                                      #
+# This version of Xclients is intended for use with wdm.  This         #
+# separate file is used rather than the Red Hat Linux Xclients         #
+# file located as /etc/X11/xinit/Xclients because it has been          #
+# extensively modified to handle starting many different window        #
+# or session managers and do that on systems other than Red Hat Linux. #
+#                                                                      #
+# Systems other than RedHat Linux will like need editing of this       #
+# file to tailor the file for the particular system.                   #
+#                                                                      #
+########################################################################
+
+# these files are left sitting around by TheNextLevel.
+rm -f $HOME/Xrootenv.0
+rm -f /tmp/fvwmrc* 2>/dev/null
+
+# check for and set x-resources
+if [ -f $HOME/.Xresources ] ; then
+	/usr/X11R6/bin/xrdb -merge $HOME/.Xresources
+fi
+
+if [ -f $HOME/.Xdefaults ] ; then
+	/usr/X11R6/bin/xrdb -merge $HOME/.Xdefaults
+fi
+
+# First thing - check the user preferences
+if [ -f $HOME/.wm_style ] ; then
+    WMSTYLE=`cat $HOME/.wm_style`
+    case "$WMSTYLE" in 
+#
+# first, a general purpose entry:
+# 	*)
+# 	    # startup a window manager
+# 	    if [ -x  ] ; then
+# 	        echo Starting  >$HOME/.xwm.msgs
+# 		exec  >>$HOME/.xwm.msgs 2>&1
+# 	    fi
+# 	    ;;
+#
+	wmaker*|WindowMaker*)
+	    # startup WindowMaker
+	    if [ -x /usr/X11R6/bin/wmaker ] ; then
+	        echo Starting WindowMaker >$HOME/.xwm.msgs
+		env > "$HOME"/Xrootenv.0
+		exec /usr/X11R6/bin/wmaker >>$HOME/.xwm.msgs 2>&1
+	    fi
+	    ;;
+# 	afterstep*|Afterstep*|AfterStep*)
+# 	    # we have to start up afterstep
+# 	    if [ -x  -a -f /usr/share/afterstep/wmconfig.conf ] ; then
+# 		mkdir -p $HOME/GNUstep/Library/AfterStep
+# 		wmconfig --output=afterstep --directories /usr/share/afterstep/wmconfig.conf 2>/dev/null
+# 		env > "$HOME"/Xrootenv.0
+# 		# if this works, we stop here
+# 		eval "exec " > "$HOME"/.AfterStep-errors 2>&1
+# 	    fi
+# 	    ;;
+# 	blackbox*|BlackBox)
+# 	    # startup blackbox
+# 	    if [ -x  ] ; then
+# 	        echo Starting BlackBox >$HOME/.xwm.msgs
+# 		exec  >>$HOME/.xwm.msgs 2>&1
+# 	    fi
+# 	    ;;
+	icewm*|IceWm)
+	    # startup icewm
+	    if [ -x /usr/X11R6/bin/icewm ] ; then
+	        echo Starting icewm >$HOME/.xwm.msgs
+		exec /usr/X11R6/bin/icewm >>$HOME/.xwm.msgs 2>&1
+	    fi
+	    ;;
+# 	xsession*|Xsession*)
+# 	    # startup xsession
+# 	    if [ -x  ] ; then
+# 	        echo Starting xsession >$HOME/.xwm.msgs
+# 		exec  -console >>$HOME/.xwm.msgs 2>&1
+# 	    fi
+# 	    ;;
+# 	startkde*|kde*|KDE*)
+# 	    # startup kde
+# 	    if [ -x  ] ; then
+# 	        echo Starting kde >$HOME/.xwm.msgs
+# 		exec  -console >>$HOME/.xwm.msgs 2>&1
+# 	    fi
+# 	    ;;
+    esac
+fi
+
+# first, find an M4-enabled config file (such as 
+# the one from AnotherLevel) for fvwm2 or fvwm95.
+RCFILE=""
+for tryfile in "$HOME/.fvwm2rc.m4" "/etc/X11/AnotherLevel/fvwm2rc.m4"; do
+    if [ -f "$tryfile" ]; then
+        RCFILE="$tryfile"
+        break
+    fi
+done
+
+# if it really exists, use it; if not, fvwm2 or fvwm95 will
+# automagically look for a config file in the regular places.
+if [ -n "$RCFILE" ]; then
+    FVWMOPTIONS="-cmd 'FvwmM4 -debug $RCFILE'"
+else
+    FVWMOPTIONS=""
+fi
+
+# TheNextLevel is supposed to work
+# with both fvwm95 and fvwm2
+# (try fvwm95 first, then fvwm2).
+for FVWMVER in 95 95-2 2; do
+    if [ -n "$(type -path fvwm${FVWMVER})" ]; then
+        env > "$HOME"/Xrootenv.0
+        # if this works, we stop here
+        eval "exec fvwm${FVWMVER} ${FVWMOPTIONS}" > "$HOME"/.FVWM${FVWMVER}-errors 2>&1
+    fi
+done
+
+# gosh, neither fvwm95 nor fvwm2 is available;
+# let's try regular fvwm (AnotherLevel doesn't work with fvwm1).
+if [ -n "$(type -path fvwm)" ]; then
+    # if this works, we stop here
+    exec fvwm
+fi
+
+# No other window or session manager found.
+# Use twm as a last resort.
+xterm &
+exec twm

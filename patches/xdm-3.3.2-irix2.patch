@@ -1,0 +1,12 @@
+--- xdm/util.c	Thu Oct  3 10:49:48 1996
++++ xdm.updated/util.c	Fri Aug 20 23:51:10 1999
+@@ -53,7 +53,8 @@
+ #undef _POSIX_SOURCE
+ #endif
+ #endif
+-#if defined(__osf__) || defined(linux) || defined(MINIX)
++#if defined(__osf__) || defined(linux) || defined(MINIX) || \
++	(defined(IRIX) && !defined(_IRIX4))
+ #define setpgrp setpgid
+ #endif
+ 

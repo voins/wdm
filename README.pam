@@ -1,0 +1,14 @@
+Red Hat normally runs pam.  The pam patch for wdm sets the
+service name to wdm.
+
+The pam config file for wdm is currently AUTOMATICALLY
+INSTALLED.  
+
+However, if you want to do it again and if your system is running pam,
+and you have compiled wdm with --enable-pam, then simply copy wdm.pamd 
+to /etc/pam.d/wdm
+
+NOTE: For some reason, the NAME of the file placed into /etc/pam.d
+      MUST BE ALL LOWER CASE!!!  Even if the name specified in
+      the pam_start is mixed case, the actual file must be named all
+      lower case.
