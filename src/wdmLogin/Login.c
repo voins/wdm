@@ -30,6 +30,7 @@
 #include <WINGs/WINGs.h>
 #include <WINGs/WUtil.h>
 #include <limits.h>
+#include <locale.h>
 
 #if (WINGS_H_VERSION == 980901)
 void WMSetScrollViewLineScroll(WMScrollView *sPtr, int amount);
