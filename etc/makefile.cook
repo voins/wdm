@@ -41,7 +41,7 @@ gfxdir = [make_var DESTDIR][make_var GFXDIR];
 pamdir = [make_var DESTDIR][make_var PAMDIR];
 localedir = [make_var DESTDIR][make_var NLSDIR];
 
-src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 {
 	rm -f [target];
 
@@ -52,7 +52,7 @@ src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 	[make_line];
 }
 
-src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 {
 	rm -f [target];
 	
