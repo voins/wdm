@@ -37,7 +37,7 @@ function make_action =
 destbindir = [make_var DESTDIR][make_var bindir]/;
 destman1dir = [make_var DESTDIR][make_var MANDIR]/man1;
 configdir = [make_var DESTDIR][make_var DMDIR];
-gfxdir = [configdir]/pixmaps;
+gfxdir = [make_var DESTDIR][make_var GFXDIR];
 pamdir = [make_var DESTDIR][make_var PAMDIR];
 localedir = [make_var DESTDIR][make_var NLSDIR];
 

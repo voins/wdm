@@ -238,6 +238,22 @@ AC_DEFINE_UNQUOTED(DEF_AUTH_DIR, "$DMDIR/authdir", [Value is a path to default a
 
 AC_SUBST(DMDIR)
 
+dnl Let the user specify a location for pixmap files.
+dnl
+AC_MSG_CHECKING(if gfxdir has been specified)
+AC_ARG_WITH(gfxdir,
+	AC_HELP_STRING([--with-gfxdir=PATH],[specify path for pixmaps directory]))
+if test "x$with_gfxdir" != "x"; then
+	GFXDIR="$with_gfxdir"
+	AC_MSG_RESULT([yes, using $GFXDIR])
+else
+	GFXDIR="$prefix/share/pixmaps/wdm"
+	AC_MSG_RESULT([no, using $GFXDIR])
+fi
+AC_DEFINE_UNQUOTED(WGFXDIR, "$GFXDIR", [Value is a path to the pixmaps directory])
+
+AC_SUBST(GFXDIR)
+
 AC_MSG_CHECKING(if  Logo pixmap specified)
 AC_ARG_WITH(Logo,
 	AC_HELP_STRING([--with-Logo=PIXMAP_FILENAME],[specify file in wdm/pixmaps for Logo]))
