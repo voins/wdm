@@ -20,6 +20,7 @@
  */
 #include <config.h>
 #include <wdmlib.h>
+#include <wdmPrefs.h>
 #include <stdlib.h>
 
 typedef struct _wdmPrefsPanel
@@ -30,20 +31,24 @@ typedef struct _wdmPrefsPanel
 } wdmPrefsPanel;
 wdmPrefsPanel wdmPrefs = {NULL, NULL, NULL};
 
-typedef struct _Panel
-{
-	WMBox *box;
-	char *description;
-} Panel;
 
 static void
 ChangeSection(WMWidget *self, void *data)
 {
+	static Panel *current = NULL;
+	Panel *new = data;
+
+	if(current && current->hide) current->hide(current);
+	if(new && new->show) new->show(new);
+	current = new;
 }
 
 static void
 DestroyButton(void *data)
 {
+	WMButton *button = data;
+	Panel *panel = WMGetHangedData(button);
+	if(panel) panel->destroy(panel);
 }
 
 void
@@ -94,9 +99,10 @@ AddSectionButton(Panel *panel, const char *iconfile)
 	WMMapWidget(button);
 }
 
-void
+static void
 CloseAction(WMWidget *self, void *data)
 {
+	WMFreeArray(wdmPrefs.sections);
 	WMDestroyWidget(self);
 	exit(0);
 }
@@ -151,13 +157,15 @@ CreateButtons(WMBox *box)
 	bsave = WMCreateCommandButton(buttonbox);
 	WMMapWidget(bsave);
 	WMSetButtonText(bsave, "Save");
-	WMAddBoxSubviewAtEnd(buttonbox, WMWidgetView(bsave), False, False, 100, 100, 0);
+	WMAddBoxSubviewAtEnd(buttonbox, WMWidgetView(bsave),
+			False, False, 100, 100, 0);
 
 	bclose = WMCreateCommandButton(buttonbox);
 	WMMapWidget(bclose);
 	WMSetButtonText(bclose, "Close");
 	WMSetButtonAction(bclose, CloseAction, NULL);
-	WMAddBoxSubviewAtEnd(buttonbox, WMWidgetView(bclose), False, False, 100, 100, 10);
+	WMAddBoxSubviewAtEnd(buttonbox, WMWidgetView(bclose),
+			False, False, 100, 100, 10);
 
 	return fcontrols;
 }
@@ -169,13 +177,10 @@ CreateSections(WMBox *box)
 
 	frame = WMCreateFrame(box);
 	WMMapWidget(frame);
-	WMSetFrameRelief(frame, WRFlat);
+	WMSetFrameRelief(frame, WRRaised);
 
-	AddSectionButton(NULL, NULL);
-	AddSectionButton(NULL, NULL);
-
-	/* TODO: here will be calls to initers
-	 * of various sections with parent = frame. */
+	InitTestPanel(frame);
+	InitTestPanel2(frame);
 
 	return frame;
 }
