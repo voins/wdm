@@ -36,7 +36,6 @@ from The Open Group.
  */
 
 # include	<dm.h>
-# include	<dm_error.h>
 # include 	<dm_socket.h>
 
 # include	<X11/Xlib.h>
@@ -45,6 +44,8 @@ from The Open Group.
 # include	<signal.h>
 # include	<errno.h>
 # include 	<sys/socket.h>
+
+#include <wdmlib.h>
 
 static int receivedUsr1;
 
@@ -61,7 +62,7 @@ CatchUsr1 (int n)
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
     (void) Signal (SIGUSR1, CatchUsr1);
 #endif
-    Debug ("display manager caught SIGUSR1\n");
+    WDMDebug("display manager caught SIGUSR1\n");
     ++receivedUsr1;
     errno = olderrno;
 }
@@ -80,7 +81,7 @@ StartServerOnce (struct display *d)
     char	arg[1024];
     int		pid;
 
-    Debug ("StartServer for %s\n", d->name);
+    WDMDebug("StartServer for %s\n", d->name);
     receivedUsr1 = 0;
     (void) Signal (SIGUSR1, CatchUsr1);
     argv = d->argv;
@@ -96,13 +97,13 @@ StartServerOnce (struct display *d)
 	    argv = parseArgs (argv, arg);
 	}
 	if (!argv) {
-	    LogError ("StartServer: no arguments\n");
+	    WDMError ("StartServer: no arguments\n");
 	    sleep ((unsigned) d->openDelay);
 	    exit (UNMANAGE_DISPLAY);
 	}
 	for (f = argv; *f; f++)
-	    Debug ("'%s' ", *f);
-	Debug ("\n");
+	    WDMDebug("'%s' ", *f);
+	WDMDebug("\n");
 	/*
 	 * give the server SIGUSR1 ignored,
 	 * it will notice that and send SIGUSR1
@@ -110,17 +111,17 @@ StartServerOnce (struct display *d)
 	 */
 	(void) Signal (SIGUSR1, SIG_IGN);
 	(void) execv (argv[0], argv);
-	LogError ("server %s cannot be executed\n",
+	WDMError("server %s cannot be executed\n",
 			argv[0]);
 	sleep ((unsigned) d->openDelay);
 	exit (REMANAGE_DISPLAY);
     case -1:
-	LogError ("fork failed, sleeping\n");
+	WDMError("fork failed, sleeping\n");
 	return 0;
     default:
 	break;
     }
-    Debug ("Server Started %d\n", pid);
+    WDMDebug("Server Started %d\n", pid);
     d->serverPid = pid;
     if (serverPause ((unsigned) d->openDelay, pid))
 	return FALSE;
@@ -163,7 +164,7 @@ serverPauseAbort (int n)
 static SIGVAL
 serverPauseUsr1 (int n)
 {
-    Debug ("display manager paused til SIGUSR1\n");
+    WDMDebug("display manager paused til SIGUSR1\n");
     ++receivedUsr1;
     Longjmp (pauseAbort, 1);
 }
@@ -186,7 +187,7 @@ serverPause (unsigned t, int serverPid)
 	if (!receivedUsr1)
 	    (void) alarm (t);
 	else
-	    Debug ("Already received USR1\n");
+	    WDMDebug("Already received USR1\n");
 #endif
 	for (;;) {
 #if defined(SYSV) && defined(X_NOT_POSIX)
@@ -205,13 +206,13 @@ serverPause (unsigned t, int serverPid)
 	    if (pid == serverPid ||
 	       (pid == -1 && errno == ECHILD))
 	    {
-		Debug ("Server dead\n");
+		WDMDebug("Server dead\n");
 		serverPauseRet = 1;
 		break;
 	    }
 #if !defined(SYSV) || !defined(X_NOT_POSIX)
 	    if (pid == 0) {
-		Debug ("Server alive and kicking\n");
+		WDMDebug("Server alive and kicking\n");
 		break;
 	    }
 #endif
@@ -221,8 +222,8 @@ serverPause (unsigned t, int serverPid)
     (void) Signal (SIGALRM, SIG_DFL);
     (void) Signal (SIGUSR1, CatchUsr1);
     if (serverPauseRet) {
-	Debug ("Server died\n");
-	LogError ("server unexpectedly died\n");
+	WDMDebug("Server died\n");
+	WDMError("server unexpectedly died\n");
     }
     return serverPauseRet;
 }
@@ -281,7 +282,7 @@ GetRemoteAddress (struct display *d, int fd)
 	    d->peerlen = len;
 	}
     }
-    Debug ("Got remote address %s %d\n", d->name, d->peerlen);
+    WDMDebug("Got remote address %s %d\n", d->name, d->peerlen);
 }
 
 #endif /* XDMCP */
@@ -289,7 +290,7 @@ GetRemoteAddress (struct display *d, int fd)
 static int
 openErrorHandler (Display *dpy)
 {
-    LogError ("IO Error in XOpenDisplay\n");
+    WDMError("IO Error in XOpenDisplay\n");
     exit (OPENFAILED_DISPLAY);
     /*NOTREACHED*/
     return(0);
@@ -304,7 +305,7 @@ WaitForServer (struct display *d)
     	(void) Signal (SIGALRM, abortOpen);
     	(void) alarm ((unsigned) d->openTimeout);
     	if (!Setjmp (openAbort)) {
-	    Debug ("Before XOpenDisplay(%s)\n", d->name);
+	    WDMDebug("Before XOpenDisplay(%s)\n", d->name);
 	    errno = 0;
 	    (void) XSetIOErrorHandler (openErrorHandler);
 	    dpy = XOpenDisplay (d->name);
@@ -314,7 +315,7 @@ WaitForServer (struct display *d)
 		   going to fail, so we might as well get that out
 		   of the way.  There is something broken here. */
 		Display *bogusDpy = XOpenDisplay (d->name);
-		Debug ("bogus XOpenDisplay %s\n",
+		WDMDebug("bogus XOpenDisplay %s\n",
 		       bogusDpy ? "succeeded" : "failed");
 		if (bogusDpy) XCloseDisplay(bogusDpy); /* just in case */
 	    }
@@ -322,7 +323,7 @@ WaitForServer (struct display *d)
 	    (void) alarm ((unsigned) 0);
 	    (void) Signal (SIGALRM, SIG_DFL);
 	    (void) XSetIOErrorHandler ((int (*)(Display *)) 0);
-	    Debug ("After XOpenDisplay(%s)\n", d->name);
+	    WDMDebug("After XOpenDisplay(%s)\n", d->name);
 	    if (dpy) {
 #ifdef XDMCP
 	    	if (d->displayType.location == Foreign)
@@ -332,20 +333,20 @@ WaitForServer (struct display *d)
 		(void) fcntl (ConnectionNumber (dpy), F_SETFD, 0);
 	    	return 1;
 	    } else {
-	    	Debug ("OpenDisplay failed %d (%s) on \"%s\"\n",
+	    	WDMDebug("OpenDisplay failed %d (%s) on \"%s\"\n",
 		       errno, strerror (errno), d->name);
 	    }
-	    Debug ("waiting for server to start %d\n", i);
+	    WDMDebug("waiting for server to start %d\n", i);
 	    sleep ((unsigned) d->openDelay);
     	} else {
-	    Debug ("hung in open, aborting\n");
-	    LogError ("Hung in XOpenDisplay(%s), aborting\n", d->name);
+	    WDMDebug("hung in open, aborting\n");
+	    WDMError("Hung in XOpenDisplay(%s), aborting\n", d->name);
 	    (void) Signal (SIGALRM, SIG_DFL);
 	    break;
     	}
     }
-    Debug ("giving up on server\n");
-    LogError ("server open failed for %s, giving up\n", d->name);
+    WDMDebug("giving up on server\n");
+    WDMError("server open failed for %s, giving up\n", d->name);
     return 0;
 }
 
@@ -394,12 +395,12 @@ PingServer (struct display *d, Display *alternateDpy)
     (void) alarm (d->pingTimeout * 60);
     if (!Setjmp (pingTime))
     {
-	Debug ("Ping server\n");
+	WDMDebug("Ping server\n");
 	XSync (aDpy, 0);
     }
     else
     {
-	Debug ("Server dead\n");
+	WDMDebug("Server dead\n");
 	(void) alarm (0);
 	(void) Signal (SIGALRM, SIG_DFL);
 	XSetIOErrorHandler (oldError);
@@ -408,7 +409,7 @@ PingServer (struct display *d, Display *alternateDpy)
     (void) alarm (0);
     (void) Signal (SIGALRM, oldSig);
     (void) alarm (oldAlarm);
-    Debug ("Server alive\n");
+    WDMDebug("Server alive\n");
     XSetIOErrorHandler (oldError);
     return 1;
 }

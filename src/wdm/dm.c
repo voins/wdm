@@ -36,8 +36,8 @@ from The Open Group.
  */
 
 # include	<dm.h>
+#include <wdm.h>
 # include	<dm_auth.h>
-# include	<dm_error.h>
 
 # include	<stdio.h>
 #ifdef X_POSIX_C_SOURCE
@@ -72,6 +72,7 @@ from The Open Group.
 #endif
 #endif
 
+#include <wdmlib.h>
 
 #if defined(SVR4) && !defined(SCO)
 extern FILE    *fdopen();
@@ -142,14 +143,28 @@ main (int argc, char **argv)
     if ((oldpid = StorePid ()))
     {
 	if (oldpid == -1)
-	    LogError ("Can't create/lock pid file %s\n", pidFile);
+	    WDMError("Can't create/lock pid file %s\n", pidFile);
 	else
-	    LogError ("Can't lock pid file %s, another xdm is running (pid %d)\n",
+	    WDMError("Can't lock pid file %s, another xdm is running (pid %d)\n",
 		 pidFile, oldpid);
 	exit (1);
     }
-    if (debugLevel == 0)
-	InitErrorLog ();
+    	WDMLogLevel(debugLevel);
+	if(useSyslog)
+	{
+		WDMUseSysLog("wdm", WDMStringToFacility(syslogFacility));
+	}
+	else if(errorLogFile && *errorLogFile)
+	{
+		int f;
+		if((f = open(errorLogFile,
+				O_CREAT | O_WRONLY | O_APPEND, 0600)) == -1)
+			WDMError("cannot open errorLogFile %s\n", errorLogFile);
+		else
+			WDMLogStream(fdopen(f, "w"));
+	}
+	/* redirect any messages for stderr into standard logging functions. */
+	WDMRedirectStderr(WDM_LEVEL_ERROR);
 
     if (nofork_session == 0) {
 	/* Clean up any old Authorization files */
@@ -161,7 +176,7 @@ main (int argc, char **argv)
     init_session_id ();
     CreateWellKnownSockets ();
 #else
-    Debug ("xdm: not compiled for XDMCP\n");
+    WDMDebug("xdm: not compiled for XDMCP\n");
 #endif
     parent_pid = getpid ();
     (void) Signal (SIGTERM, StopAll);
@@ -200,7 +215,7 @@ main (int argc, char **argv)
 	WaitForSomething ();
 #endif
     }
-    Debug ("Nothing left to do, exiting\n");
+    WDMDebug("Nothing left to do, exiting\n");
     exit(0);
     /*NOTREACHED*/
 }
@@ -211,7 +226,7 @@ RescanNotify (int n)
 {
     int olderrno = errno;
 
-    Debug ("Caught SIGHUP\n");
+    WDMDebug("Caught SIGHUP\n");
     Rescan = 1;
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
     (void) Signal (SIGHUP, RescanNotify);
@@ -238,7 +253,7 @@ ScanServers (void)
 	serversFile = fopen (servers, "r");
 	if (serversFile == NULL)
  	{
-	    LogError ("cannot access servers file %s\n", servers);
+	    WDMError("cannot access servers file %s\n", servers);
 	    return;
 	}
 	if (ServersModTime == 0)
@@ -270,8 +285,8 @@ MarkDisplay (struct display *d)
 static void
 RescanServers (void)
 {
-    Debug ("rescanning servers\n");
-    LogInfo ("Rescanning both config and servers files\n");
+    WDMDebug("rescanning servers\n");
+    WDMInfo("Rescanning both config and servers files\n");
     ForEachDisplay (MarkDisplay);
     SetConfigFileTime ();
     ReinitResources ();
@@ -311,8 +326,8 @@ RescanIfMod (void)
     {
 	if (statb.st_mtime != ConfigModTime)
 	{
-	    Debug ("Config file %s has changed, rereading\n", config);
-	    LogInfo ("Rereading configuration file %s\n", config);
+	    WDMDebug("Config file %s has changed, rereading\n", config);
+	    WDMInfo("Rereading configuration file %s\n", config);
 	    ConfigModTime = statb.st_mtime;
 	    ReinitResources ();
 	    LoadDMResources ();
@@ -322,8 +337,8 @@ RescanIfMod (void)
     {
 	if (statb.st_mtime != ServersModTime)
 	{
-	    Debug ("Servers file %s has changed, rescanning\n", servers);
-	    LogInfo ("Rereading servers file %s\n", servers);
+	    WDMDebug("Servers file %s has changed, rescanning\n", servers);
+	    WDMInfo("Rereading servers file %s\n", servers);
 	    ServersModTime = statb.st_mtime;
 	    ForEachDisplay (MarkDisplay);
 	    ScanServers ();
@@ -334,8 +349,8 @@ RescanIfMod (void)
     {
 	if (statb.st_mtime != AccessFileModTime)
 	{
-	    Debug ("Access file %s has changed, rereading\n", accessFile);
-	    LogInfo ("Rereading access file %s\n", accessFile);
+	    WDMDebug("Access file %s has changed, rereading\n", accessFile);
+	    WDMInfo("Rereading access file %s\n", accessFile);
 	    AccessFileModTime = statb.st_mtime;
 	    ScanAccessDatabase ();
 	}
@@ -362,13 +377,13 @@ StopAll (int n)
 	 *
 	 * See defect XWSog08655 for more information.
 	 */
-	Debug ("Child xdm caught SIGTERM before it remove that signal.\n");
+	WDMDebug("Child xdm caught SIGTERM before it remove that signal.\n");
 	(void) Signal (n, SIG_DFL);
 	TerminateProcess (getpid(), SIGTERM);
 	errno = olderrno;
 	return;
     }
-    Debug ("Shutting down entire manager\n");
+    WDMDebug("Shutting down entire manager\n");
 #ifdef XDMCP
     DestroyWellKnownSockets ();
 #endif
@@ -424,10 +439,10 @@ WaitForChild (void)
     sigaddset(&mask, SIGCHLD);
     sigaddset(&mask, SIGHUP);
     sigprocmask(SIG_BLOCK, &mask, &omask);
-    Debug ("signals blocked\n");
+    WDMDebug("signals blocked\n");
 #else
     omask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
-    Debug ("signals blocked, mask was 0x%x\n", omask);
+    WDMDebug("signals blocked, mask was 0x%x\n", omask);
 #endif
     if (!ChildReady && !Rescan)
 #ifndef X_NOT_POSIX
@@ -448,7 +463,7 @@ WaitForChild (void)
 #endif
 #endif
     {
-	Debug ("Manager wait returns pid: %d sig %d core %d code %d\n",
+	WDMDebug("Manager wait returns pid: %d sig %d core %d code %d\n",
 	       pid, waitSig(status), waitCore(status), waitCode(status));
 	if (autoRescan)
 	    RescanIfMod ();
@@ -457,12 +472,12 @@ WaitForChild (void)
 	    d->pid = -1;
 	    switch (waitVal (status)) {
 	    case UNMANAGE_DISPLAY:
-		Debug ("Display exited with UNMANAGE_DISPLAY\n");
+		WDMDebug("Display exited with UNMANAGE_DISPLAY\n");
 		StopDisplay (d);
 		break;
 	    case OBEYSESS_DISPLAY:
 		d->startTries = 0;
-		Debug ("Display exited with OBEYSESS_DISPLAY\n");
+		WDMDebug("Display exited with OBEYSESS_DISPLAY\n");
 		if (d->displayType.lifetime != Permanent ||
 		    d->status == zombie)
 		    StopDisplay (d);
@@ -470,15 +485,15 @@ WaitForChild (void)
 		    RestartDisplay (d, FALSE);
 		break;
 	    default:
-		Debug ("Display exited with unknown status %d\n", waitVal(status));
-		LogError ("Unknown session exit code %d from process %d\n",
+		WDMDebug("Display exited with unknown status %d\n", waitVal(status));
+		WDMError("Unknown session exit code %d from process %d\n",
 			  waitVal (status), pid);
 		StopDisplay (d);
 		break;
 	    case OPENFAILED_DISPLAY:
-		Debug ("Display exited with OPENFAILED_DISPLAY, try %d of %d\n",
+		WDMDebug("Display exited with OPENFAILED_DISPLAY, try %d of %d\n",
 		       d->startTries, d->startAttempts);
-		LogError ("Display %s cannot be opened\n", d->name);
+		WDMError ("Display %s cannot be opened\n", d->name);
 		/*
  		 * no display connection was ever made, tell the
 		 * terminal that the open attempt failed
@@ -491,7 +506,7 @@ WaitForChild (void)
 		    d->status == zombie ||
 		    ++d->startTries >= d->startAttempts)
 		{
-		    LogError ("Display %s is being disabled\n", d->name);
+		    WDMError ("Display %s is being disabled\n", d->name);
 		    StopDisplay (d);
 		}
 		else
@@ -501,7 +516,7 @@ WaitForChild (void)
 		break;
 	    case RESERVER_DISPLAY:
 		d->startTries = 0;
-		Debug ("Display exited with RESERVER_DISPLAY\n");
+		WDMDebug("Display exited with RESERVER_DISPLAY\n");
 		if (d->displayType.origin == FromXDMCP || d->status == zombie)
 		    StopDisplay(d);
 		else
@@ -509,12 +524,12 @@ WaitForChild (void)
 		{
 		  Time_t Time;
 		  time(&Time);
-		  Debug("time %i %i\n",Time,d->lastCrash);
+		  WDMDebug("time %i %i\n", (int)Time, (int)d->lastCrash);
 		  if (d->lastCrash && 
 		      ((Time - d->lastCrash) < XDM_BROKEN_INTERVAL)) {
-		    Debug("Server crash frequency too high:"
+		    WDMDebug("Server crash frequency too high:"
 			  " removing display %s\n",d->name);
-		    LogError("Server crash rate too high:"
+		    WDMError("Server crash rate too high:"
 			     " removing display %s\n",d->name);
 		    RemoveDisplay (d);
 		  } else 
@@ -522,19 +537,19 @@ WaitForChild (void)
 		}
 		break;
 	    case waitCompose (SIGTERM,0,0):
-		Debug ("Display exited on SIGTERM, try %d of %d\n",
+		WDMDebug("Display exited on SIGTERM, try %d of %d\n",
 			d->startTries, d->startAttempts);
 		if (d->displayType.origin == FromXDMCP ||
 		    d->status == zombie ||
 		    ++d->startTries >= d->startAttempts) {
-		    LogError ("Display %s is being disabled\n", d->name);
+		    WDMError ("Display %s is being disabled\n", d->name);
 		    StopDisplay(d);
 		} else
 		    RestartDisplay (d, TRUE);
 		break;
 	    case REMANAGE_DISPLAY:
 		d->startTries = 0;
-		Debug ("Display exited with REMANAGE_DISPLAY\n");
+		WDMDebug("Display exited with REMANAGE_DISPLAY\n");
 		/*
  		 * XDMCP will restart the session if the display
 		 * requests it
@@ -553,30 +568,30 @@ WaitForChild (void)
 	    switch (d->status)
 	    {
 	    case zombie:
-		Debug ("Zombie server reaped, removing display %s\n", d->name);
+		WDMDebug("Zombie server reaped, removing display %s\n", d->name);
 		RemoveDisplay (d);
 		break;
 	    case phoenix:
-		Debug ("Phoenix server arises, restarting display %s\n", d->name);
+		WDMDebug("Phoenix server arises, restarting display %s\n", d->name);
 		d->status = notRunning;
 		break;
 	    case running:
-		Debug ("Server for display %s terminated unexpectedly, status %d %d\n", d->name, waitVal (status), status);
-		LogError ("Server for display %s terminated unexpectedly: %d\n", d->name, waitVal (status));
+		WDMDebug("Server for display %s terminated unexpectedly, status %d %d\n", d->name, waitVal (status), status);
+		WDMError("Server for display %s terminated unexpectedly: %d\n", d->name, waitVal (status));
 		if (d->pid != -1)
 		{
-		    Debug ("Terminating session pid %d\n", d->pid);
+		    WDMDebug("Terminating session pid %d\n", d->pid);
 		    TerminateProcess (d->pid, SIGTERM);
 		}
 		break;
 	    case notRunning:
-		Debug ("Server exited for notRunning session on display %s\n", d->name);
+		WDMDebug("Server exited for notRunning session on display %s\n", d->name);
 		break;
 	    }
 	}
 	else
 	{
-	    Debug ("Unknown child termination, status %d\n", waitVal (status));
+	    WDMDebug("Unknown child termination, status %d\n", waitVal (status));
 	}
     }
     StartDisplays ();
@@ -612,7 +627,7 @@ StartDisplay (struct display *d)
 {
     int	pid;
 
-    Debug ("StartDisplay %s\n", d->name);
+    WDMDebug("StartDisplay %s\n", d->name);
     LoadServerResources (d);
     if (d->displayType.location == Local)
     {
@@ -622,7 +637,7 @@ StartDisplay (struct display *d)
 	d->pingInterval = 0;
     	if (d->authorize)
     	{
-	    Debug ("SetLocalAuthorization %s, auth %s\n",
+	    WDMDebug("SetLocalAuthorization %s, auth %s\n",
 		    d->name, d->authNames[0]);
 	    SetLocalAuthorization (d);
 	    /*
@@ -636,7 +651,7 @@ StartDisplay (struct display *d)
     	}
 	if (d->serverPid == -1 && !StartServer (d))
 	{
-	    LogError ("Server for display %s can't be started, session disabled\n", d->name);
+	    WDMError("Server for display %s can't be started, session disabled\n", d->name);
 	    RemoveDisplay (d);
 	    return;
 	}
@@ -672,7 +687,7 @@ StartDisplay (struct display *d)
     case -1:
 	break;
     default:
-	Debug ("pid: %d\n", pid);
+	WDMDebug("pid: %d\n", pid);
 	d->pid = pid;
 	d->status = running;
 	break;
@@ -774,7 +789,7 @@ StorePid (void)
 	    pidFd = open (pidFile, O_RDWR|O_CREAT, 0666);
 	if (pidFd == -1 || !(pidFilePtr = fdopen (pidFd, "r+")))
 	{
-	    LogError ("process-id file %s cannot be opened\n",
+	    WDMError("process-id file %s cannot be opened\n",
 		      pidFile);
 	    return -1;
 	}

@@ -37,11 +37,11 @@ function make_action =
 destbindir = [make_var DESTDIR][make_var bindir]/;
 destman1dir = [make_var DESTDIR][make_var MANDIR]/man1;
 configdir = [make_var DESTDIR][make_var DMDIR];
-gfxdir = [configdir]/pixmaps;
+gfxdir = [make_var DESTDIR][make_var GFXDIR];
 pamdir = [make_var DESTDIR][make_var PAMDIR];
 localedir = [make_var DESTDIR][make_var NLSDIR];
 
-src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 {
 	rm -f [target];
 
@@ -52,7 +52,7 @@ src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 	[make_line];
 }
 
-src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 {
 	rm -f [target];
 	
@@ -133,12 +133,6 @@ pixmaps/%.M: etc/makefile.cook
 {
 	rm -f [target];
 
-	if [is_xpm %] then
-	{
-		[make_line include/%\: pixmaps/%];
-		[make_action ln -s ../pixmaps/% \\$\\@];
-		[make_line];
-	}
 	[make_line [gfxdir]/%\: pixmaps/%];
 	[make_action [make_var INSTALL_DATA] -D pixmaps/% \\$\\@];
 	[make_line];

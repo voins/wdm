@@ -37,7 +37,6 @@ from The Open Group.
 
 # include <dm.h>
 # include <dm_auth.h>
-# include <dm_error.h>
 
 #ifdef XDMCP
 
@@ -68,6 +67,8 @@ from The Open Group.
 #define Time_t time_t
 
 #define getString(name,len)	((name = malloc (len + 1)) ? 1 : 0)
+
+#include <wdmlib.h>
 
 /*
  * misc externs
@@ -204,7 +205,7 @@ all_query_respond (
 
     family = ConvertAddr((XdmcpNetaddr) from, &length, (char **)&(addr.data));
     addr.length = length;	/* convert int to short */
-    Debug ("all_query_respond: conntype=%d, addr=%lx, len=%d\n",
+    WDMDebug ("all_query_respond: conntype=%d, addr=%lx, len=%d\n",
 	   family, (unsigned long) *(addr.data), addr.length);
     if (family < 0)
 	return;
@@ -239,7 +240,7 @@ indirect_respond (
     XdmcpHeader	    header;
     int		    localHostAsWell;
     
-    Debug ("Indirect respond %d\n", length);
+    WDMDebug ("Indirect respond %d\n", length);
     if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
 	return;
     expectedLen = 1;
@@ -274,7 +275,7 @@ indirect_respond (
     }
     else
     {
-	Debug ("Indirect length error got %d expect %d\n", length, expectedLen);
+	WDMDebug("Indirect length error got %d expect %d\n", length, expectedLen);
     }
     XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
 }
@@ -286,22 +287,22 @@ ProcessRequestSocket (void)
     struct sockaddr	addr;
     int			addrlen = sizeof addr;
 
-    Debug ("ProcessRequestSocket\n");
+    WDMDebug("ProcessRequestSocket\n");
     bzero ((char *) &addr, sizeof (addr));
     if (!XdmcpFill (xdmcpFd, &buffer, (XdmcpNetaddr) &addr, &addrlen)) {
-	Debug ("XdmcpFill failed\n");
+	WDMDebug("XdmcpFill failed\n");
 	return;
     }
     if (!XdmcpReadHeader (&buffer, &header)) {
-	Debug ("XdmcpReadHeader failed\n");
+	WDMDebug("XdmcpReadHeader failed\n");
 	return;
     }
     if (header.version != XDM_PROTOCOL_VERSION) {
-	Debug ("XDMCP header version read was %d, expected %d\n",
+	WDMDebug("XDMCP header version read was %d, expected %d\n",
 	       header.version, XDM_PROTOCOL_VERSION);
 	return;
     }
-    Debug ("header: %d %d %d\n", header.version, header.opcode, header.length);
+    WDMDebug("header: %d %d %d\n", header.version, header.opcode, header.length);
     switch (header.opcode)
     {
     case BROADCAST_QUERY:
@@ -334,11 +335,11 @@ WaitForSomething (void)
     FD_TYPE	reads;
     int	nready;
 
-    Debug ("WaitForSomething\n");
+    WDMDebug("WaitForSomething\n");
     if (AnyWellKnownSockets () && !ChildReady) {
 	reads = WellKnownSocketsMask;
 	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
-	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
+	WDMDebug("select returns %d.  Rescan: %d  ChildReady: %d\n",
 		nready, Rescan, ChildReady);
 	if (nready > 0)
 	{
@@ -406,7 +407,7 @@ query_respond (
     int		    fromlen,
     int		    length)
 {
-    Debug ("Query respond %d\n", length);
+    WDMDebug("Query respond %d\n", length);
     direct_query_respond (from, fromlen, length, QUERY);
 }
 
@@ -526,7 +527,7 @@ forward_respond (
     int		    expectedLen;
     int		    i;
     
-    Debug ("Forward respond %d\n", length);
+    WDMDebug("Forward respond %d\n", length);
     clientAddress.length = 0;
     clientAddress.data = 0;
     clientPort.length = 0;
@@ -550,10 +551,10 @@ forward_respond (
 	    j = 0;
 	    for (i = 0; i < (int)clientPort.length; i++)
 		j = j * 256 + clientPort.data[i];
-	    Debug ("Forward client address (port %d)", j);
+	    WDMDebug("Forward client address (port %d)", j);
 	    for (i = 0; i < (int)clientAddress.length; i++)
-		Debug (" %d", clientAddress.data[i]);
-	    Debug ("\n");
+		WDMDebug(" %d", clientAddress.data[i]);
+	    WDMDebug("\n");
     	    switch (from->sa_family)
     	    {
 #ifdef AF_INET
@@ -615,7 +616,7 @@ forward_respond (
 	}
 	else
 	{
-	    Debug ("Forward length error got %d expect %d\n", length, expectedLen);
+	    WDMDebug("Forward length error got %d expect %d\n", length, expectedLen);
 	}
     }
 badAddress:
@@ -633,7 +634,7 @@ send_willing (
 {
     XdmcpHeader	header;
 
-    Debug ("Send willing %*.*s %*.*s\n", authenticationName->length,
+    WDMDebug("Send willing %*.*s %*.*s\n", authenticationName->length,
 					 authenticationName->length,
 					 pS(authenticationName->data),
 					 status->length,
@@ -659,7 +660,7 @@ send_unwilling (
 {
     XdmcpHeader	header;
 
-    Debug ("Send unwilling %*.*s %*.*s\n", authenticationName->length,
+    WDMDebug("Send unwilling %*.*s %*.*s\n", authenticationName->length,
 					 authenticationName->length,
 					 pS(authenticationName->data),
 					 status->length,
@@ -712,7 +713,7 @@ request_respond (
     ARRAY8	    authorizationName, authorizationData;
     ARRAY8Ptr	    connectionAddress;
 
-    Debug ("Request respond %d\n", length);
+    WDMDebug("Request respond %d\n", length);
     connectionTypes.data = 0;
     connectionAddresses.data = 0;
     authenticationName.data = 0;
@@ -743,7 +744,7 @@ request_respond (
 	expectlen += 2 + manufacturerDisplayID.length;	/* displayID */
 	if (expectlen != length)
 	{
-	    Debug ("Request length error got %d expect %d\n", length, expectlen);
+	    WDMDebug("Request length error got %d expect %d\n", length, expectlen);
 	    goto abort;
 	}
 	if (connectionTypes.length == 0 ||
@@ -774,7 +775,7 @@ request_respond (
 	    pdpy = NewProtoDisplay ((XdmcpNetaddr) from, fromlen, displayNumber,
 				    connectionTypes.data[i], connectionAddress,
 				    NextSessionID());
-	    Debug ("NewProtoDisplay %p\n", pdpy);
+	    WDMDebug("NewProtoDisplay %p\n", (void *)pdpy);
 	    if (!pdpy) {
 		reason = &outOfMemory;
 		goto decline;
@@ -854,7 +855,7 @@ send_accept (
 {
     XdmcpHeader	header;
 
-    Debug ("Accept Session ID %ld\n", (long) sessionID);
+    WDMDebug("Accept Session ID %ld\n", (long) sessionID);
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) ACCEPT;
     header.length = 4;			    /* session ID */
@@ -881,7 +882,7 @@ send_decline (
 {
     XdmcpHeader	header;
 
-    Debug ("Decline %*.*s\n", status->length, status->length, pS(status->data));
+    WDMDebug("Decline %*.*s\n", status->length, status->length, pS(status->data));
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) DECLINE;
     header.length = 0;
@@ -913,7 +914,7 @@ manage (
     ARRAY8		clientAddress, clientPort;
     CARD16		connectionType;
 
-    Debug ("Manage %d\n", length);
+    WDMDebug("Manage %d\n", length);
     displayClass.data = 0;
     displayClass.length = 0;
     if (XdmcpReadCARD32 (&buffer, &sessionID) &&
@@ -925,11 +926,11 @@ manage (
 		    2 + displayClass.length;	/* displayClass */
 	if (expectlen != length)
 	{
-	    Debug ("Manage length error got %d expect %d\n", length, expectlen);
+	    WDMDebug("Manage length error got %d expect %d\n", length, expectlen);
 	    goto abort;
 	}
 	pdpy = FindProtoDisplay ((XdmcpNetaddr) from, fromlen, displayNumber);
-	Debug ("Manage Session ID %ld, pdpy %p\n", (long) sessionID, pdpy);
+	WDMDebug("Manage Session ID %ld, pdpy %p\n", (long) sessionID, (void *)pdpy);
 	if (!pdpy || pdpy->sessionID != sessionID)
 	{
 	    /*
@@ -943,12 +944,12 @@ manage (
 	    if (!pdpy 
 		&& (d = FindDisplayByAddress((XdmcpNetaddr) from, fromlen, displayNumber))
 		&& d->sessionID == sessionID) {
-		     Debug("manage: got duplicate pkt, ignoring\n");
+		     WDMDebug("manage: got duplicate pkt, ignoring\n");
 		     goto abort;
 	    }
-	    Debug ("Session ID %ld refused\n", (long) sessionID);
+	    WDMDebug("Session ID %ld refused\n", (long) sessionID);
 	    if (pdpy)
-		Debug ("Existing Session ID %ld\n", (long) pdpy->sessionID);
+		WDMDebug("Existing Session ID %ld\n", (long) pdpy->sessionID);
 	    send_refuse (from, fromlen, sessionID);
 	}
 	else
@@ -957,7 +958,7 @@ manage (
 					 &pdpy->connectionAddress,
 					 from,
 					 pdpy->displayNumber);
-	    Debug ("Computed display name: %s\n", name);
+	    WDMDebug("Computed display name: %s\n", name);
 	    if (!name)
 	    {
 		send_failed (from, fromlen, "(no name)", sessionID, "out of memory");
@@ -966,7 +967,7 @@ manage (
 	    d = FindDisplayByName (name);
 	    if (d)
 	    {
-		Debug ("Terminating active session for %s\n", d->name);
+		WDMDebug("Terminating active session for %s\n", d->name);
 		StopDisplay (d);
 	    }
 	    class = malloc (displayClass.length + 1);
@@ -1010,12 +1011,12 @@ manage (
 	    d->useChooser = 0;
 	    if (IsIndirectClient (&clientAddress, connectionType))
 	    {
-		Debug ("IsIndirectClient\n");
+		WDMDebug("IsIndirectClient\n");
 		ForgetIndirectClient (&clientAddress, connectionType);
 		if (UseChooser (&clientAddress, connectionType))
 		{
 		    d->useChooser = 1;
-		    Debug ("Use chooser for %s\n", d->name);
+		    WDMDebug("Use chooser for %s\n", d->name);
 		}
 	    }
 	    d->clientAddr = clientAddress;
@@ -1036,7 +1037,7 @@ manage (
 		pdpy->fileAuthorization = 0;
 	    }
 	    DisposeProtoDisplay (pdpy);
-	    Debug ("Starting display %s,%s\n", d->name, d->class);
+	    WDMDebug("Starting display %s,%s\n", d->name, d->class);
 	    StartDisplay (d);
 	}
     }
@@ -1051,7 +1052,7 @@ SendFailed (
     struct display  *d,
     char	    *reason)
 {
-    Debug ("Display start failed, sending Failed\n");
+    WDMDebug("Display start failed, sending Failed\n");
     send_failed ((struct sockaddr *)(d->from), d->fromlen, d->name, d->sessionID, reason);
 }
 
@@ -1069,7 +1070,7 @@ send_failed (
 
     sprintf (buf, "Session %ld failed for display %.100s: %.100s",
 	     (long) sessionID, name, reason);
-    Debug ("Send failed %ld %s\n", (long) sessionID, buf);
+    WDMDebug("Send failed %ld %s\n", (long) sessionID, buf);
     status.length = strlen (buf);
     status.data = (CARD8Ptr) buf;
     header.version = XDM_PROTOCOL_VERSION;
@@ -1089,7 +1090,7 @@ send_refuse (
 {
     XdmcpHeader	header;
 
-    Debug ("Send refuse %ld\n", (long) sessionID);
+    WDMDebug("Send refuse %ld\n", (long) sessionID);
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) REFUSE;
     header.length = 4;
@@ -1111,7 +1112,7 @@ send_alive (
     CARD8		sendRunning;
     CARD32		sendSessionID;
 
-    Debug ("Send alive\n");
+    WDMDebug("Send alive\n");
     if (XdmcpReadCARD16 (&buffer, &displayNumber) &&
 	XdmcpReadCARD32 (&buffer, &sessionID))
     {
@@ -1132,7 +1133,7 @@ send_alive (
 	    header.version = XDM_PROTOCOL_VERSION;
 	    header.opcode = (CARD16) ALIVE;
 	    header.length = 5;
-	    Debug ("alive: %d %ld\n", sendRunning, (long) sendSessionID);
+	    WDMDebug("alive: %d %ld\n", sendRunning, (long) sendSessionID);
 	    XdmcpWriteHeader (&buffer, &header);
 	    XdmcpWriteCARD8 (&buffer, sendRunning);
 	    XdmcpWriteCARD32 (&buffer, sendSessionID);
@@ -1169,7 +1170,7 @@ NetworkAddressToHostname (
 			connectionAddress->data[2],
 			connectionAddress->data[3]);
 		local_name = dotted;
-		LogError ("Cannot convert Internet address %s to host name\n",
+		WDMError("Cannot convert Internet address %s to host name\n",
 			  dotted);
 	    }
 	    if (!getString (name, strlen (local_name)))

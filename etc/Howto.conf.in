@@ -9,15 +9,10 @@ srcdir = @srcdir@;
 XCFLAGS = @XCFLAGS@;
 XLDFLAGS = @XLDFLAGS@;
 XLIBS = @XLIBS@;
-GFXCFLAGS = @GFXCFLAGS@;
-GFXLDFLAGS = @GFXLDFLAGS@;
-GFXLIBS = @GFXLIBS@;
-LIBCRYPT = @LIBCRYPT@;
+WCFLAGS = @WCFLAGS@;
+WLDFLAGS = @WLDFLAGS@;
+WLIBS = @WLIBS@;
 PASSWDLIB = @PASSWDLIB@;
-LIBSOCKET = @LIBSCOKET@;
-LIBUCB = @LIBUCB@;
-LIBUTIL = @LIBUTIL@;
-LIBXINERAMA = @LIBXINERAMA@;
 CC = @CC@;
 PACKAGE_NAME = @PACKAGE_NAME@;
 PACKAGE_VERSION = @PACKAGE_VERSION@;
@@ -33,18 +28,16 @@ cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];
 ldflags = [LDFLAGS] [prepost -L /bin [search_list]];
 libs = [LIBS] -lwdm;
 
-wdmLogin_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
-wdmLogin_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
-wdmLogin_libs = [libs] [XLIBS] [GFXLIBS] [LIBXINERAMA];
+wdmLogin_cflags = [cflags] [XCFLAGS] [WCFLAGS];
+wdmLogin_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
+wdmLogin_libs = [libs] [XLIBS] [WLIBS];
 
-TestLogin_cflags = [cflags];
-TestLogin_ldflags = [ldflags];
-TestLogin_libs = [libs];
+TestLogin_cflags = [cflags] [XCFLAGS] [WCFLAGS];
+TestLogin_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
+TestLogin_libs = [libs] [XLIBS] [WLIBS];
 
-wdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
-wdm_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
-wdm_libs = [libs] [XLIBS] [GFXLIBS] [LIBCRYPT] \
-	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
-	-lXmu -lXau -lXdmcp;
+wdm_cflags = [cflags] [XCFLAGS] [WCFLAGS];
+wdm_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
+wdm_libs = [libs] [XLIBS] [WLIBS] [PASSWDLIB] -lXmu -lXau -lXdmcp;
 
-libwdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
+libwdm_cflags = [cflags] [XCFLAGS] [WCFLAGS];

@@ -36,7 +36,8 @@ from The Open Group.
  */
 
 # include <dm.h>
-# include <dm_error.h>
+
+#include <wdmlib.h>
 
 # include <X11/Intrinsic.h>
 # include <X11/Xmu/CharSet.h>
@@ -47,6 +48,8 @@ char	*servers;
 int	request_port;
 int	debugLevel;
 char	*errorLogFile;
+char	*syslogFacility;
+int	useSyslog;
 int	daemonMode;
 char	*pidFile;
 int	lockPidFile;
@@ -82,6 +85,11 @@ int	wdmAnimations;		/* if true, enable shake and rollup animations */
 				/* if false, disable animations */
 char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
 char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
+char	*wdmCursorTheme;	/* this will be XCURSOR_THEME value before starting
+				   wdmLogin */
+int	wdmXineramaHead;	/* select xinerama head where to show login panel 
+				   this _should_ be display dependant, but I make it
+				   later */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -223,9 +231,13 @@ struct dmResources {
 { "requestPort","RequestPort",	DM_INT,		(char **) &request_port,
 				DEF_UDP_PORT} ,
 { "debugLevel",	"DebugLevel",	DM_INT,		(char **) &debugLevel,
-				"0"} ,
+				"1"} ,
 { "errorLogFile","ErrorLogFile",	DM_STRING,	&errorLogFile,
 				""} ,
+{ "syslogFacility","SyslogFacility",	DM_STRING,	&syslogFacility,
+				""} ,
+{ "useSyslog",	"UseSyslog",	DM_BOOL,	(char **) &useSyslog,
+				"false"} ,
 { "daemonMode",	"DaemonMode",	DM_BOOL,	(char **) &daemonMode,
 				"true"} ,
 { "pidFile",	"PidFile",	DM_STRING,	&pidFile,
@@ -366,12 +378,16 @@ struct dmResources wdmResources[] = {
 				""} ,
 { "wdmDefaultPasswd",	"WdmDefaultPasswd",	DM_STRING,	&wdmDefaultPasswd,
 				""} ,
-{ "wdmAnimations",	"WdmAnimations",	DM_BOOL,	&wdmAnimations,
+{ "wdmAnimations",	"WdmAnimations",	DM_BOOL,	(char **)&wdmAnimations,
 				"true"} ,
 { "wdmLocale",		"WdmLocale",		DM_STRING,	&wdmLocale,
 				""} ,
 { "wdmLoginConfig",	"WdmLoginConfig",	DM_STRING,	&wdmLoginConfig,
 				DEF_WDMLOGIN_CONFIG} ,
+{ "wdmCursorTheme",	"WdmCursorTheme",	DM_STRING,	&wdmCursorTheme,
+				""} ,
+{ "wdmXineramaHead",	"WdmXineramaHead",	DM_INT,		(char **)&wdmXineramaHead,
+				"0"} ,
 };
 
 # define NUM_WDM_RESOURCES	(sizeof wdmResources/\
@@ -407,7 +423,7 @@ GetResource (
 	len = strlen (string);
     }
 
-    Debug ("%s/%s value %*.*s\n", name, class, len, len, string);
+    WDMDebug("%s/%s value %*.*s\n", name, class, len, len, string);
 
     if (valueType == DM_STRING && *valuep)
     {
@@ -421,7 +437,7 @@ GetResource (
     case DM_STRING:
 	new_string = malloc ((unsigned) (len+1));
 	if (!new_string) {
-		LogOutOfMem ("GetResource");
+		WDMError("GetResource: out of memory");
 		return;
 	}
 	strncpy (new_string, string, len);
@@ -473,7 +489,10 @@ XrmOptionDescRec optionTable [] = {
 {"-debug",	"*debugLevel",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-xrm",	NULL,			XrmoptionResArg,	(caddr_t) NULL },
 {"-daemon",	".daemonMode",		XrmoptionNoArg,		"true"         },
-{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        }
+{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        },
+{"-syslog",	".syslogFacility",	XrmoptionSepArg,	(caddr_t) NULL },
+{"-usesyslog",	".useSyslog",		XrmoptionNoArg,		"true"         },
+{"-useerrfile",	".useSyslog",		XrmoptionNoArg,		"false"        }
 };
 
 static int	originalArgc;
@@ -498,7 +517,7 @@ ReinitResources (void)
 
     argv = (char **) malloc ((originalArgc + 1) * sizeof (char *));
     if (!argv)
-	LogPanic ("no space for argument realloc\n");
+	WDMError("no space for argument realloc\n");
     for (argc = 0; argc < originalArgc; argc++)
 	argv[argc] = originalArgv[argc];
     argv[argc] = 0;
@@ -519,16 +538,16 @@ ReinitResources (void)
 	DmResourceDB = newDB;
     }
     else if (argc != originalArgc)
-	LogError ("Can't open configuration file %s\n", config );
+	WDMError("Can't open configuration file %s\n", config);
     XrmParseCommand (&DmResourceDB, optionTable,
 		     sizeof (optionTable) / sizeof (optionTable[0]),
 		     "DisplayManager", &argc, argv);
     if (argc > 1)
     {
-	LogError ("extra arguments on command line:");
+	WDMError("extra arguments on command line:");
 	for (a = argv + 1; *a; a++)
-		LogError (" \"%s\"", *a);
-	LogError ("\n");
+		WDMError(" \"%s\"", *a);
+	WDMError("\n");
     }
     free (argv);
 }

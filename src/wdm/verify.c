@@ -38,20 +38,21 @@ from The Open Group.
  */
 
 #include	<dm.h>
-#include	<dm_error.h>
 
 #include	<pwd.h>
 #ifdef USE_PAM
 # include	<security/pam_appl.h>
 # include	<stdlib.h>
 #else
-# ifdef USESHADOW
+# ifdef HAVE_SHADOW_H
 #  include	<shadow.h>
 #  include	<errno.h>
 # endif
 #endif
 
 # include	<greet.h>
+
+#include <wdmlib.h>
 
 #ifdef QNX4
 extern char *crypt(const char *, const char *);
@@ -291,7 +292,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 #ifdef USE_PAM
 	pam_handle_t **pamhp = thepamhp();
 #else
-#ifdef USESHADOW
+#ifdef HAVE_SHADOW_H
 	struct spwd	*sp;
 #endif
 	char		*user_pass = NULL;
@@ -303,19 +304,19 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	char		*shell, *home;
 	char		**argv;
 
-	Debug ("Verify %s ...\n", greet->name);
+	WDMDebug("Verify %s ...\n", greet->name);
 #ifndef USE_PAM
 	p = getpwnam (greet->name);
 	endpwent();
 
 	if (!p || strlen (greet->name) == 0) {
-		Debug ("getpwnam() failed.\n");
+		WDMDebug("getpwnam() failed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	} else {
 #ifdef linux
 	    if (!strcmp(p->pw_passwd, "!") || !strcmp(p->pw_passwd, "*")) {
-		Debug ("The account is locked, no login allowed.\n");
+		WDMDebug("The account is locked, no login allowed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	    }
@@ -331,7 +332,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 		int ret;
 	    
 		if(krb_get_lrealm(realm, 1)){
-			Debug ("Can't get Kerberos realm.\n");
+			WDMDebug("Can't get Kerberos realm.\n");
 		} else {
 
 		    sprintf(krbtkfile, "%s.%s", TKT_ROOT, d->name);
@@ -343,31 +344,31 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
            
 		    if(ret == KSUCCESS){
 			    chown(krbtkfile, p->pw_uid, p->pw_gid);
-			    Debug("kerberos verify succeeded\n");
+			    WDMDebug("kerberos verify succeeded\n");
 			    if (k_hasafs()) {
 				    if (k_setpag() == -1)
-					    LogError ("setpag() failed for %s\n",
+					    WDMError("setpag() failed for %s\n",
 						      greet->name);
 				    
 				    if((ret = k_afsklog(NULL, NULL)) != KSUCCESS)
-					    LogError("Warning %s\n", 
+					    WDMError("Warning %s\n", 
 						     krb_get_err_text(ret));
 			    }
 			    goto done;
 		    } else if(ret != KDC_PR_UNKNOWN && ret != SKDC_CANT){
 			    /* failure */
-			    Debug("kerberos verify failure %d\n", ret);
+			    WDMDebug("kerberos verify failure %d\n", ret);
 			    krbtkfile[0] = '\0';
 		    }
 		}
 	}
 #endif
 #ifndef USE_PAM
-#ifdef USESHADOW
+#ifdef HAVE_SHADOW_H
 	errno = 0;
 	sp = getspnam(greet->name);
 	if (sp == NULL) {
-	    Debug ("getspnam() failed, errno=%d.  Are you root?\n", errno);
+	    WDMDebug("getspnam() failed, errno=%d.  Are you root?\n", errno);
 	} else {
 	    user_pass = sp->sp_pwdp;
 	}
@@ -382,7 +383,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 #endif
 	{
 		if(!greet->allow_null_passwd || strlen(p->pw_passwd) > 0) {
-			Debug ("password verify failed\n");
+			WDMDebug("password verify failed\n");
 			bzero(greet->password, strlen(greet->password));
 			return 0;
 		} /* else: null passwd okay */
@@ -395,7 +396,7 @@ done:
 	 * Only accept root logins if allowRootLogin resource is set
 	 */
 	if ((p->pw_uid == 0) && !greet->allow_root_login) {
-		Debug("root logins not allowed\n");
+		WDMDebug("root logins not allowed\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	}
@@ -407,7 +408,7 @@ done:
 		if (s == NULL) {
 			/* did not found the shell in /etc/shells 
 			   -> failure */
-			Debug("shell not in /etc/shells\n");
+			WDMDebug("shell not in /etc/shells\n");
 			bzero(greet->password, strlen(greet->password));
 			endusershell();
 			return 0;
@@ -425,14 +426,14 @@ done:
 		(void)gettimeofday(&tp, (struct timezone *)NULL);
 	if (p->pw_change) {
 		if (tp.tv_sec >= p->pw_change) {
-			Debug("Password has expired.\n");
+			WDMDebug("Password has expired.\n");
 			bzero(greet->password, strlen(greet->password));
 			return 0;
 		}
 	}
 	if (p->pw_expire) {
 		if (tp.tv_sec >= p->pw_expire) {
-			Debug("account has expired.\n");
+			WDMDebug("account has expired.\n");
 			bzero(greet->password, strlen(greet->password));
 			return 0;
 		} 
@@ -462,7 +463,7 @@ done:
 	endpwent();
 
 	if (!p || strlen (greet->name) == 0) {
-		Debug ("getpwnam() failed.\n");
+		WDMDebug("getpwnam() failed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	}
@@ -477,7 +478,7 @@ done:
 #endif /* USE_PAM */
 #endif /* USE_BSDAUTH */
 
-	Debug ("verify succeeded\n");
+	WDMDebug("verify succeeded\n");
 	/* The password is passed to StartClient() for use by user-based
 	   authorization schemes.  It is zeroed there. */
 	verify->uid = p->pw_uid;
@@ -494,11 +495,11 @@ done:
 	verify->argv = argv;
 	verify->userEnviron = userEnv (d, p->pw_uid == 0,
 				       greet->name, home, shell);
-	Debug ("user environment:\n");
+	WDMDebug("user environment:\n");
 	printEnv (verify->userEnviron);
 	verify->systemEnviron = systemEnv (d, greet->name, home);
-	Debug ("system environment:\n");
+	WDMDebug("system environment:\n");
 	printEnv (verify->systemEnviron);
-	Debug ("end of environments\n");
+	WDMDebug("end of environments\n");
 	return 1;
 }

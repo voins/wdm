@@ -40,17 +40,13 @@
 #ifdef HAVE_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
-#include <WINGs/WINGs.h>
+#include <wdmlib.h>
 /* temporary hack {{{ */
 #include <WINGs/WINGsP.h>
 /* }}} */
-#include <WINGs/WUtil.h>
 #include <limits.h>
 #include <locale.h>
 #include <time.h>
-
-#include <gnuLogo.xpm>
-
 
 /*###################################################################*/
 
@@ -61,7 +57,7 @@
 #define P_WIDTH 530
 #define P_HEIGTH 240
 
-static int screen_width = 0, screen_heigth = 0;
+WMRect screen;
 static int panel_width = P_WIDTH, panel_heigth = P_HEIGTH;
 static int help_heigth = 140;
 static int panel_X = 0, panel_Y = 0;
@@ -164,6 +160,10 @@ static char *ExitStr[] = { N_("Login"), N_("Reboot"), N_("Halt"),
 	N_("ExitLogin"), NULL
 };
 
+static char *ExitFailStr[] = { N_("Login failed"), N_("Reboot failed"),
+	N_("Halt failed"), N_("ExitLogin failed"), NULL
+};
+
 static int WmOptionCode = 0;
 static char WmDefault[] = "wmaker:afterstep:xsession";
 static char *WmArg = WmDefault;
@@ -175,6 +175,9 @@ static char *bgOption = NULL;
 static int animate = False;
 static int smoothScale = True;
 static char *configFile = NULL;
+#ifdef HAVE_XINERAMA
+static int xinerama_head = 0;
+#endif
 
 static int exit_request = 0;
 
@@ -191,8 +194,7 @@ read_help_file(int handle)
 		HelpText = wmalloc(s.st_size + 1);
 		if(read(handle, HelpText, s.st_size) == -1)
 		{
-			fprintf(stderr,
-				"%s - read_help_file(): can't read %s\n",
+			WDMError("%s - read_help_file(): can't read %s\n",
 				ProgName, helpArg);
 			wfree(HelpText);
 			return NULL;
@@ -200,7 +202,7 @@ read_help_file(int handle)
 		HelpText[s.st_size] = '\0';
 	}
 	else
-		fprintf(stderr, "%s - read_help_file(): can't stat %s\n",
+		WDMError("%s - read_help_file(): can't stat %s\n",
 			ProgName, helpArg);
 
 	return HelpText;
@@ -222,7 +224,7 @@ parse_helpArg(void)
 	{
 		if((handle = open(helpArg, O_RDONLY)) == -1)
 		{
-			fprintf(stderr, "%s - parse_helpArg(): can't open %s\n",
+			WDMError("%s - parse_helpArg(): can't open %s\n",
 				ProgName, helpArg);
 			return defaultHelpText;
 		}
@@ -241,8 +243,7 @@ parse_helpArg(void)
 void
 wAbort()			/* for WINGs compatibility */
 {
-	fprintf(stderr, "%s - wAbort from WINGs\n", ProgName);
-	exit(1);
+	WDMPanic("%s - wAbort from WINGs\n", ProgName);
 }
 
 /*###################################################################*/
@@ -349,7 +350,7 @@ LoginArgs(int argc, char *argv[])
 	int c;
 
 
-	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:")) != -1)
+	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:x:")) != -1)
 	{
 		switch (c)
 		{
@@ -380,8 +381,13 @@ LoginArgs(int argc, char *argv[])
 		case 'c':	/* configfile */
 			configFile = optarg;
 			break;
+#ifdef HAVE_XINERAMA
+		case 'x':	/* xinerama head */
+			xinerama_head = strtol(optarg, NULL, 0);
+			break;
+#endif
 		default:
-			fprintf(stderr, "bad option: %c\n", c);
+			WDMError("bad option: %c\n", c);
 			break;
 		}
 	}
@@ -493,8 +499,6 @@ InitializeLoginInput(LoginPanel * panel)
 static void
 PerformLogin(LoginPanel * panel, int canexit)
 {
-	char *tmp;
-
 	if(LoginSwitch == False)
 	{
 		if(LoginName)
@@ -541,8 +545,6 @@ PerformLogin(LoginPanel * panel, int canexit)
 static void
 goPressed(WMWidget * self, LoginPanel * panel)
 {
-	char *tmp;
-
 	if(OptionCode == 0)
 	{
 		if(LoginSwitch == False)
@@ -663,13 +665,21 @@ CreateLogo(LoginPanel * panel)
 		image1 = RLoadImage(context, logoArg, 0);
 	}
 	if(image1 == NULL)
-		image1 = RGetImageFromXPMData(context, gnuLogo_xpm);
+	{
+		RColor first, second;
+		first.red = 0xae;
+		first.green = 0xaa;
+		first.blue = 0xc0;
+		second.red = 0xae;
+		second.green = 0xaa;
+		second.blue = 0xae;
+		image1 = RRenderGradient(200, 300, &first, &second, RDiagonalGradient);
+	}
 	if(image1 == NULL)
 		return;
 
 #if 0
-	fprintf(stderr, "width=%i,heigth=%i\n", image1->width, image1->height);
-	/*DEBUG*/
+	WDMDebug("width=%i,heigth=%i\n", image1->width, image1->height);
 #endif
 		if(image1->width > 200)
 	{			/* try to keep the aspect ratio */
@@ -677,8 +687,7 @@ CreateLogo(LoginPanel * panel)
 		h = (int) ((float) image1->height * ratio);
 	}
 #if 0
-	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
-	/*DEBUG*/
+	WDMDebug("new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 #endif
 		if(image1->height > 130)
 	{
@@ -690,12 +699,11 @@ CreateLogo(LoginPanel * panel)
 		}
 	}
 #if 0
-	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
-	/*DEBUG*/
+	WDMDebug("new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 #endif
 		/* if image is too small, do not reallly resize since this looks bad */
 		/* the image will be centered */
-		if((image1->width < 200) && (image1->height < 130))
+	if((image1->width < 200) && (image1->height < 130))
 	{
 		w = image1->width;
 		h = image1->height;
@@ -706,10 +714,9 @@ CreateLogo(LoginPanel * panel)
 	if(h > 130)
 		h = 130;
 #if 0
-	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
-	/*DEBUG*/
+	WDMDebug("new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 #endif
-		if(smoothScale)
+	if(smoothScale)
 		image2 = RSmoothScaleImage(image1, w, h);
 	else
 		image2 = RScaleImage(image1, w, h);
@@ -726,7 +733,7 @@ CreateLogo(LoginPanel * panel)
 
 	if(pixmap == NULL)
 	{
-		fprintf(stderr, "unable to load pixmap\n");
+		WDMError("unable to load pixmap\n");
 		return;
 	}
 	WMSetLabelImage(panel->logoL, pixmap);
@@ -1078,14 +1085,14 @@ loadBGpixmap(RContext * rcontext)
 	image = RLoadImage(rcontext, bgOption, 0);
 	if(image == NULL)
 	{
-		fprintf(stderr, "%s could not load bg image %s\n",
+		WDMError("%s could not load bg image %s\n",
 			ProgName, bgOption);
 		return NULL;
 	}
-	tmp = RScaleImage(image, screen_width, screen_heigth);
+	tmp = RScaleImage(image, screen.size.width, screen.size.height);
 	if(tmp == NULL)
 	{
-		fprintf(stderr, "%s could not resize bg image %s\n",
+		WDMError("%s could not resize bg image %s\n",
 			ProgName, bgOption);
 		RReleaseImage(image);
 		return NULL;
@@ -1159,7 +1166,7 @@ createBGcolor(WMScreen * scr, RContext * rcontext, char *str, int style)
 		if(!XParseColor
 		   (WMScreenDisplay(scr), rcontext->cmap, colorstr, &color))
 		{
-			fprintf(stderr, "could not parse color \"%s\"\n",
+			WDMError("could not parse color \"%s\"\n",
 				colorstr);
 			freemem(num_colors, colors);
 			return NULL;
@@ -1168,7 +1175,7 @@ createBGcolor(WMScreen * scr, RContext * rcontext, char *str, int style)
 		colors[i]->green = color.green >> 8;
 		colors[i]->blue = color.blue >> 8;
 	}
-	image = RRenderMultiGradient(screen_width, screen_heigth,
+	image = RRenderMultiGradient(screen.size.width, screen.size.height,
 				     colors, style);
 	freemem(num_colors, colors);
 	return image;
@@ -1204,8 +1211,8 @@ setBG(WMScreen * scr)
 	rcontext = RCreateContext(WMScreenDisplay(scr), scr->screen, &rattr);
 	if(rcontext == NULL)
 	{
-		fprintf(stderr,
-			"%s could not initialize graphics library context: %s\n",
+		WDMError("%s could not initialize "
+			"graphics library context: %s\n",
 			ProgName, RMessageForError(RErrorCode));
 		return;
 	}
@@ -1254,12 +1261,8 @@ setBG(WMScreen * scr)
 static void
 SignalUsr1(int ignored)		/* oops, an error */
 {
-	char msg[64];
-
-	strcpy(msg, ExitStr[OptionCode]);
-	strcat(msg, " failed.");
 	InitializeLoginInput(panel);
-	PrintErrMsg(panel, msg);
+	PrintErrMsg(panel, gettext(ExitFailStr[OptionCode]));
 	signal(SIGUSR1, SignalUsr1);
 }
 
@@ -1294,7 +1297,6 @@ main(int argc, char **argv)
 	WMScreen *scr;
 	WMPropList *configdb;
 	int xine_count;
-	int c;
 
 #ifdef HAVE_XINERAMA
 	XineramaScreenInfo *xine;
@@ -1325,10 +1327,14 @@ main(int argc, char **argv)
 	scr = WMOpenScreen(displayArg);
 	if(!scr)
 	{
-		fprintf(stderr, "could not initialize Screen\n");
+		WDMPanic("could not initialize Screen\n");
 		exit(2);
 	}
 
+	screen.pos.x = 0;
+	screen.pos.y = 0;
+	screen.size.width = WMScreenWidth(scr);
+	screen.size.height = WMScreenHeight(scr);
 #ifdef HAVE_XINERAMA
 	if(XineramaIsActive(WMScreenDisplay(scr)))
 	{
@@ -1336,31 +1342,19 @@ main(int argc, char **argv)
 
 		if(xine != NULL)
 		{
-			for(c = 0; c < xine_count; c++)
+			if(xinerama_head < xine_count)
 			{
-				if(xine[c].screen_number == 0)
-				{
-					screen_width = xine[c].width;
-					screen_heigth = xine[c].height;
-				}
+				screen.pos.x = xine[xinerama_head].x_org;
+				screen.pos.y = xine[xinerama_head].y_org;
+				screen.size.width = xine[xinerama_head].width;
+				screen.size.height = xine[xinerama_head].height;
 			}
 		}
-		else
-		{
-			screen_width = WMScreenWidth(scr);
-			screen_heigth = WMScreenHeight(scr);
-		}
-	}
-	else
-	{
-#endif
-		screen_width = WMScreenWidth(scr);
-		screen_heigth = WMScreenHeight(scr);
-#ifdef HAVE_XINERAMA
 	}
 #endif
-	panel_X = (screen_width - panel_width) / 2;
-	panel_Y = (screen_heigth - panel_heigth) / 2;
+
+	panel_X = screen.pos.x + (screen.size.width - panel_width)/2;
+	panel_Y = screen.pos.y + (screen.size.height - panel_heigth)/2;
 
 	XSynchronize(WMScreenDisplay(scr), False);
 

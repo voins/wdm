@@ -30,6 +30,7 @@ configure: configure.ac etc/configure.cook install-sh
 
 config.status : configure etc/configure.cook
 {
+	CFLAGS\="\"-O2 -g -Wall -pedantic\""
 	[pathname [resolve configure]]
 		--enable-pam
 		--no-create

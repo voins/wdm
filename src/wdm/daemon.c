@@ -58,7 +58,7 @@ from The Open Group.
 #include <stdlib.h>
 
 #include <dm.h>
-#include <dm_error.h>
+#include <wdmlib.h>
 
 void
 BecomeOrphan (void)
@@ -84,7 +84,7 @@ BecomeOrphan (void)
 	break;
     case -1:
 	/* error */
-	LogError("daemon fork failed, errno = %d\n", errno);
+	WDMError("daemon fork failed, errno = %d\n", errno);
 	break;
 
     default:
@@ -100,7 +100,7 @@ BecomeOrphan (void)
 #else
 	stat = setpgrp(child_id, child_id);
 	if (stat != 0)
-	    LogError("setting process grp for daemon failed, errno = %d\n",
+	    WDMError("setting process grp for daemon failed, errno = %d\n",
 		     errno);
 #endif
 #endif

@@ -29,10 +29,10 @@ DisplayManager*wdmBg:           solid:RoyalBlue
 ! DisplayManager*wdmBg:         dgradient:RoyalBlue,FireBrick,Black
 ! DisplayManager*wdmBg:         hgradient:RoyalBlue,FireBrick,Black
 ! DisplayManager*wdmBg:         vgradient:RoyalBlue,FireBrick,Black
-! DisplayManager*wdmBg:         pixmap:@DMDIR@/pixmaps/Stars.jpg
+! DisplayManager*wdmBg:         pixmap:@GFXDIR@/Stars.jpg
 !
 ! optional pixmap for logo
-@PIXMAPCOMMENT@DisplayManager*wdmLogo:  @DMDIR@/pixmaps/@PIXMAPFILE@
+@PIXMAPCOMMENT@DisplayManager*wdmLogo:  @GFXDIR@/@PIXMAPFILE@
 !
 ! optional help file to display in the help panel
 ! long lines may cause an ugly display 

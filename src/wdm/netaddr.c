@@ -35,7 +35,6 @@ from The Open Group.
  */
 
 #include <dm.h>
-#include <dm_error.h>
 
 #include <X11/X.h>		/* FamilyInternet, etc. */
 
@@ -55,6 +54,8 @@ from The Open Group.
 #ifdef DNETCONN
 #include <netdnet/dn.h>		/* struct sockaddr_dn */
 #endif
+
+#include <wdmlib.h>
 
 /* given an XdmcpNetaddr, returns the socket protocol family used,
    e.g., AF_INET */
@@ -179,7 +180,7 @@ int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
         break;
     }
 #endif /* STREAMSCONN else */
-    Debug ("ConvertAddr returning %d for family %d\n", retval,
+    WDMDebug("ConvertAddr returning %d for family %d\n", retval,
 	   NetaddrFamily(saddr));
     return retval;
 }

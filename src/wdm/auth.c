@@ -43,11 +43,12 @@ from The Open Group.
 
 #include <dm.h>
 #include <dm_auth.h>
-#include <dm_error.h>
 
 #include <errno.h>
 
 #include <sys/ioctl.h>
+
+#include <wdmlib.h>
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
 # include <dm_socket.h>
@@ -169,8 +170,7 @@ GenerateAuthorization (unsigned short name_length, char *name)
     Xauth   *auth = 0;
     int	    i;
 
-    Debug ("GenerateAuthorization %*.*s\n",
-	    name_length, name_length, name);
+    WDMDebug("GenerateAuthorization %*.*s\n", name_length, name_length, name);
     a = findProtocol (name_length, name);
     if (a)
     {
@@ -182,19 +182,18 @@ GenerateAuthorization (unsigned short name_length, char *name)
 	auth = (*a->GetAuth) (name_length, name);
 	if (auth)
 	{
-	    Debug ("Got %p (%d %*.*s) ", auth,
-		auth->name_length, auth->name_length,
- 		auth->name_length, auth->name);
+	    WDMDebug("Got %p (%d %*.*s) ", (void*)auth, auth->name_length,
+		auth->name_length, auth->name_length, auth->name);
 	    for (i = 0; i < (int)auth->data_length; i++)
-		Debug (" %02x", auth->data[i] & 0xff);
-	    Debug ("\n");
+		WDMDebug(" %02x", auth->data[i] & 0xff);
+	    WDMDebug("\n");
 	}
 	else
-	    Debug ("Got (null)\n");
+	    WDMDebug("Got (null)\n");
     }
     else
     {
-	Debug ("Unknown authorization %*.*s\n", name_length, name_length, name);
+	WDMDebug("Unknown authorization %*.*s\n", name_length, name_length, name);
     }
     return auth;
 }
@@ -231,11 +230,10 @@ SetProtoDisplayAuthorization (
 	    pdpy->xdmcpAuthorization = 0;
 	}
 	if (auth)
-	    Debug ("Got %p (%d %*.*s)\n", auth,
-		auth->name_length, auth->name_length,
- 		auth->name_length, auth->name);
+	    WDMDebug("Got %p (%d %*.*s)\n", (void *)auth, auth->name_length,
+		auth->name_length, auth->name_length, auth->name);
 	else
-	    Debug ("Got (null)\n");
+	    WDMDebug("Got (null)\n");
     }
 }
 
@@ -348,15 +346,15 @@ SaveServerAuthorizations (
     auth_file = fopen (d->authFile, "w");
     umask (mask);
     if (!auth_file) {
-	Debug ("Can't creat auth file %s\n", d->authFile);
-	LogError ("Cannot open server authorization file %s\n", d->authFile);
+	WDMDebug("Can't creat auth file %s\n", d->authFile);
+	WDMError("Cannot open server authorization file %s\n", d->authFile);
 	free (d->authFile);
 	d->authFile = NULL;
 	ret = FALSE;
     }
     else
     {
-    	Debug ("File: %s auth: %p\n", d->authFile, auths);
+	WDMDebug("File: %s auth: %p\n", d->authFile, (void *)auths);
 	ret = TRUE;
 	for (i = 0; i < count; i++)
 	{
@@ -369,7 +367,7 @@ SaveServerAuthorizations (
 		if (!XauWriteAuth (auth_file, auths[i]) ||
 		    fflush (auth_file) == EOF)
 		{
-		    LogError ("Cannot write server authorization file %s\n",
+		    WDMError("Cannot write server authorization file %s\n",
 			      d->authFile);
 		    ret = FALSE;
 		    free (d->authFile);
@@ -470,11 +468,11 @@ openFiles (char *name, char *new_name, FILE **oldp, FILE **newp)
 	*newp = fopen (new_name, "w");
 	(void) umask (mask);
 	if (!*newp) {
-		Debug ("can't open new file %s\n", new_name);
+		WDMDebug("can't open new file %s\n", new_name);
 		return 0;
 	}
 	*oldp = fopen (name, "r");
-	Debug ("opens succeeded %s %s\n", name, new_name);
+	WDMDebug("opens succeeded %s %s\n", name, new_name);
 	return 1;
 }
 
@@ -492,24 +490,24 @@ dumpBytes (unsigned short len, char *data)
 {
 	unsigned short	i;
 
-	Debug ("%d: ", len);
+	WDMDebug("%d: ", len);
 	for (i = 0; i < len; i++)
-		Debug ("%02x ", data[i] & 0377);
-	Debug ("\n");
+		WDMDebug("%02x ", data[i] & 0377);
+	WDMDebug("\n");
 }
 
 static void
 dumpAuth (Xauth *auth)
 {
-	Debug ("family: %d\n", auth->family);
-	Debug ("addr:   ");
-	dumpBytes (auth->address_length, auth->address);
-	Debug ("number: ");
-	dumpBytes (auth->number_length, auth->number);
-	Debug ("name:   ");
-	dumpBytes (auth->name_length, auth->name);
-	Debug ("data:   ");
-	dumpBytes (auth->data_length, auth->data);
+	WDMDebug("family: %d\n", auth->family);
+	WDMDebug("addr:   ");
+	dumpBytes(auth->address_length, auth->address);
+	WDMDebug("number: ");
+	dumpBytes(auth->number_length, auth->number);
+	WDMDebug("name:   ");
+	dumpBytes(auth->name_length, auth->name);
+	WDMDebug("data:   ");
+	dumpBytes(auth->data_length, auth->data);
 }
 
 struct addrList {
@@ -554,13 +552,13 @@ saveEntry (Xauth *auth)
 
 	new = (struct addrList *) malloc (sizeof (struct addrList));
 	if (!new) {
-		LogOutOfMem ("saveEntry");
+		WDMError("saveEntry: out of memory");
 		return;
 	}
 	if ((new->address_length = auth->address_length) > 0) {
 		new->address = malloc (auth->address_length);
 		if (!new->address) {
-			LogOutOfMem ("saveEntry");
+			WDMError("saveEntry: out of memory");
 			free ((char *) new);
 			return;
 		}
@@ -570,7 +568,7 @@ saveEntry (Xauth *auth)
 	if ((new->number_length = auth->number_length) > 0) {
 		new->number = malloc (auth->number_length);
 		if (!new->number) {
-			LogOutOfMem ("saveEntry");
+			WDMError("saveEntry: out of memory");
 			free (new->address);
 			free ((char *) new);
 			return;
@@ -581,7 +579,7 @@ saveEntry (Xauth *auth)
 	if ((new->name_length = auth->name_length) > 0) {
 		new->name = malloc (auth->name_length);
 		if (!new->name) {
-			LogOutOfMem ("saveEntry");
+			WDMError("saveEntry: out of memory");
 			free (new->number);
 			free (new->address);
 			free ((char *) new);
@@ -621,7 +619,7 @@ static void
 writeAuth (FILE *file, Xauth *auth)
 {
     if (debugLevel >= 15) {	/* normally too verbose */
-        Debug ("writeAuth: doWrite = %d\n", doWrite);
+        WDMDebug("writeAuth: doWrite = %d\n", doWrite);
 	dumpAuth (auth);	/* does Debug only */
     }
 	if (doWrite)
@@ -639,7 +637,7 @@ writeAddr (
 	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
 	auth->address = addr;
-	Debug ("writeAddr: writing and saving an entry\n");
+	WDMDebug("writeAddr: writing and saving an entry\n");
 	writeAuth (file, auth);
 	saveEntry (auth);
 }
@@ -882,7 +880,7 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
     ifc.ifc_len = sizeof (buf);
     ifc.ifc_buf = buf;
     if (ifioctl (fd, SIOCGIFCONF, (char *) &ifc) < 0)
-        LogError ("Trouble getting network interface configuration");
+        WDMError("Trouble getting network interface configuration");
 
 #ifdef ISC
 #define IFC_IFC_REQ (struct ifreq *) ifc.ifc_buf
@@ -911,7 +909,7 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
 		continue;
 	    if (len == 0)
  	    {
-		Debug ("Skipping zero length address\n");
+		WDMDebug("Skipping zero length address\n");
 		continue;
 	    }
 	    /*
@@ -925,12 +923,12 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
 		addr[0] == 127 && addr[1] == 0 &&
 		addr[2] == 0 && addr[3] == 1)
 	    {
-		    Debug ("Skipping localhost address\n");
+		    WDMDebug("Skipping localhost address\n");
 		    continue;
 	    }
 	    family = FamilyInternet;
 	}
-	Debug ("DefineSelf: write network address, length %d\n", len);
+	WDMDebug("DefineSelf: write network address, length %d\n", len);
 	writeAddr (family, len, addr, file, auth);
     }
 }
@@ -989,7 +987,7 @@ setAuthNumber (Xauth *auth, char *name)
     char	*colon;
     char	*dot, *number;
 
-    Debug ("setAuthNumber %s\n", name);
+    WDMDebug("setAuthNumber %s\n", name);
     colon = strrchr(name, ':');
     if (colon) {
 	++colon;
@@ -1003,11 +1001,11 @@ setAuthNumber (Xauth *auth, char *name)
 	    strncpy (number, colon, auth->number_length);
 	    number[auth->number_length] = '\0';
 	} else {
-	    LogOutOfMem ("setAuthNumber");
+	    WDMError("setAuthNumber: out of memory");
 	    auth->number_length = 0;
 	}
 	auth->number = number;
-	Debug ("setAuthNumber: %s\n", number);
+	WDMDebug("setAuthNumber: %s\n", number);
     }
 }
 
@@ -1016,7 +1014,7 @@ writeLocalAuth (FILE *file, Xauth *auth, char *name)
 {
     int	fd;
 
-    Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
+    WDMDebug("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
 #ifdef STREAMSCONN
     fd = t_open ("/dev/tcp", O_RDWR, 0);
@@ -1045,16 +1043,16 @@ writeRemoteAuth (FILE *file, Xauth *auth, XdmcpNetaddr peer, int peerlen, char *
 {
     int	    family = FamilyLocal;
     char    *addr;
-    
-    Debug ("writeRemoteAuth: %s %.*s\n", name, auth->name_length, auth->name);
+
+    WDMDebug("writeRemoteAuth: %s %.*s\n", name, auth->name_length, auth->name);
     if (!peer || peerlen < 2)
 	return;
     setAuthNumber (auth, name);
     family = ConvertAddr (peer, &peerlen, &addr);
-    Debug ("writeRemoteAuth: family %d\n", family);
+    WDMDebug("writeRemoteAuth: family %d\n", family);
     if (family != FamilyLocal)
     {
-	Debug ("writeRemoteAuth: %d, %d, %x\n",
+	WDMDebug("writeRemoteAuth: %d, %d, %x\n",
 		family, peerlen, *(int *)addr);
 	writeAddr (family, peerlen, addr, file, auth);
     }
@@ -1082,7 +1080,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
     int		magicCookie;
     int		data_len;
 
-    Debug ("SetUserAuthorization\n");
+    WDMDebug("SetUserAuthorization\n");
     auths = d->authorizations;
     if (auths) {
 	home = getEnv (verify->userEnviron, "HOME");
@@ -1092,15 +1090,15 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	    if (home[strlen(home) - 1] != '/')
 		strcat (home_name, "/");
 	    strcat (home_name, ".Xauthority");
-	    Debug ("XauLockAuth %s\n", home_name);
+	    WDMDebug("XauLockAuth %s\n", home_name);
 	    lockStatus = XauLockAuth (home_name, 1, 2, 10);
-	    Debug ("Lock is %d\n", lockStatus);
+	    WDMDebug("Lock is %d\n", lockStatus);
 	    if (lockStatus == LOCK_SUCCESS) {
 		if (openFiles (home_name, new_name, &old, &new)) {
 		    name = home_name;
 		    setenv = 0;
 		} else {
-		    Debug ("openFiles failed\n");
+		    WDMDebug("openFiles failed\n");
 		    XauUnlockAuth (home_name);
 		    lockStatus = LOCK_ERROR;
 		}	
@@ -1114,7 +1112,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
     	(void) mktemp (backup_name);
 #endif
 	    lockStatus = XauLockAuth (backup_name, 1, 2, 10);
-	    Debug ("backup lock is %d\n", lockStatus);
+	    WDMDebug("backup lock is %d\n", lockStatus);
 	    if (lockStatus == LOCK_SUCCESS) {
 		if (openFiles (backup_name, new_name, &old, &new)) {
 		    name = backup_name;
@@ -1126,15 +1124,15 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	    }
 	}
 	if (lockStatus != LOCK_SUCCESS) {
-	    Debug ("can't lock auth file %s or backup %s\n",
+	    WDMDebug("can't lock auth file %s or backup %s\n",
 			    home_name, backup_name);
-	    LogError ("can't lock authorization file %s or backup %s\n",
+	    WDMError("can't lock authorization file %s or backup %s\n",
 			    home_name, backup_name);
 	    return;
 	}
 	initAddrs ();
 	doWrite = 1;
-	Debug ("%d authorization protocols for %s\n", d->authNum, d->name);
+	WDMDebug("%d authorization protocols for %s\n", d->authNum, d->name);
 	/*
 	 * Write MIT-MAGIC-COOKIE-1 authorization first, so that
 	 * R4 clients which only knew that, and used the first
@@ -1184,7 +1182,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	    while ((entry = XauReadAuth (old))) {
 		if (!checkEntry (entry))
 		{
-		    Debug ("Writing an entry\n");
+		    WDMDebug("Writing an entry\n");
 		    writeAuth (new, entry);
 		}
 		XauDisposeAuth (entry);
@@ -1194,15 +1192,15 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	doneAddrs ();
 	fclose (new);
 	if (unlink (name) == -1)
-	    Debug ("unlink %s failed\n", name);
+	    WDMDebug("unlink %s failed\n", name);
 	envname = name;
 	if (link (new_name, name) == -1) {
-	    Debug ("link failed %s %s\n", new_name, name);
-	    LogError ("Can't move authorization into place\n");
+	    WDMDebug("link failed %s %s\n", new_name, name);
+	    WDMError("Can't move authorization into place\n");
 	    setenv = 1;
 	    envname = new_name;
 	} else {
-	    Debug ("new is in place, go for it!\n");
+	    WDMDebug("new is in place, go for it!\n");
 	    unlink (new_name);
 	}
 	if (setenv) {
@@ -1215,7 +1213,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	if (envname)
 	    chown (envname, verify->uid, verify->gid);
     }
-    Debug ("done SetUserAuthorization\n");
+    WDMDebug("done SetUserAuthorization\n");
 }
 
 void
@@ -1234,14 +1232,14 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
     home = getEnv (verify->userEnviron, "HOME");
     if (!home)
 	return;
-    Debug ("RemoveUserAuthorization\n");
+    WDMDebug("RemoveUserAuthorization\n");
     strcpy (name, home);
     if (home[strlen(home) - 1] != '/')
 	strcat (name, "/");
     strcat (name, ".Xauthority");
-    Debug ("XauLockAuth %s\n", name);
+    WDMDebug("XauLockAuth %s\n", name);
     lockStatus = XauLockAuth (name, 1, 2, 10);
-    Debug ("Lock is %d\n", lockStatus);
+    WDMDebug("Lock is %d\n", lockStatus);
     if (lockStatus != LOCK_SUCCESS)
 	return;
     if (openFiles (name, new_name, &old, &new))
@@ -1265,7 +1263,7 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 	    while ((entry = XauReadAuth (old))) {
 		if (!checkEntry (entry))
 		{
-		    Debug ("Writing an entry\n");
+		    WDMDebug("Writing an entry\n");
 		    writeAuth (new, entry);
 		}
 		XauDisposeAuth (entry);
@@ -1275,14 +1273,15 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 	doneAddrs ();
 	fclose (new);
 	if (unlink (name) == -1)
-	    Debug ("unlink %s failed\n", name);
+	    WDMDebug("unlink %s failed\n", name);
 	if (link (new_name, name) == -1) {
-	    Debug ("link failed %s %s\n", new_name, name);
-	    LogError ("Can't move authorization into place\n");
+	    WDMDebug("link failed %s %s\n", new_name, name);
+	    WDMError("Can't move authorization into place\n");
 	} else {
-	    Debug ("new is in place, go for it!\n");
+	    WDMDebug("new is in place, go for it!\n");
 	    unlink (new_name);
 	}
     }
     XauUnlockAuth (name);
 }
+

@@ -112,7 +112,7 @@ from the X Consortium.
 #endif
 #include <limits.h>
 
-#include <WINGs/WUtil.h>
+#include <wdmlib.h>
 
 extern Display  *dpy;
 
@@ -130,6 +130,8 @@ extern int   wdmVerify;
 extern int   wdmAnimations;
 extern char *wdmLocale;
 extern char *wdmLoginConfig;
+extern char *wdmCursorTheme;
+extern int   wdmXineramaHead;
 
 static int      pipe_filedes[2];
 static char	name[128], password[128];
@@ -164,14 +166,8 @@ static void guaranteed_read(int fd, char *buf, size_t count)
                 }
         }
 
-        LogError ("Greet: guarenteed_read error, UNMANAGE DISPLAY\n");
-        LogError ("Greet: pipe read error with %s\n",wdmLogin);
-#ifdef HAVE_SYSLOG_H
-        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
-        syslog(LOG_DAEMON|LOG_INFO,
-                "%s pipe read error with program %s, %s terminating\n", 
-                PACKAGE_NAME, wdmLogin, PACKAGE_NAME);
-#endif
+        WDMError("Greet: guarenteed_read error, UNMANAGE DISPLAY\n");
+        WDMError("Greet: pipe read error with %s\n", wdmLogin);
         SessionExit (Save_d, RESERVER_DISPLAY, FALSE);  /* this exits */
         exit (UNMANAGE_DISPLAY);                        /* should not happen */
 }
@@ -179,15 +175,15 @@ static void guaranteed_read(int fd, char *buf, size_t count)
 static unsigned char readuc(int fd)
 {
         unsigned char uc;
-        
-        guaranteed_read(fd, &uc, sizeof(unsigned char));
+
+        guaranteed_read(fd, (char *)&uc, sizeof(unsigned char));
         return uc;
 }
 
 static char *readstring(int fd, char *buf)
 {
         int len;
-        
+
         len = (int) readuc(fd);
         guaranteed_read(fd, buf, len);
         buf[len] = 0;
@@ -201,19 +197,19 @@ static int InitGreet (struct display *d)
 {
     int pid;
 
-    Debug ("Greet display=%s\n", d->name);
+    WDMDebug("Greet display=%s\n", d->name);
 
     pipe(pipe_filedes);
 
     pid = fork();
 
     if (pid == -1) {            /* error */
-        LogError ("Greet cannot fork\n");
-        exit (RESERVER_DISPLAY);
+        WDMError("Greet cannot fork\n");
+        exit(RESERVER_DISPLAY);
     }
     if (pid == 0) {             /* child */
         char **env = NULL;
-	char *argv[10];
+	char *argv[20];
 	int argc = 1; /* argc = 0 is for command itself */
 
         close(pipe_filedes[0]);
@@ -224,6 +220,9 @@ static int InitGreet (struct display *d)
 
 	if(*wdmLocale)
 		env = setEnv(env, "LANG", wdmLocale);
+
+	if(*wdmCursorTheme)
+		env = setEnv(env, "XCURSOR_THEME", wdmCursorTheme);
 
 	if((argv[0] = strrchr(wdmLogin, '/')) == NULL)
 		argv[0] = wdmLogin;
@@ -245,10 +244,17 @@ static int InitGreet (struct display *d)
 		argv[argc++] = wstrconcat("-c", wdmLoginConfig);
 	if(wdmAnimations)
 		argv[argc++] = "-a";
+	if(wdmXineramaHead)
+	{
+		argv[argc] = wmalloc(25); /* much more than length of 64bit integer 
+					     converted to string, but it still a hack */
+		sprintf(argv[argc++], "-x%i", wdmXineramaHead);
+	}
 
+	argv[argc++] = NULL;
         execve(wdmLogin, argv, env);
 
-        LogError("Greet cannot exec %s\n", wdmLogin);
+        WDMError("Greet cannot exec %s\n", wdmLogin);
         exit(RESERVER_DISPLAY);
     }
 
@@ -265,16 +271,16 @@ static void CloseGreet (int pid)
 
 /*    ClearCloseOnFork (XConnectionNumber (dpy));*/
 /*    XCloseDisplay (dpy);*/
-    Debug ("Greet connection closed\n");
+    WDMDebug("Greet connection closed\n");
 }
 
 static int Greet (struct display *d, struct greet_info *greet)
 {
     int code = 0, done = 0, extension_code=0;
-    
+
     readstring(pipe_filedes[0], name);  /* username */
     readstring(pipe_filedes[0], password);
-    
+
     xsessionArg[0] = '\0';
     while (!done) {
         extension_code = readuc(pipe_filedes[0]);
@@ -298,15 +304,15 @@ static int Greet (struct display *d, struct greet_info *greet)
                 code = 4;
            break;
            default:     /*????*/
-                LogError ("Bad extension code from external program: %i\n", 
-                                code);
+                WDMError("Bad extension code from external program: %i\n",
+				code);
                 exit (RESERVER_DISPLAY);
            break;
         }
     }
     greet->name = name;
     greet->password = password;
-                                
+
     if (xsessionArg[0] == '\0')
         greet->string = NULL;
     else
@@ -334,22 +340,22 @@ greet_user_rtn GreetUser(struct display *d, Display **dpy, struct verify_info
     if (!d->grabServer)
         SetupDisplay (d);
     if (!*dpy) {
-        LogError ("Cannot reopen display %s for greet window\n", d->name);
+        WDMError("Cannot reopen display %s for greet window\n", d->name);
         exit (RESERVER_DISPLAY);
     }
-    
+
     pid = InitGreet(d); /* fork and exec the external program */
-    
+
     for (;;) {
         /*
          * Greet user, requesting name/password
          */
         code = Greet (d, greet);
-        Debug("Greet greet done: %s, pwlen=%i\n",name,strlen(password));
+        WDMDebug("Greet greet done: %s, pwlen=%i\n", name, strlen(password));
 
         if (code != 0)
         {
-            Debug("Greet: exit code=%i, %s\n", code, exitArg);
+            WDMDebug("Greet: exit code=%i, %s\n", code, exitArg);
             if (wdmVerify || wdmRoot) {
                 flag = False;
                 if (Verify (d, greet, verify))
@@ -363,37 +369,25 @@ greet_user_rtn GreetUser(struct display *d, Display **dpy, struct verify_info
                 switch (code) {
                    case 2:              /* reboot */
                         CloseGreet (pid);
-#ifdef HAVE_SYSLOG_H
-                        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
-                        syslog(LOG_DAEMON|LOG_NOTICE,
-                                "reboot(%s) by %s\n", exitArg, name);
-#endif
+                        WDMInfo("reboot(%s) by %s\n", exitArg, name);
                         system(wdmReboot);
                         SessionExit (d, UNMANAGE_DISPLAY, FALSE);
                    break;
                    case 3:              /* halt */
                         CloseGreet (pid);
-#ifdef HAVE_SYSLOG_H
-                        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
-                        syslog(LOG_DAEMON|LOG_NOTICE,
-                                "halt(%s) by %s\n", exitArg, name);
-#endif
+                        WDMInfo("halt(%s) by %s\n", exitArg, name);
                         system(wdmHalt);
                         SessionExit (d, UNMANAGE_DISPLAY, FALSE);
                    break;
                    case 4:              /* exit */
                         CloseGreet (pid);
-                        Debug("UNMANAGE_DISPLAY\n");
-#ifdef HAVE_SYSLOG_H
-                        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
-                        syslog(LOG_DAEMON|LOG_INFO,
-                                "%s exit(%s) by %s\n", 
-                                PACKAGE_NAME, exitArg, name);
-#endif
+                        WDMDebug("UNMANAGE_DISPLAY\n");
+                        WDMInfo("%s exit(%s) by %s\n",
+					PACKAGE_NAME, exitArg, name);
 #if 0
                         SessionExit (d, UNMANAGE_DISPLAY, FALSE);
 #else
-                        Debug ("Killing parent process %d\n", getppid());
+                        WDMDebug ("Killing parent process %d\n", getppid());
                         kill (getppid(), SIGINT);
 #endif
                    break;
@@ -420,16 +414,17 @@ greet_user_rtn GreetUser(struct display *d, Display **dpy, struct verify_info
     }
     DeleteXloginResources (d, *dpy);
     CloseGreet (pid);
-    Debug ("Greet loop finished\n");
+    WDMDebug("Greet loop finished\n");
     /*
      * Run system-wide initialization file
      */
     if (source (verify->systemEnviron, d->startup) != 0)
     {
-        Debug ("Startup program %s exited with non-zero status\n",
+        WDMDebug("Startup program %s exited with non-zero status\n",
                 d->startup);
         SessionExit (d, OBEYSESS_DISPLAY, FALSE);
     }
 
     return Greet_Success;
 }
+

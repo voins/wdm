@@ -311,6 +311,8 @@ extern char	*servers;
 extern int	request_port;
 extern int	debugLevel;
 extern char	*errorLogFile;
+extern char	*syslogFacility;
+extern int	useSyslog;
 extern int	daemonMode;
 extern char	*pidFile;
 extern int	lockPidFile;

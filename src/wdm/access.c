@@ -34,7 +34,6 @@ in this Software without prior written authorization from The Open Group.
  */
 
 # include   <dm.h>
-# include   <dm_error.h>
 
 #ifdef XDMCP
 
@@ -47,6 +46,8 @@ in this Software without prior written authorization from The Open Group.
 # include   <dm_socket.h>
 
 # include   <netdb.h>
+
+#include <wdmlib.h>
 
 #define ALIAS_CHARACTER	    '%'
 #define NEGATE_CHARACTER    '!'
@@ -264,14 +265,14 @@ tryagain:
 	hostent = gethostbyname (hostOrAlias);
 	if (!hostent)
 	{
-	    Debug ("No such host %s\n", hostOrAlias);
-	    LogError ("Access file \"%s\", host \"%s\" not found\n", accessFile, hostOrAlias);
+	    WDMDebug("No such host %s\n", hostOrAlias);
+	    WDMError("Access file \"%s\", host \"%s\" not found\n", accessFile, hostOrAlias);
 	    free ((char *) h);
 	    goto tryagain;
 	}
 	if (!XdmcpAllocARRAY8 (&h->entry.hostAddress, hostent->h_length))
 	{
-	    LogOutOfMem ("ReadHostEntry\n");
+	    WDMError("ReadHostEntry: out of memory\n");
 	    free ((char *) h);
 	    return NULL;
 	}
@@ -301,10 +302,10 @@ ReadDisplayEntry (FILE *file)
     struct _display *display;
     HostEntry	    *h, **prev;
     struct hostent  *hostent;
-    
+
     displayOrAlias = ReadWord (file, FALSE);
     if (!displayOrAlias)
-    	return NULL;
+	return NULL;
     d = (DisplayEntry *) malloc (sizeof (DisplayEntry));
     d->notAllowed = 0;
     d->notBroadcast = 0;
@@ -327,22 +328,22 @@ ReadDisplayEntry (FILE *file)
 	    d->notAllowed = 1;
 	    ++displayOrAlias;
 	}
-    	if (HasGlobCharacters (displayOrAlias))
-    	{
+	if (HasGlobCharacters (displayOrAlias))
+	{
 	    d->type = DISPLAY_PATTERN;
 	    d->entry.displayPattern = malloc (strlen (displayOrAlias) + 1);
 	    if (!d->entry.displayPattern)
 	    {
-	    	free ((char *) d);
-	    	return NULL;
+		free ((char *) d);
+		return NULL;
 	    }
 	    strcpy (d->entry.displayPattern, displayOrAlias);
-    	}
-    	else
-    	{
+	}
+	else
+	{
 	    if ((hostent = gethostbyname (displayOrAlias)) == NULL)
 	    {
-		LogError ("Access file %s, display %s unknown\n", accessFile, displayOrAlias);
+		WDMError("Access file %s, display %s unknown\n", accessFile, displayOrAlias);
 		free ((char *) d);
 		return NULL;
 	    }
@@ -350,21 +351,21 @@ ReadDisplayEntry (FILE *file)
 	    display = &d->entry.displayAddress;
 	    if (!XdmcpAllocARRAY8 (&display->clientAddress, hostent->h_length))
 	    {
-	    	free ((char *) d);
-	    	return NULL;
+		free ((char *) d);
+		return NULL;
 	    }
 	    memmove( display->clientAddress.data, hostent->h_addr, hostent->h_length);
 	    switch (hostent->h_addrtype)
 	    {
 #ifdef AF_UNIX
 	    case AF_UNIX:
-	    	display->connectionType = FamilyLocal;
-	    	break;
+		display->connectionType = FamilyLocal;
+		break;
 #endif
 #ifdef AF_INET
 	    case AF_INET:
-	    	display->connectionType = FamilyInternet;
-	    	break;
+		display->connectionType = FamilyInternet;
+		break;
 #endif
 #ifdef AF_DECnet
 	    case AF_DECnet:
@@ -421,7 +422,7 @@ ScanAccessDatabase (void)
     	datafile = fopen (accessFile, "r");
     	if (!datafile)
 	{
-	    LogError ("Cannot open access control file %s, no XDMCP reqeusts will be granted\n", accessFile);
+	    WDMError("Cannot open access control file %s, no XDMCP requests will be granted\n", accessFile);
 	    return 0;
 	}
 	ReadAccessDatabase (datafile);

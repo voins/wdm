@@ -36,13 +36,14 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include <dm.h>
-#include <dm_error.h>
 
 #ifdef XDMCP
 
 #include <sys/types.h>
 #include <time.h>
 #define Time_t time_t
+
+#include <wdmlib.h>
 
 static struct protoDisplay	*protoDisplays;
 
@@ -68,7 +69,7 @@ FindProtoDisplay (
 {
     struct protoDisplay	*pdpy;
 
-    Debug ("FindProtoDisplay\n");
+    WDMDebug("FindProtoDisplay\n");
     for (pdpy = protoDisplays; pdpy; pdpy=pdpy->next)
     {
 	if (pdpy->displayNumber == displayNumber &&
@@ -105,7 +106,7 @@ NewProtoDisplay (
     struct protoDisplay	*pdpy;
     Time_t date;
 
-    Debug ("NewProtoDisplay\n");
+    WDMDebug("NewProtoDisplay\n");
     time (&date);
     TimeoutProtoDisplays (date);
     pdpy = (struct protoDisplay *) malloc (sizeof *pdpy);
