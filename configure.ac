@@ -606,7 +606,6 @@ dnl ==========================================================
 
 AC_CONFIG_FILES(
 	[Makefile
-	doc/wdm.man
 	src/config/wdm-config
 	src/config/Xclients
 	src/config/Xsetup_0

@@ -1,3 +1,10 @@
 change_files = [collect aegis -list cf -terse -p [project] -c [change]];
 project_files = [collect aegis -list pf -terse -p [project]];
 source_files = [sort [stringset [change_files] [project_files]]];
+
+/* generated man files */
+g_manfiles = [fromto %0%.man.in %0%.man [match_mask doc/%.man.in [source_files]]];
+
+/* pre-made man files */
+manfiles = [match_mask doc/%.man [source_files]] [g_manfiles];
+

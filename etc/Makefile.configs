@@ -1,13 +1,6 @@
 install-config: $(DESTDIR)$(DMDIR)/authdir $(DESTDIR)$(DMDIR)/wdm-config.in \
 	$(DESTDIR)$(DMDIR)/wdm-config $(DESTDIR)$(DMDIR)/Xsession.in \
-	$(DESTDIR)$(DMDIR)/Xclients.in $(DESTDIR)$(PAMDIR)/wdm \
-	$(DESTDIR)$(MAN1DIR)/wdm.1 $(DESTDIR)$(MAN1DIR)/wdmLogin.1
-
-$(DESTDIR)$(MAN1DIR)/wdm.1 : doc/wdm.man
-	$(INSTALL_DATA) -D doc/wdm.man $@
-
-$(DESTDIR)$(MAN1DIR)/wdmLogin.1 : doc/wdmLogin.man
-	$(INSTALL_DATA) -D doc/wdmLogin.man $@
+	$(DESTDIR)$(DMDIR)/Xclients.in $(DESTDIR)$(PAMDIR)/wdm
 
 $(DESTDIR)$(DMDIR)/authdir:
 	$(INSTALL) -D -m 700 -d $@

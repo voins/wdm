@@ -9,7 +9,7 @@ prefix = @prefix@;
 /**exec_prefix = @exec_prefix@*/;
 /**bindir = @bindir@*/
 DMDIR = @DMDIR@;
-/**MAN1DIR = @mandir@/man1*/
+/**MANDIR = @mandir@*/
 PAMDIR = @PAMDIR@;
 
 CFLAGS = @CFLAGS@;
