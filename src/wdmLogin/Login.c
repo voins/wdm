@@ -130,6 +130,7 @@ static char *bgOption = NULL;
 static int animate = False;
 static int smoothScale = True;
 static char *configFile = NULL;
+static int wdm_fd = 1;
 #ifdef HAVE_XINERAMA
 static int xinerama_head = 0;
 #endif
@@ -237,25 +238,25 @@ writestring(int fd, char *string)
 static void
 OutputAuth(char *user, char *pswd)
 {
-	writestring(3, user ? user : "");
-	writestring(3, pswd ? pswd : "");
+	writestring(wdm_fd, user ? user : "");
+	writestring(wdm_fd, pswd ? pswd : "");
 
 	if(OptionCode == 0)
 	{
 		if(WmOptionCode == 0)
-			writeuc(3, 0);	/* end of data */
+			writeuc(wdm_fd, 0);	/* end of data */
 		else
 		{
-			writeuc(3, 1);
-			writestring(3, WmStr[WmOptionCode]);
-			writeuc(3, 0);	/* end of data */
+			writeuc(wdm_fd, 1);
+			writestring(wdm_fd, WmStr[WmOptionCode]);
+			writeuc(wdm_fd, 0);	/* end of data */
 		}
 	}
 	else
 	{
-		writeuc(3, OptionCode + 1);
-		writestring(3, ExitStr[OptionCode]);
-		writeuc(3, 0);	/* end of data */
+		writeuc(wdm_fd, OptionCode + 1);
+		writestring(wdm_fd, ExitStr[OptionCode]);
+		writeuc(wdm_fd, 0);	/* end of data */
 	}
 	return;
 }
@@ -307,7 +308,7 @@ LoginArgs(int argc, char *argv[])
 	int c;
 
 
-	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:x:")) != -1)
+	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:x:f:")) != -1)
 	{
 		switch (c)
 		{
@@ -337,6 +338,10 @@ LoginArgs(int argc, char *argv[])
 			break;
 		case 'c':	/* configfile */
 			configFile = optarg;
+			break;
+		case 'f':	/* filedescriptor for wdm comm.*/
+			wdm_fd = strtol(optarg, NULL, 0);
+			if(wdm_fd < 1) wdm_fd = 1;
 			break;
 #ifdef HAVE_XINERAMA
 		case 'x':	/* xinerama head */
