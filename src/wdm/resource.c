@@ -231,7 +231,7 @@ struct dmResources {
 { "requestPort","RequestPort",	DM_INT,		(char **) &request_port,
 				DEF_UDP_PORT} ,
 { "debugLevel",	"DebugLevel",	DM_INT,		(char **) &debugLevel,
-				"0"} ,
+				"1"} ,
 { "errorLogFile","ErrorLogFile",	DM_STRING,	&errorLogFile,
 				""} ,
 { "syslogFacility","SyslogFacility",	DM_STRING,	&syslogFacility,
