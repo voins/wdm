@@ -27,6 +27,8 @@
 typedef struct _WDMLoginConfig
 {
 	WMRect geometry;
+	Bool aaenabled;
+	Bool multibyte;
 } WDMLoginConfig;
 
 extern WDMLoginConfig *LoadConfiguration(char *configFile);

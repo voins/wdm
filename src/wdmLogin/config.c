@@ -32,6 +32,10 @@ static WDMDictionaryStruct wdmLogin_config_struct[] =
 {
 	{"geometry", WDMCheckPLGeometry, &default_geometry,
 		offsetof(WDMLoginConfig, geometry)},
+	{"aa", WDMCheckPLBool, False,
+		offsetof(WDMLoginConfig, aaenabled)},
+	{"multibyte", WDMCheckPLBool, True,
+		offsetof(WDMLoginConfig, multibyte)},
 	{NULL, NULL, NULL, 0}
 };
 

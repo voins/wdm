@@ -216,7 +216,7 @@ static int InitGreet (struct display *d)
         dup2(pipe_filedes[1],3);
         fcntl(3, F_SETFD, 0); /* Reset close-on-exec (just in case) */
 
-        env = (char **)systemEnv(d, (char*)NULL, (char*)NULL);
+        env = (char **)systemEnv(d, (char*)NULL, FAKEHOME);
 
 	if(*wdmLocale)
 		env = setEnv(env, "LANG", wdmLocale);

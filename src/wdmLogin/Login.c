@@ -1322,6 +1322,7 @@ main(int argc, char **argv)
 				cfg->geometry.size.height,
 				cfg->geometry.pos.x,
 				cfg->geometry.pos.y);
+		printf("aa: %i\n", cfg->aaenabled);
 	}
 
 	SetupWm();		/* and init the startup list */
@@ -1332,6 +1333,28 @@ main(int argc, char **argv)
 	{
 		WDMPanic("could not initialize Screen\n");
 		exit(2);
+	}
+
+	if(cfg->multibyte)
+		scr->useMultiByte = True;
+
+	if(cfg->aaenabled)
+	{
+		scr->antialiasedText = True;
+		scr->normalFont = WMSystemFontOfSize(scr,
+				WINGsConfiguration.defaultFontSize);
+
+		scr->boldFont = WMBoldSystemFontOfSize(scr, 
+				WINGsConfiguration.defaultFontSize);
+
+		if(!scr->boldFont)
+			scr->boldFont = scr->normalFont;
+
+		if(!scr->normalFont)
+		{
+			WDMError("could not load any fonts.");
+			exit(2);
+		}
 	}
 
 	screen.pos.x = 0;

@@ -407,6 +407,17 @@ AC_SUBST(NLSDIR)
 AC_SUBST(XGETTEXT)
 AC_SUBST(MSGFMT)
 
+dnl this is hackaround for libfontconfig bug
+AC_ARG_WITH(fakehome,
+	AC_HELP_STRING([--with-fakehome=PATH],[path to use as home when no HOME is present. [/var/run/wdm] ]))
+
+FAKEHOME=/var/run/wdm
+if test "x$with_fakehome" != "x"; then
+	FAKEHOME=$with_fakehome
+fi
+AC_DEFINE_UNQUOTED(FAKEHOME, "$FAKEHOME", [what to use as HOME value])
+AC_SUBST(FAKEHOME)
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
