@@ -12,9 +12,21 @@ loop
 	if [not [search_dir]] then
 		loopstop;
 	search_path = [tail [search_path]];
-	if [not [exists [search_name]]] then
+	if [not [exists-symlink [search_name]]] then
+	{
 		ln -s [search_dir] [search_name]
 			set clearstat;
+	}
+	else
+	{
+		if [not [exists [search_name]]] then
+		{
+			rm -f [search_name]
+				set clearstat;
+			ln -s [search_dir] [search_name]
+				set clearstat;
+		}
+	}
 	search_list = [search_list] [search_name];
 	search_name = [search_name]bl;
 }
