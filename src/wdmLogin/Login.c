@@ -61,7 +61,7 @@
 #define P_WIDTH 530
 #define P_HEIGTH 240
 
-static int screen_width = 0, screen_heigth = 0;
+WMRect screen;
 static int panel_width = P_WIDTH, panel_heigth = P_HEIGTH;
 static int help_heigth = 140;
 static int panel_X = 0, panel_Y = 0;
@@ -1094,7 +1094,7 @@ loadBGpixmap(RContext * rcontext)
 			ProgName, bgOption);
 		return NULL;
 	}
-	tmp = RScaleImage(image, screen_width, screen_heigth);
+	tmp = RScaleImage(image, screen.size.width, screen.size.height);
 	if(tmp == NULL)
 	{
 		fprintf(stderr, "%s could not resize bg image %s\n",
@@ -1180,7 +1180,7 @@ createBGcolor(WMScreen * scr, RContext * rcontext, char *str, int style)
 		colors[i]->green = color.green >> 8;
 		colors[i]->blue = color.blue >> 8;
 	}
-	image = RRenderMultiGradient(screen_width, screen_heigth,
+	image = RRenderMultiGradient(screen.size.width, screen.size.height,
 				     colors, style);
 	freemem(num_colors, colors);
 	return image;
@@ -1303,7 +1303,6 @@ main(int argc, char **argv)
 	WMPropList *configdb;
 	int xine_count;
 	int c;
-	WMRect rect;
 
 #ifdef HAVE_XINERAMA
 	XineramaScreenInfo *xine;
@@ -1338,8 +1337,10 @@ main(int argc, char **argv)
 		exit(2);
 	}
 
-	screen_width = WMScreenWidth(scr);
-	screen_heigth = WMScreenHeight(scr);
+	screen.pos.x = 0;
+	screen.pos.y = 0;
+	screen.size.width = WMScreenWidth(scr);
+	screen.size.height = WMScreenHeight(scr); 
 #ifdef HAVE_XINERAMA
 	if(XineramaIsActive(WMScreenDisplay(scr)))
 	{
@@ -1349,43 +1350,17 @@ main(int argc, char **argv)
 		{
 			if(xinerama_head < xine_count)
 			{
-				rect.pos.x = xine[xinerama_head].x_org;
-				rect.pos.y = xine[xinerama_head].y_org;
-				rect.size.width = xine[xinerama_head].width;
-				rect.size.height = xine[xinerama_head].height;
-			}
-			else
-			{
-				rect.pos.x = 0;
-				rect.pos.y = 0;
-				rect.size.width = screen_width;
-				rect.size.height = screen_heigth; 
+				screen.pos.x = xine[xinerama_head].x_org;
+				screen.pos.y = xine[xinerama_head].y_org;
+				screen.size.width = xine[xinerama_head].width;
+				screen.size.height = xine[xinerama_head].height;
 			}
 		}
-		else
-		{ 
-			rect.pos.x = 0;
-			rect.pos.y = 0;
-			rect.size.width = screen_width;
-			rect.size.height = screen_heigth; 
-		}
 	}
-	else
-	{ 
-		rect.pos.x = 0;
-		rect.pos.y = 0;
-		rect.size.width = screen_width;
-		rect.size.height = screen_heigth; 
-	}
-#else 
-	rect.pos.x = 0;
-	rect.pos.y = 0;
-	rect.size.width = screen_width;
-	rect.size.height = screen_heigth; 
 #endif
 
-	panel_X = rect.pos.x + (rect.size.width - panel_width)/2;
-	panel_Y = rect.pos.y + (rect.size.height - panel_heigth)/2;
+	panel_X = screen.pos.x + (screen.size.width - panel_width)/2;
+	panel_Y = screen.pos.y + (screen.size.height - panel_heigth)/2;
 
 	XSynchronize(WMScreenDisplay(scr), False);
 
