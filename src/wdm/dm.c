@@ -576,6 +576,7 @@ WaitForChild (void)
 	    case running:
 		WDMDebug("Server for display %s terminated unexpectedly, status %d %d\n", d->name, waitVal (status), status);
 		WDMError("Server for display %s terminated unexpectedly: %d\n", d->name, waitVal (status));
+		d->status = notRunning;
 		if (d->pid != -1)
 		{
 		    WDMDebug("Terminating session pid %d\n", d->pid);
@@ -665,9 +666,10 @@ StartDisplay (struct display *d)
     {
     case 0:
 	CleanUpChild ();
-	(void) Signal (SIGPIPE, SIG_IGN);
 	LoadSessionResources (d);
 	SetAuthorization (d);
+	(void) Signal (SIGPIPE, SIG_IGN);
+	(void) Signal (SIGHUP, SIG_IGN);
 	if (!WaitForServer (d))
 	    exit (OPENFAILED_DISPLAY);
 #ifdef XDMCP

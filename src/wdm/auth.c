@@ -260,68 +260,83 @@ CleanUpFileName (char *src, char *dst, int len)
 static char authdir1[] = "authdir";
 static char authdir2[] = "authfiles";
 
-static int
+static FILE *
 MakeServerAuthFile (struct display *d)
 {
-    int len;
+	int len;
 #ifdef SYSV
 #define NAMELEN	14
 #else
 #define NAMELEN	255
 #endif
-    char    cleanname[NAMELEN];
-    int r;
-    struct stat	statb;
+	char    cleanname[NAMELEN];
+	int r;
+	struct stat	statb;
+	FILE *auth_file;
 
-    if (d->clientAuthFile && *d->clientAuthFile)
-	len = strlen (d->clientAuthFile) + 1;
-    else
-    {
-    	CleanUpFileName (d->name, cleanname, NAMELEN - 8);
-    	len = strlen (authDir) + strlen (authdir1) + strlen (authdir2)
-	    + strlen (cleanname) + 14;
-    }
-    if (d->authFile)
-	free (d->authFile);
-    d->authFile = malloc ((unsigned) len);
-    if (!d->authFile)
-	return FALSE;
-    if (d->clientAuthFile && *d->clientAuthFile)
-	strcpy (d->authFile, d->clientAuthFile);
-    else
-    {
-	sprintf (d->authFile, "%s/%s", authDir, authdir1);
-	r = stat(d->authFile, &statb);
-	if (r == 0) {
-	    if (statb.st_uid != 0)
-		(void) chown(d->authFile, 0, statb.st_gid);
-	    if ((statb.st_mode & 0077) != 0)
-		(void) chmod(d->authFile, statb.st_mode & 0700);
-	} else {
-	    if (errno == ENOENT)
-		r = mkdir(d->authFile, 0700);
-	    if (r < 0) {
-		free (d->authFile);
-		d->authFile = NULL;
-		return FALSE;
-	    }
+	if (d->clientAuthFile && *d->clientAuthFile)
+		len = strlen (d->clientAuthFile) + 1;
+	else
+	{
+		CleanUpFileName (d->name, cleanname, NAMELEN - 8);
+		len = strlen (authDir) + strlen (authdir1) + strlen (authdir2)
+			+ strlen (cleanname) + 14;
 	}
-	sprintf (d->authFile, "%s/%s/%s", authDir, authdir1, authdir2);
-	r = mkdir(d->authFile, 0700);
-	if (r < 0  &&  errno != EEXIST) {
-	    free (d->authFile);
-	    d->authFile = NULL;
-	    return FALSE;
-	}
-    	sprintf (d->authFile, "%s/%s/%s/A%s-XXXXXX",
-		 authDir, authdir1, authdir2, cleanname);
+	if (!d->authFile)
+	{
+		d->authFile = malloc ((unsigned) len);
+		if (!d->authFile)
+			return NULL;
+		if (d->clientAuthFile && *d->clientAuthFile)
+			strcpy (d->authFile, d->clientAuthFile);
+		else
+		{
+			sprintf (d->authFile, "%s/%s", authDir, authdir1);
+			r = stat(d->authFile, &statb);
+			if (r == 0)
+			{
+				if (statb.st_uid != 0)
+					(void) chown(d->authFile,
+						     0, statb.st_gid);
+				if ((statb.st_mode & 0077) != 0)
+					(void) chmod(d->authFile,
+						     statb.st_mode & 0700);
+			}
+			else
+			{
+				if (errno == ENOENT)
+					r = mkdir(d->authFile, 0700);
+				if (r < 0)
+				{
+					free (d->authFile);
+					d->authFile = NULL;
+					return NULL;
+				}
+			}
+			sprintf (d->authFile, "%s/%s/%s",
+					authDir, authdir1, authdir2);
+			r = mkdir(d->authFile, 0700);
+			if (r < 0  &&  errno != EEXIST)
+			{
+				free (d->authFile);
+				d->authFile = NULL;
+				return NULL;
+			}
+			sprintf (d->authFile, "%s/%s/%s/A%s-XXXXXX",
+					authDir, authdir1, authdir2, cleanname);
 #ifdef HAVE_MKSTEMP
-    	(void) mkstemp (d->authFile);
+			r = mkstemp (d->authFile);
+			if(r < 0) return NULL;
+			auth_file = fdopen(r, "w");
+			return auth_file;
 #else
-    	(void) mktemp (d->authFile);
+			(void) mktemp (d->authFile);
 #endif
-    }
-    return TRUE;
+		}
+	}
+	(void) unlink (d->authFile);
+	auth_file = fopen (d->authFile, "w");
+	return auth_file;
 }
 
 int
@@ -336,10 +351,7 @@ SaveServerAuthorizations (
     int		i;
 
     mask = umask (0077);
-    if (!d->authFile && !MakeServerAuthFile (d))
-	return FALSE;
-    (void) unlink (d->authFile);
-    auth_file = fopen (d->authFile, "w");
+    auth_file = MakeServerAuthFile(d);
     umask (mask);
     if (!auth_file) {
 	WDMDebug("Can't creat auth file %s\n", d->authFile);
@@ -998,8 +1010,8 @@ writeRemoteAuth (FILE *file, Xauth *auth, XdmcpNetaddr peer, int peerlen, char *
     WDMDebug("writeRemoteAuth: family %d\n", family);
     if (family != FamilyLocal)
     {
-	WDMDebug("writeRemoteAuth: %d, %d, %x\n",
-		family, peerlen, *(int *)addr);
+/*	WDMDebug("writeRemoteAuth: %d, %d, %x\n",
+		family, peerlen, *(int *)addr);*/
 	writeAddr (family, peerlen, addr, file, auth);
     }
     else

@@ -154,6 +154,7 @@ WDMRedirectStderr(int level)
 	/* child, will close read end of pipe and dup2
 	 * write end of pipe to stderr */
 	close(errpipe[0]);
+	RegisterCloseOnFork(errpipe[1]);
 	dup2(errpipe[1], 2);
 }
 

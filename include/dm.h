@@ -243,7 +243,7 @@ struct display {
 #ifdef XDMCP
 
 #define PROTO_TIMEOUT	(30 * 60)   /* 30 minutes should be long enough */
-#define XDM_BROKEN_INTERVAL (120)   /* server crashing more than once within */
+#define XDM_BROKEN_INTERVAL (10)    /* server crashing more than once within */
                                     /* two minutes is assumed to be broken!  */
 struct protoDisplay {
 	struct protoDisplay	*next;

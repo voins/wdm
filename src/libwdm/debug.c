@@ -60,6 +60,18 @@ WDMUseSysLog(const char *ident, int facility)
 	use_syslog = True;
 }
 
+void
+WDMCloseLog(void)
+{
+	if(use_syslog)
+		closelog();
+	else
+	{
+		fclose(WDMLogStream(NULL));
+		WDMLogStream(stderr);
+	}
+}
+
 static int
 WDMLevelToSyslog(int level)
 {

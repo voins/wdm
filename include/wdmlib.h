@@ -67,6 +67,7 @@ extern Bool WDMCheckPLStringOrArray(WMPropList *pl, void *def, void *target);
 
 extern int WDMLogLevel(int level);
 extern FILE *WDMLogStream(FILE *debugfile);
+extern void WDMCloseLog(void);
 extern int WDMStringToFacility(const char *facility);
 extern void WDMUseSysLog(const char *ident, int facility);
 extern void WDMLogMessage(int level, char *fmt, ...) __attribute__((format(printf, 2, 3)));
