@@ -1303,6 +1303,7 @@ main(int argc, char **argv)
 	WMPropList *configdb;
 	int xine_count;
 	int c;
+	WMRect rect;
 
 #ifdef HAVE_XINERAMA
 	XineramaScreenInfo *xine;
@@ -1339,38 +1340,52 @@ main(int argc, char **argv)
 
 	screen_width = WMScreenWidth(scr);
 	screen_heigth = WMScreenHeight(scr);
-	printf("xinerama_head: %i\n", xinerama_head);
 #ifdef HAVE_XINERAMA
-	printf("have xinerama\n");
 	if(XineramaIsActive(WMScreenDisplay(scr)))
 	{
 		xine = XineramaQueryScreens(WMScreenDisplay(scr), &xine_count);
 
 		if(xine != NULL)
 		{
-			for(c = 0; c < xine_count; c++)
+			if(xinerama_head < xine_count)
 			{
-				if(xine[c].screen_number == 0)
-				{
-					screen_width = xine[c].width;
-					screen_heigth = xine[c].height;
-					break;
-				}
+				rect.pos.x = xine[xinerama_head].x_org;
+				rect.pos.y = xine[xinerama_head].y_org;
+				rect.size.width = xine[xinerama_head].width;
+				rect.size.height = xine[xinerama_head].height;
 			}
-			for(c = 0; c < xine_count; c++)
+			else
 			{
-				if(xine[c].screen_number == xinerama_head)
-				{
-					screen_width = xine[c].width;
-					screen_heigth = xine[c].height;
-					break;
-				}
+				rect.pos.x = 0;
+				rect.pos.y = 0;
+				rect.size.width = screen_width;
+				rect.size.height = screen_heigth; 
 			}
 		}
+		else
+		{ 
+			rect.pos.x = 0;
+			rect.pos.y = 0;
+			rect.size.width = screen_width;
+			rect.size.height = screen_heigth; 
+		}
 	}
+	else
+	{ 
+		rect.pos.x = 0;
+		rect.pos.y = 0;
+		rect.size.width = screen_width;
+		rect.size.height = screen_heigth; 
+	}
+#else 
+	rect.pos.x = 0;
+	rect.pos.y = 0;
+	rect.size.width = screen_width;
+	rect.size.height = screen_heigth; 
 #endif
-	panel_X = (screen_width - panel_width) / 2;
-	panel_Y = (screen_heigth - panel_heigth) / 2;
+
+	panel_X = rect.pos.x + (rect.size.width - panel_width)/2;
+	panel_Y = rect.pos.y + (rect.size.height - panel_heigth)/2;
 
 	XSynchronize(WMScreenDisplay(scr), False);
 
