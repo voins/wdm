@@ -679,7 +679,7 @@ static void CreateLogo(LoginPanel *panel)
     fprintf(stderr,"new: ratio=%.5f,width=%i,heigth=%i\n",ratio,w,h);/*DEBUG*/
 #endif
     image2 = RScaleImage(image1, w, h);
-    RDestroyImage(image1);
+    RReleaseImage(image1);
     if (image2==NULL)
 	return;
     gray.red = 0xae;
@@ -687,7 +687,7 @@ static void CreateLogo(LoginPanel *panel)
     gray.blue = 0xae;
     RCombineImageWithColor(image2,&gray);
     pixmap = WMCreatePixmapFromRImage(panel->scr, image2, 0);
-    RDestroyImage(image2);
+    RReleaseImage(image2);
 
     if (pixmap==NULL) {
 	fprintf(stderr,"unable to load pixmap\n");
@@ -1024,10 +1024,10 @@ static RImage *loadBGpixmap(RContext *rcontext)
 	if (tmp==NULL) {
 	   fprintf(stderr,"%s could not resize bg image %s\n",
 			ProgName,bgOption);
-	   RDestroyImage(image);
+	   RReleaseImage(image);
 	   return NULL;
 	}
-	RDestroyImage(image);
+	RReleaseImage(image);
 	return tmp;
 }
 
@@ -1162,7 +1162,7 @@ static void setBG()
 	return;
     }
     RConvertImage(rcontext, image, &pixmap);
-    RDestroyImage(image);
+    RReleaseImage(image);
     XSetWindowBackgroundPixmap(dpy, root_window, pixmap);
     XClearWindow(dpy, root_window);
     XFlush(dpy);
