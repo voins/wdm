@@ -83,16 +83,6 @@ static char     LoginPswd[] = "Testing";
 static char     *ExternalLogin = NULL;
 static char     *ExternalName  = NULL;
 
-static char     *Arg1 = "";
-static char     *Arg2 = "";
-static char     *Arg3 = "";
-static char     *Arg4 = "";
-static char     *Arg5 = "";
-static char     *Arg6 = "";
-static char     *Arg7 = "";
-static char     *Arg8 = "";
-static char     *Arg9 = "";
-
 /* this needs to be defined for the read routes */
 
 void read_error(char *msg)
@@ -150,6 +140,7 @@ int main (int argc, char *argv[])
 {
         int  pid, filedescriptor[2], extcode=0, notdone = 0, i;
         char *username, *userpswd, *xsession=NULL, *exitstr=NULL;
+	char **nargv;
 
 #if 0
 	FILE *f;
@@ -176,17 +167,7 @@ int main (int argc, char *argv[])
         else
             ExternalName++;
         WDMDebug("External Name: %s\n",ExternalName);
-
         WDMInfo("Testing: %s\n",ExternalLogin);
-
-        if (argc > 2) Arg1 = argv[2];
-        if (argc > 3) Arg2 = argv[3];
-        if (argc > 4) Arg3 = argv[4];
-        if (argc > 5) Arg4 = argv[5];
-        if (argc > 6) Arg5 = argv[6];
-        if (argc > 7) Arg6 = argv[7];
-        if (argc > 8) Arg7 = argv[8];
-        if (argc > 9) Arg8 = argv[9];
 
         pipe(filedescriptor);
 
@@ -198,13 +179,16 @@ int main (int argc, char *argv[])
                 break;
                 case 0: /* this is the child process */
                         close(filedescriptor[0]);
-                        dup2(filedescriptor[1], 3);
-                        fcntl(3, F_SETFD, 0); /*unset close-on-exec */
-                        execle(ExternalLogin,ExternalName,
-                                Arg1, Arg2, Arg3, Arg4, Arg5,
-                                Arg6, Arg7, Arg8, Arg9, NULL,
-                                environ);
-                        WDMPanic("Cannot exec %s\n",ExternalLogin);
+                        fcntl(filedescriptor[1], F_SETFD, 0); /*unset close-on-exec */
+
+			nargv = wmalloc(sizeof(char*) * (argc + 1));
+			memcpy(nargv, argv + 1, sizeof(char*) * (argc - 1));
+			nargv[argc - 1] = wmalloc(25);
+			sprintf(nargv[argc - 1], "-f%i", filedescriptor[1]);
+			nargv[argc] = NULL;
+
+                        execve(ExternalLogin, nargv, environ);
+                        WDMPanic("Cannot exec %s\n", ExternalLogin);
                 break;
         }
         WDMDebug("Continuing, child=%i\n",pid);
