@@ -305,27 +305,39 @@ struct verify_info {
 #define FALSE	0
 #endif
 
+typedef union
+{
+	int i;
+	char* c;
+} int_resource;
+
+typedef union
+{
+	char** l;
+	char* c;
+} slist_resource;
+
 extern char	*config;
 
 extern char	*servers;
-extern int	request_port;
-extern int	debugLevel;
+extern int_resource	request_port;
+extern int_resource	debugLevel;
 extern char	*errorLogFile;
 extern char	*syslogFacility;
-extern int	useSyslog;
-extern int	daemonMode;
+extern int_resource	useSyslog;
+extern int_resource	daemonMode;
 extern char	*pidFile;
-extern int	lockPidFile;
+extern int_resource	lockPidFile;
 extern char	*authDir;
-extern int	autoRescan;
-extern int	removeDomainname;
+extern int_resource	autoRescan;
+extern int_resource	removeDomainname;
 extern char	*keyFile;
 extern char	*accessFile;
-extern char	**exportList;
+extern slist_resource	exportList;
 extern char	*randomFile;
 extern char	*greeterLib;
 extern char	*willing;
-extern int	choiceTimeout;	/* chooser choice timeout */
+extern int_resource	choiceTimeout;	/* chooser choice timeout */
 
 extern struct display	*FindDisplayByName (char *name),
 			*FindDisplayBySessionID (CARD32 sessionID),

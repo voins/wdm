@@ -917,7 +917,7 @@ defaultEnv (void)
     char    **env, **exp, *value;
 
     env = 0;
-    for (exp = exportList; exp && *exp; ++exp)
+    for (exp = exportList.l; exp && *exp; ++exp)
     {
 	value = getenv (*exp);
 	if (value)

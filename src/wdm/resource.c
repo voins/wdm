@@ -42,29 +42,30 @@ from The Open Group.
 # include <X11/Intrinsic.h>
 # include <X11/Xmu/CharSet.h>
 
+
 char	*config;
 
 char	*servers;
-int	request_port;
-int	debugLevel;
+int_resource	request_port;
+int_resource	debugLevel;
 char	*errorLogFile;
 char	*syslogFacility;
-int	useSyslog;
-int	daemonMode;
+int_resource	useSyslog;
+int_resource	daemonMode;
 char	*pidFile;
-int	lockPidFile;
-int	sourceAddress;
+int_resource	lockPidFile;
+int_resource	sourceAddress;
 char	*authDir;
-int	autoRescan;
-int	removeDomainname;
+int_resource	autoRescan;
+int_resource	removeDomainname;
 char	*keyFile;
 char	*accessFile;
 char	*accessFilePL;
-char	**exportList;
+slist_resource exportList;
 char	*randomFile;
 char	*greeterLib;
 char	*willing;
-int	choiceTimeout;	/* chooser choice timeout */
+int_resource	choiceTimeout;	/* chooser choice timeout */
 
 /* wdm additions */
 #define DEF_WDMLOGIN "/usr/X11R6/bin/wdmLogin"
@@ -77,19 +78,22 @@ char	*wdmDefaultPasswd;	/* points to optional default passwd */
 char	*wdmBg;			/* pixmap or color(s) for background */
 char	*wdmReboot;		/* command for Reboot */
 char	*wdmHalt;		/* command to Halt */
-int	wdmVerify;		/* if true, require name & password for Exit */
+int_resource	wdmVerify;	/* if true, require name & password for Exit */
 				/* reboot or halt */
-int	wdmRoot;		/* if true only username=root and verified */
+int_resource	wdmRoot;	/* if true only username=root and verified */
 				/* password can do Exit, reboot or halt */
-int	wdmAnimations;		/* if true, enable shake and rollup animations */
+int_resource	wdmAnimations;	/* if true, enable shake and rollup */
+				/* animations */
 				/* if false, disable animations */
-char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
-char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
-char	*wdmCursorTheme;	/* this will be XCURSOR_THEME value before starting
-				   wdmLogin */
-int	wdmXineramaHead;	/* select xinerama head where to show login panel 
-				   this _should_ be display dependant, but I make it
-				   later */
+char	*wdmLocale;		/* this will be LANG value before starting */
+				/* wdmLogin */
+char	*wdmLoginConfig;	/* this will be passed to wdmLogin with */
+				/* -c option */
+char	*wdmCursorTheme;	/* this will be XCURSOR_THEME value before */
+				/* starting wdmLogin */
+int_resource	wdmXineramaHead;/* select xinerama head where to show login */
+				/* panel this _should_ be display dependant, */
+				/* but I make it later */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -228,27 +232,27 @@ struct dmResources {
 } DmResources[] = {
 { "servers",	"Servers", 	DM_STRING,	&servers,
 				DEF_SERVER_LINE} ,
-{ "requestPort","RequestPort",	DM_INT,		(char **) &request_port,
+{ "requestPort","RequestPort",	DM_INT,		&request_port.c,
 				DEF_UDP_PORT} ,
-{ "debugLevel",	"DebugLevel",	DM_INT,		(char **) &debugLevel,
+{ "debugLevel",	"DebugLevel",	DM_INT,		&debugLevel.c,
 				"1"} ,
 { "errorLogFile","ErrorLogFile",	DM_STRING,	&errorLogFile,
 				""} ,
 { "syslogFacility","SyslogFacility",	DM_STRING,	&syslogFacility,
 				""} ,
-{ "useSyslog",	"UseSyslog",	DM_BOOL,	(char **) &useSyslog,
+{ "useSyslog",	"UseSyslog",	DM_BOOL,	&useSyslog.c,
 				"false"} ,
-{ "daemonMode",	"DaemonMode",	DM_BOOL,	(char **) &daemonMode,
+{ "daemonMode",	"DaemonMode",	DM_BOOL,	&daemonMode.c,
 				"true"} ,
 { "pidFile",	"PidFile",	DM_STRING,	&pidFile,
 				""} ,
-{ "lockPidFile","LockPidFile",	DM_BOOL,	(char **) &lockPidFile,
+{ "lockPidFile","LockPidFile",	DM_BOOL,	&lockPidFile.c,
 				"true"} ,
 { "authDir",	"authDir",	DM_STRING,	&authDir,
 				DEF_AUTH_DIR} ,
-{ "autoRescan",	"AutoRescan",	DM_BOOL,	(char **) &autoRescan,
+{ "autoRescan",	"AutoRescan",	DM_BOOL,	&autoRescan.c,
 				"true"} ,
-{ "removeDomainname","RemoveDomainname",DM_BOOL,(char **) &removeDomainname,
+{ "removeDomainname","RemoveDomainname",DM_BOOL,&removeDomainname.c,
 				"true"} ,
 { "keyFile",	"KeyFile",	DM_STRING,	&keyFile,
 				DEF_KEY_FILE} ,
@@ -256,15 +260,15 @@ struct dmResources {
 				DEF_ACCESS_FILE} ,
 { "accessFilePL","AccessFilePL",DM_STRING,	&accessFilePL,
 				DEF_ACCESS_FILE_PL} ,
-{ "exportList",	"ExportList",	DM_ARGV,	(char **) &exportList,
+{ "exportList",	"ExportList",	DM_ARGV,	&exportList.c,
 				""} ,
 { "randomFile",	"RandomFile",	DM_STRING,	&randomFile,
 				DEF_RANDOM_FILE} ,
 { "greeterLib",	"GreeterLib",	DM_STRING,	&greeterLib,
 				DEF_GREETER_LIB} ,
-{ "choiceTimeout","ChoiceTimeout",DM_INT,	(char **) &choiceTimeout,
+{ "choiceTimeout","ChoiceTimeout",DM_INT,	&choiceTimeout.c,
 				"15"} ,
-{ "sourceAddress","SourceAddress",DM_BOOL,	(char **) &sourceAddress,
+{ "sourceAddress","SourceAddress",DM_BOOL,	&sourceAddress.c,
 				"false"} ,
 { "willing",	"Willing",	DM_STRING,	&willing,
 				""} ,
@@ -274,9 +278,9 @@ struct dmResources {
 				"reboot"} ,
 { "wdmHalt",	"WdmHalt",	DM_STRING,	&wdmHalt,
 				"halt"} ,
-{ "wdmVerify",	"WdmVerify",	DM_BOOL,	(char **)&wdmVerify,
+{ "wdmVerify",	"WdmVerify",	DM_BOOL,	&wdmVerify.c,
 				"false"} ,
-{ "wdmRoot",	"WdmRoot",	DM_BOOL,	(char **)&wdmRoot,
+{ "wdmRoot",	"WdmRoot",	DM_BOOL,	&wdmRoot.c,
 				"false"} ,
 };
 
@@ -376,9 +380,9 @@ struct dmResources wdmResources[] = {
 				""} ,
 { "wdmDefaultUser",	"WdmDefaultUser",	DM_STRING,	&wdmDefaultUser,
 				""} ,
-{ "wdmDefaultPasswd",	"WdmDefaultPasswd",	DM_STRING,	&wdmDefaultPasswd,
+{ "wdmDefaultPasswd",	"WdmDefaultPasswd",	DM_STRING, &wdmDefaultPasswd,
 				""} ,
-{ "wdmAnimations",	"WdmAnimations",	DM_BOOL,	(char **)&wdmAnimations,
+{ "wdmAnimations",	"WdmAnimations",	DM_BOOL, &wdmAnimations.c,
 				"true"} ,
 { "wdmLocale",		"WdmLocale",		DM_STRING,	&wdmLocale,
 				""} ,
@@ -386,7 +390,7 @@ struct dmResources wdmResources[] = {
 				DEF_WDMLOGIN_CONFIG} ,
 { "wdmCursorTheme",	"WdmCursorTheme",	DM_STRING,	&wdmCursorTheme,
 				""} ,
-{ "wdmXineramaHead",	"WdmXineramaHead",	DM_INT,		(char **)&wdmXineramaHead,
+{ "wdmXineramaHead",	"WdmXineramaHead",	DM_INT,	&wdmXineramaHead.c,
 				"0"} ,
 };
 

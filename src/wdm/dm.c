@@ -128,13 +128,13 @@ main (int argc, char **argv)
     /*
      * Only allow root to run in non-debug mode to avoid problems
      */
-    debugMode = (debugLevel > WDM_LEVEL_WARNING);
+    debugMode = (debugLevel.i > WDM_LEVEL_WARNING);
     if (!debugMode && getuid() != 0)
     {
 	fprintf (stderr, "Only root wants to run %s\n", argv[0]);
 	exit (1);
     }
-    if (!debugMode && daemonMode)
+    if (!debugMode && daemonMode.i)
     {
 	BecomeOrphan ();
 	BecomeDaemon ();
@@ -145,12 +145,12 @@ main (int argc, char **argv)
 	if (oldpid == -1)
 	    WDMError("Can't create/lock pid file %s\n", pidFile);
 	else
-	    WDMError("Can't lock pid file %s, another xdm is running (pid %d)\n",
-		 pidFile, oldpid);
+	    WDMError("Can't lock pid file %s, another xdm is running "
+			    "(pid %d)\n", pidFile, oldpid);
 	exit (1);
     }
-    	WDMLogLevel(debugLevel);
-	if(useSyslog)
+	WDMLogLevel(debugLevel.i);
+	if(useSyslog.i)
 	{
 		WDMUseSysLog("wdm", WDMStringToFacility(syslogFacility));
 	}
@@ -463,7 +463,7 @@ WaitForChild (void)
     {
 	WDMDebug("Manager wait returns pid: %d sig %d core %d code %d\n",
 	       pid, waitSig(status), waitCore(status), waitCode(status));
-	if (autoRescan)
+	if (autoRescan.i)
 	    RescanIfMod ();
 	/* SUPPRESS 560 */
 	if ((d = FindDisplayByPid (pid))) {
@@ -789,7 +789,7 @@ StorePid (void)
 	if (fscanf (pidFilePtr, "%d\n", &oldpid) != 1)
 	    oldpid = -1;
 	fseek (pidFilePtr, 0l, 0);
-	if (lockPidFile)
+	if (lockPidFile.i)
 	{
 #ifdef F_SETLK
 #ifndef SEEK_SET

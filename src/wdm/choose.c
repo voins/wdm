@@ -241,11 +241,11 @@ IndirectChoice (
     {
 	next = c->next;
 	WDMDebug("Choice checking timeout: %ld >? %d\n",
-	    (long)(now - c->time), choiceTimeout);
-	if (now - c->time > (Time_t)choiceTimeout)
+	    (long)(now - c->time), choiceTimeout.i);
+	if (now - c->time > (Time_t)choiceTimeout.i)
 	{
 	    WDMDebug("Timeout choice %ld > %d\n",
-		(long)(now - c->time), choiceTimeout);
+		(long)(now - c->time), choiceTimeout.i);
 	    if (prev)
 		prev->next = next;
 	    else
