@@ -28,6 +28,9 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 #include <WINGs/WINGs.h>
+/* temporary hack {{{ */
+#include <WINGs/WINGsP.h>
+/* }}} */
 #include <WINGs/WUtil.h>
 #include <limits.h>
 #include <locale.h>
@@ -56,15 +59,11 @@
 #endif
 #define LOGNAME_LEN _POSIX_LOGIN_NAME_MAX+1
 
-Display *dpy = NULL;
-static int	screen_number = 0;
 static int	screen_width = 0,	screen_heigth = 0;
 static int	panel_width = P_WIDTH,	panel_heigth=P_HEIGTH;
 static int	help_heigth = 140;
 static int	panel_X = 0,		panel_Y = 0;
 static int	text_width = 150,	text_heigth=26;
-
-static int exit_request = 0;
 
 static char  displayArgDefault[] = "";
 static char *displayArg = displayArgDefault;
@@ -393,20 +392,20 @@ static void ClearMsgs(LoginPanel *panel)
     WMSetFrameTitle(panel->msgF,"");
     WMSetLabelText(panel->msgL,"");
     panel->msgFlag = False;
-    XFlush(dpy);
+    XFlush(WMScreenDisplay(panel->scr));
 }
 
 static void PrintErrMsg(LoginPanel *panel, char* msg)
 {
     int i,x;
 
-    XSynchronize(dpy,True);
+    XSynchronize(WMScreenDisplay(panel->scr), True);
     ClearMsgs(panel);
     WMSetFrameRelief(panel->msgF,WRGroove);
     WMSetFrameTitle(panel->msgF, _("ERROR"));
     WMSetLabelText(panel->msgL,msg);
     panel->msgFlag = True;
-    XFlush(dpy);
+    XFlush(WMScreenDisplay(panel->scr));
 
     /* shake the panel like Login.app */
     if (animate) {
@@ -417,22 +416,22 @@ static void PrintErrMsg(LoginPanel *panel, char* msg)
 		WMMoveWidget(panel->win, panel_X+x, panel_Y);
 	    for (x=-18;x<=0;x+=2)
 		WMMoveWidget(panel->win, panel_X+x, panel_Y);
-	    XFlush(dpy);
+	    XFlush(WMScreenDisplay(panel->scr));
 	}
     }
-    XSynchronize(dpy,False);
+    XSynchronize(WMScreenDisplay(panel->scr), False);
 }
 
 /* write info message to panel */
 
 static void PrintInfoMsg(LoginPanel *panel, char *msg)
 {
-    XSynchronize(dpy,True);
+    XSynchronize(WMScreenDisplay(panel->scr), True);
     ClearMsgs(panel);
     WMSetLabelText(panel->msgL,msg);
-    XFlush(dpy);
+    XFlush(WMScreenDisplay(panel->scr));
     panel->msgFlag = True;
-    XSynchronize(dpy,False);
+    XSynchronize(WMScreenDisplay(panel->scr), False);
 }
 
 /*###################################################################*/
@@ -930,13 +929,13 @@ static void DestroyLoginPanel(LoginPanel *panel)
     int width=panel_width, heigth=panel_heigth;
     /* roll up the window before destroying it */
     if (animate) {
-	XSynchronize(dpy,True);	 /* slow things up */
+	XSynchronize(WMScreenDisplay(panel->scr), True);	 /* slow things up */
 	for (width=panel_width-2,heigth=panel_heigth-1;
 		(heigth>0 && width>0);
 		heigth-=1, width-=2) {
 	    WMResizeWidget(panel->win,width,heigth);
 	}
-	XSynchronize(dpy,False);
+	XSynchronize(WMScreenDisplay(panel->scr), False);
     }
     WMUnmapWidget(panel->win);
     WMDestroyWidget(panel->win);
@@ -1023,9 +1022,8 @@ static void freemem(int num, RColor **colors)
     free(colors);
 }
 
-static RImage *createBGcolor(RContext *rcontext, char *str, int style)
+static RImage *createBGcolor(WMScreen *scr, RContext *rcontext, char *str, int style)
 {
-    Window  root_window;
     RImage *image;
     RColor **colors = NULL;
     XColor  color;
@@ -1033,7 +1031,6 @@ static RImage *createBGcolor(RContext *rcontext, char *str, int style)
     int	    i;
     char   *tmp, *colorstr;
 
-    root_window = RootWindow(dpy, screen_number);
     colorstr = str;
     while (*colorstr) {
 	num_colors++;
@@ -1056,7 +1053,7 @@ static RImage *createBGcolor(RContext *rcontext, char *str, int style)
 	}
 	else
 	    tmp = colorstr + strlen(colorstr);
-	if (!XParseColor(dpy, rcontext->cmap, colorstr, &color)) {
+	if (!XParseColor(WMScreenDisplay(scr), rcontext->cmap, colorstr, &color)) {
 	    fprintf(stderr,"could not parse color \"%s\"\n",colorstr);
 	    freemem(num_colors,colors);
 	    return NULL;
@@ -1071,7 +1068,7 @@ static RImage *createBGcolor(RContext *rcontext, char *str, int style)
     return image;
 }
 
-static void setBG()
+static void setBG(WMScreen *scr)
 {
     Window root_window;
     int cpc=4, render_mode = RBestMatchRendering, default_depth=8;
@@ -1088,14 +1085,16 @@ static void setBG()
     if (strcasecmp(bgArg,"none")==0)
 	return;
 
-    root_window = RootWindow(dpy, screen_number);
-    default_depth = DefaultDepth(dpy, screen_number);
+    /* use of scr->rootWin is temporary hack */
+    root_window = scr->rootWin;
+    default_depth = WMScreenDepth(scr);
     if (default_depth<=8)
 	render_mode = RDitheredRendering;
     rattr.flags = RC_RenderMode | RC_ColorsPerChannel;
     rattr.render_mode = render_mode;
     rattr.colors_per_channel = cpc;
-    rcontext = RCreateContext(dpy, screen_number, &rattr);
+    /* use of scr->screen is temporary hack */
+    rcontext = RCreateContext(WMScreenDisplay(scr), scr->screen, &rattr);
     if (rcontext==NULL) {
 	fprintf(stderr,
 	   "%s could not initialize graphics library context: %s\n",
@@ -1110,32 +1109,32 @@ static void setBG()
 	    image = loadBGpixmap(rcontext);
 	break;
 	case 2:
-	    image = createBGcolor(rcontext, bgOption, RGRD_HORIZONTAL);
+	    image = createBGcolor(scr, rcontext, bgOption, RGRD_HORIZONTAL);
 	break;
 	case 3:
-	    image = createBGcolor(rcontext, bgOption, RGRD_HORIZONTAL);
+	    image = createBGcolor(scr, rcontext, bgOption, RGRD_HORIZONTAL);
 	break;
 	case 4:
-	    image = createBGcolor(rcontext, bgOption, RGRD_VERTICAL);
+	    image = createBGcolor(scr, rcontext, bgOption, RGRD_VERTICAL);
 	break;
 	case 5:
-	    image = createBGcolor(rcontext, bgOption, RGRD_DIAGONAL);
+	    image = createBGcolor(scr, rcontext, bgOption, RGRD_DIAGONAL);
 	break;
 	default:
 	    image = NULL;
 	break;
     }
     if (image==NULL) {
-	XSetWindowBackground(dpy, root_window, 0L);
-	XClearWindow(dpy, root_window);
-	XFlush(dpy);
+	XSetWindowBackground(WMScreenDisplay(scr), root_window, 0L);
+	XClearWindow(WMScreenDisplay(scr), root_window);
+	XFlush(WMScreenDisplay(scr));
 	return;
     }
     RConvertImage(rcontext, image, &pixmap);
     RReleaseImage(image);
-    XSetWindowBackgroundPixmap(dpy, root_window, pixmap);
-    XClearWindow(dpy, root_window);
-    XFlush(dpy);
+    XSetWindowBackgroundPixmap(WMScreenDisplay(scr), root_window, pixmap);
+    XClearWindow(WMScreenDisplay(scr), root_window);
+    XFlush(WMScreenDisplay(scr));
 }
 
 /*###################################################################*/
@@ -1155,7 +1154,7 @@ static void SignalUsr1(int ignored)	/* oops, an error */
 
 static void SignalTerm(int ignored)	/* all done */
 {
-    exit_request = 1;	 /* corrects some hanging problems, thanks to A. Kabaev */
+	exit(0);	 /* corrects some hanging problems, thanks to A. Kabaev */
 }
 
 /*###################################################################*/
@@ -1186,17 +1185,16 @@ int main(int argc, char **argv)
     LoginArgs(argc, argv);		/* process our args */
     SetupWm();				/* and init the startup list */
 
-    dpy = XOpenDisplay(displayArg);
-
-    if (!dpy) {
-	fprintf(stderr,"could not open display\n");
-	exit(1);
+    WMInitializeApplication(ProgName, &argc, argv);
+    scr = WMOpenScreen(displayArg);
+    if (!scr) {
+	fprintf(stderr,"could not initialize Screen\n");
+	exit(2);
     }
 
-    screen_number = DefaultScreen(dpy);
 #ifdef HAVE_XINERAMA
-    if (XineramaIsActive(dpy)) {
-	xine = XineramaQueryScreens(dpy, &xine_count);
+    if (XineramaIsActive(WMScreenDisplay(scr))) {
+	xine = XineramaQueryScreens(WMScreenDisplay(scr), &xine_count);
 		
 	if (xine != NULL) {
 		for (c = 0;c < xine_count;c++) {
@@ -1206,38 +1204,34 @@ int main(int argc, char **argv)
 			}
 		}
 	} else {
-		screen_width = DisplayWidth(dpy, screen_number);
-		screen_heigth = DisplayHeight(dpy, screen_number);
+		screen_width = WMScreenWidth(scr);
+		screen_heigth = WMScreenHeight(scr);
 	}
     } else {
 #endif
-	screen_width = DisplayWidth(dpy,screen_number);
-	screen_heigth = DisplayHeight(dpy,screen_number);
+	screen_width = WMScreenWidth(scr);
+	screen_heigth = WMScreenHeight(scr);
 #ifdef HAVE_XINERAMA
     }
 #endif
     panel_X = (screen_width  - panel_width)/2;
     panel_Y = (screen_heigth - panel_heigth)/2;
 
-    XSynchronize(dpy,False);
+    XSynchronize(WMScreenDisplay(scr), False);
 
-    XWarpPointer(dpy, None,
-		XRootWindowOfScreen(XDefaultScreenOfDisplay(dpy)),
+    /* use of scr->rootWin is temporary hack */
+    XWarpPointer(WMScreenDisplay(scr), None,
+		scr->rootWin,
 		0, 0, 0, 0,
 		(panel_X + (panel_width - 10)),
 		(panel_Y + (panel_heigth - 10)));
-    XDefineCursor(dpy,
-		XRootWindowOfScreen(XDefaultScreenOfDisplay(dpy)),
-		XCreateFontCursor(dpy,XC_top_left_arrow));
+    /* use of scr->rootWin is temporary hack */
+    XDefineCursor(WMScreenDisplay(scr),
+		scr->rootWin,
+		XCreateFontCursor(WMScreenDisplay(scr), XC_top_left_arrow));
 
-    setBG();
+    setBG(scr);
 
-    WMInitializeApplication(ProgName, &argc, argv);
-    scr = WMCreateScreen(dpy, screen_number);
-    if (!scr) {
-	fprintf(stderr,"could not initialize Screen\n");
-	exit(2);
-    }
 
     panel = CreateLoginPanel(scr);
     WMSetWindowTitle(panel->win,ProgName);
@@ -1249,24 +1243,19 @@ int main(int argc, char **argv)
     WMMoveWidget(panel->win, panel_X,panel_Y);
     WMResizeWidget(panel->win,panel_width,panel_heigth);
     WMSetFocusToWidget(panel->entryText);
-    XSetInputFocus(dpy, WMWidgetXID(panel->win), RevertToParent, CurrentTime);
-    panel->retkey = XKeysymToKeycode(dpy, XK_Return);
-    panel->tabkey = XKeysymToKeycode(dpy, XK_Tab);
+    XSetInputFocus(WMScreenDisplay(scr), WMWidgetXID(panel->win), RevertToParent, CurrentTime);
+    panel->retkey = XKeysymToKeycode(WMScreenDisplay(scr), XK_Return);
+    panel->tabkey = XKeysymToKeycode(WMScreenDisplay(scr), XK_Tab);
 
     WMCreateEventHandler(WMWidgetView(panel->entryText), KeyPressMask,
 				handleKeyPress, panel);
 
-    exit_request = 0;
     signal(SIGUSR1, SignalUsr1);
     signal(SIGTERM, SignalTerm);
     signal(SIGINT,  SignalTerm);
     signal(SIGPIPE, SIG_DFL);
 
-    while (! exit_request) {
-	XEvent event;
-	WMNextEvent(dpy,&event);
-	WMHandleEvent(&event);
-    }
+    WMScreenMainLoop(scr);
     DestroyLoginPanel(panel);
 
     return 0; /* never get here but keeps compiler happy */
