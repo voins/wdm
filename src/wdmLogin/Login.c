@@ -47,18 +47,6 @@
 #define P_WIDTH 530
 #define P_HEIGTH 240
 
-/* 128 is the max for MD5 passwords; is there a constant? */
-#define PASS_LEN 128+1
-
-#ifndef _POSIX_LOGIN_NAME_MAX
-#ifdef LOGNAME_MAX
-#define _POSIX_LOGIN_NAME_MAX LOGNAME_MAX
-#else
-#define _POSIX_LOGIN_NAME_MAX 9
-#endif
-#endif
-#define LOGNAME_LEN _POSIX_LOGIN_NAME_MAX+1
-
 static int	screen_width = 0,	screen_heigth = 0;
 static int	panel_width = P_WIDTH,	panel_heigth=P_HEIGTH;
 static int	help_heigth = 140;

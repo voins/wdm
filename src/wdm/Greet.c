@@ -112,18 +112,6 @@ from the X Consortium.
 #endif
 #include <limits.h>
 
-/* 128 is the max for MD5 passwords; is there a constant? */
-#define PASS_LEN 128+1
-
-#ifndef _POSIX_LOGIN_NAME_MAX
-#ifdef LOGNAME_MAX
-#define _POSIX_LOGIN_NAME_MAX LOGNAME_MAX
-#else
-#define _POSIX_LOGIN_NAME_MAX 9
-#endif
-#endif
-#define LOGNAME_LEN _POSIX_LOGIN_NAME_MAX+1
-
 extern Display  *dpy;
 
 extern char *wdmLogin;          /* X resources (see resource.c) */
