@@ -23,6 +23,8 @@ PACKAGE_NAME = @PACKAGE_NAME@;
 PACKAGE_VERSION = @PACKAGE_VERSION@;
 DESTDIR =;
 NLSDIR = @NLSDIR@;
+xgettext = @XGETTEXT@;
+msgfmt = @MSGFMT@;
 
 cc = [CC];
 cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];

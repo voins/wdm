@@ -54,7 +54,7 @@ po/%.mo.M: etc/makefile.cook
 {
 	rm -f [target];
 	echo po/%.mo\: po/%.po  > [target];
-	echo -e "\"\\t\""msgfmt -o \\$\\@ po/%.po >> [target];
+	echo -e "\"\\t\""\\$\\(MSGFMT\\) -o \\$\\@ po/%.po >> [target];
 	echo >> [target];
 	echo [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo >> [target];
 	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D po/%.mo \\$\\@ >> [target];
