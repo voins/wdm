@@ -139,6 +139,7 @@ extern int   wdmRoot;
 extern int   wdmVerify;
 extern int   wdmAnimations;
 extern char *wdmLocale;
+extern char *wdmLoginConfig;
 
 static int      pipe_filedes[2];
 static char	name[128], password[128];
@@ -224,7 +225,7 @@ static int InitGreet (struct display *d)
         char **env = NULL, *tmp = NULL;
         char DisplayName[128] = "-d";
 	char Wm[256]="", Logo[256]="", HelpFile[256] = "", DefaultUser[10] = "";
-        char Bg[256]="", Animate[8]="";
+        char Bg[256]="", Animate[8]="", Cfg[256]="";
 
         close(pipe_filedes[0]);
         dup2(pipe_filedes[1],3);
@@ -260,12 +261,16 @@ static int InitGreet (struct display *d)
            strcpy(Bg,"-b");
            strncat(Bg,wdmBg,250);
         }
+	if (wdmLoginConfig[0]!='\0') {
+	   strcpy(Cfg,"-c");
+	   strncat(Cfg,wdmLoginConfig,250);
+	}
         if (wdmAnimations) {
             strcpy(Animate,"-a");
         }
         
         execle(wdmLogin, tmp, DisplayName, 
-			 Wm, Logo, HelpFile, DefaultUser, Bg, Animate,
+			 Wm, Logo, HelpFile, DefaultUser, Bg, Animate, Cfg,
                          NULL, env);
         
         LogError ("Greet cannot exec %s\n", wdmLogin);
