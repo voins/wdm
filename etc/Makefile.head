@@ -8,3 +8,4 @@ bindir=@bindir@
 DMDIR=@DMDIR@
 MANDIR=@mandir@
 PAMDIR=@PAMDIR@
+USE_PAM=@USE_PAM@

@@ -18,6 +18,8 @@
 
 destbindir = \\$\\(DESTDIR\\)\\$\\(bindir\\)/;
 destman1dir = \\$\\(DESTDIR\\)\\$\\(MANDIR\\)/man1;
+configdir = \\$\\(DESTDIR\\)\\$\\(DMDIR\\);
+pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
 
 bin/M/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
@@ -46,10 +48,41 @@ doc/%.man.M: etc/makefile.cook
 	echo >> [target];
 }
 
-Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook etc/Makefile.configs
+configs/%.M: etc/makefile.cook etc/functions.cook
+{
+	rm -f [target];
+	if [in configs/% [g_configs]] then
+	{
+		echo configs/%\: configs/%.in >> [target];
+		echo -e "\"\\t\""CONFIG_FILES\=\\$\\@\:configs/%.in \
+			CONFIG_HEADERS\= ./config.status >> [target];
+		echo >> [target];
+	}
+
+	perm = 0644;
+	if [in configs/% [exe_configs]] then perm = [octal [expr [perm] | 0111]];
+	if [in configs/% [sec_configs]] then perm = [octal [expr [perm] & 0700]];
+
+	if [in configs/% [pam_configs]] then
+	{
+		echo [pamdir]/[stripext %]\: configs/% >> [target];
+		echo -e "\"\\t\""\\$\\(INSTALL\\) -m [perm] -D configs/% \\$\\@ >> [target];
+		echo >> [target];
+	}
+	else
+	{
+		echo [configdir]/%\: configs/% >> [target];
+		echo -e "\"\\t\""\\$\\(INSTALL\\) -m [perm] -D configs/% \\$\\@ >> [target];
+		echo >> [target];
+	}
+	echo >> [target];
+}
+
+Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
 	[fromto % bin/M/%.M [program_list]]
 	[fromto %0% %0%.M [manfiles]]
+	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]]
 {
 	rm -f [target];
 	sed [resolve etc/Howto.conf.in] \
@@ -62,13 +95,30 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	cat [resolve etc/Makefile.head] >> [target];
 
 	echo >> [target];
-	echo all\: [addprefix bin/ [program_list]] all-doc >> [target];
+	echo all\: [addprefix bin/ [program_list]] all-doc all-config >> [target];
 	echo >> [target];
 
 	cat [resolve [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]] >> [target];
 	cat [resolve [fromto % bin/M/%.M [program_list]]] >> [target];
 	echo install\: [addprefix [destbindir] [program_list]] install-config install-doc>> [target];
-	cat [resolve etc/Makefile.configs] >> [target];
+
+
+	echo >> [target];
+	echo all-config\: [g_configs] >> [target];
+	echo >> [target];
+	echo install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
+			install-pam-\\$\\(USE_PAM\\)
+			[configdir]/authdir >> [target];
+	echo >> [target];
+	echo install-pam-no\: >> [target];
+	echo >> [target];
+	echo install-pam-yes\: [fromto %0%.pamd [pamdir]/% [pam_configs]] >> [target];
+	echo >> [target];
+	echo [configdir]/authdir\: >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL\\) -m 700 -D -d \\$\\@ >> [target];
+	echo >> [target];
+	cat [resolve [fromto %0% %0%.M [configs] [pam_configs] [i_configs]]] >> [target];
+	
 
 	echo >> [target];
 	echo all-doc\: [g_manfiles] >> [target];

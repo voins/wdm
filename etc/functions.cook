@@ -36,3 +36,23 @@ function get_program =
 		return [fromto src/%/ % [@1]]_;
 	return;
 }
+
+function octal = 
+{
+	result =;
+	number = [@1];
+	loop
+	{
+		if [expr [number] \=\= 0] then loopstop;
+		result = [expr [number] & 7][result];
+		number = [expr [number] / 8];
+	}
+	
+	return 0[result];
+}
+
+function stripext =
+{
+	return [fromto %0%.%1 %0% [@1]];
+}
+

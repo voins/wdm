@@ -75,10 +75,12 @@ AC_ARG_WITH(pamdir,
 	[PAMDIR="/etc/pam.d"])
 AC_SUBST(PAMDIR)
 
+USE_PAM=
 AC_MSG_CHECKING(for pam being enabled)
 AC_ARG_ENABLE(pam,
 	AC_HELP_STRING([--enable-pam], [enable PAM]), 
 	[
+		USE_PAM=yes
 		AC_MSG_RESULT([yes])
 		AC_DEFINE(USE_PAM, 1, [Define if you want wdm  to be compiiled with pam support])
 		AC_CHECK_LIB(pam, main, [PASSWDLIB="-lpam -ldl"
@@ -94,6 +96,7 @@ AC_ARG_ENABLE(pam,
 		fi
 	],
 	[
+		USE_PAM=no
 		AC_MSG_RESULT([no])
 		AC_MSG_CHECKING(for shadow being enabled)
 		AC_ARG_ENABLE(shadow,
@@ -112,6 +115,7 @@ AC_ARG_ENABLE(pam,
 
 	])
 AC_SUBST(PASSWDLIB)
+AC_SUBST(USE_PAM)
 
 LIBUTIL=
 AC_CHECK_LIB(util, main, [LIBUTIL="-lutil"]) dnl for FreeBSD
@@ -604,14 +608,6 @@ dnl ==========================================================
 
 
 
-AC_CONFIG_FILES(
-	[Makefile
-	src/config/wdm-config
-	src/config/Xclients
-	src/config/Xsetup_0
-	src/config/Xsession
-	src/config/Xservers
-	src/config/Xservers.ws
-	src/config/wdmReconfig])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
