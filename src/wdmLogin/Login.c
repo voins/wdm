@@ -40,11 +40,10 @@
 #ifdef HAVE_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
-#include <WINGs/WINGs.h>
+#include <wdmlib.h>
 /* temporary hack {{{ */
 #include <WINGs/WINGsP.h>
 /* }}} */
-#include <WINGs/WUtil.h>
 #include <limits.h>
 #include <locale.h>
 #include <time.h>
@@ -195,8 +194,7 @@ read_help_file(int handle)
 		HelpText = wmalloc(s.st_size + 1);
 		if(read(handle, HelpText, s.st_size) == -1)
 		{
-			fprintf(stderr,
-				"%s - read_help_file(): can't read %s\n",
+			WDMError("%s - read_help_file(): can't read %s\n",
 				ProgName, helpArg);
 			wfree(HelpText);
 			return NULL;
@@ -204,7 +202,7 @@ read_help_file(int handle)
 		HelpText[s.st_size] = '\0';
 	}
 	else
-		fprintf(stderr, "%s - read_help_file(): can't stat %s\n",
+		WDMError("%s - read_help_file(): can't stat %s\n",
 			ProgName, helpArg);
 
 	return HelpText;
@@ -226,7 +224,7 @@ parse_helpArg(void)
 	{
 		if((handle = open(helpArg, O_RDONLY)) == -1)
 		{
-			fprintf(stderr, "%s - parse_helpArg(): can't open %s\n",
+			WDMError("%s - parse_helpArg(): can't open %s\n",
 				ProgName, helpArg);
 			return defaultHelpText;
 		}
@@ -245,8 +243,7 @@ parse_helpArg(void)
 void
 wAbort()			/* for WINGs compatibility */
 {
-	fprintf(stderr, "%s - wAbort from WINGs\n", ProgName);
-	exit(1);
+	WDMPanic("%s - wAbort from WINGs\n", ProgName);
 }
 
 /*###################################################################*/
@@ -390,7 +387,7 @@ LoginArgs(int argc, char *argv[])
 			break;
 #endif
 		default:
-			fprintf(stderr, "bad option: %c\n", c);
+			WDMError("bad option: %c\n", c);
 			break;
 		}
 	}
@@ -682,8 +679,7 @@ CreateLogo(LoginPanel * panel)
 		return;
 
 #if 0
-	fprintf(stderr, "width=%i,heigth=%i\n", image1->width, image1->height);
-	/*DEBUG*/
+	WDMDebug("width=%i,heigth=%i\n", image1->width, image1->height);
 #endif
 		if(image1->width > 200)
 	{			/* try to keep the aspect ratio */
@@ -691,8 +687,7 @@ CreateLogo(LoginPanel * panel)
 		h = (int) ((float) image1->height * ratio);
 	}
 #if 0
-	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
-	/*DEBUG*/
+	WDMDebug("new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 #endif
 		if(image1->height > 130)
 	{
@@ -704,8 +699,7 @@ CreateLogo(LoginPanel * panel)
 		}
 	}
 #if 0
-	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
-	/*DEBUG*/
+	WDMDebug("new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 #endif
 		/* if image is too small, do not reallly resize since this looks bad */
 		/* the image will be centered */
@@ -720,8 +714,7 @@ CreateLogo(LoginPanel * panel)
 	if(h > 130)
 		h = 130;
 #if 0
-	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
-	/*DEBUG*/
+	WDMDebug("new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 #endif
 	if(smoothScale)
 		image2 = RSmoothScaleImage(image1, w, h);
@@ -740,7 +733,7 @@ CreateLogo(LoginPanel * panel)
 
 	if(pixmap == NULL)
 	{
-		fprintf(stderr, "unable to load pixmap\n");
+		WDMError("unable to load pixmap\n");
 		return;
 	}
 	WMSetLabelImage(panel->logoL, pixmap);
@@ -1092,14 +1085,14 @@ loadBGpixmap(RContext * rcontext)
 	image = RLoadImage(rcontext, bgOption, 0);
 	if(image == NULL)
 	{
-		fprintf(stderr, "%s could not load bg image %s\n",
+		WDMError("%s could not load bg image %s\n",
 			ProgName, bgOption);
 		return NULL;
 	}
 	tmp = RScaleImage(image, screen.size.width, screen.size.height);
 	if(tmp == NULL)
 	{
-		fprintf(stderr, "%s could not resize bg image %s\n",
+		WDMError("%s could not resize bg image %s\n",
 			ProgName, bgOption);
 		RReleaseImage(image);
 		return NULL;
@@ -1173,7 +1166,7 @@ createBGcolor(WMScreen * scr, RContext * rcontext, char *str, int style)
 		if(!XParseColor
 		   (WMScreenDisplay(scr), rcontext->cmap, colorstr, &color))
 		{
-			fprintf(stderr, "could not parse color \"%s\"\n",
+			WDMError("could not parse color \"%s\"\n",
 				colorstr);
 			freemem(num_colors, colors);
 			return NULL;
@@ -1218,8 +1211,8 @@ setBG(WMScreen * scr)
 	rcontext = RCreateContext(WMScreenDisplay(scr), scr->screen, &rattr);
 	if(rcontext == NULL)
 	{
-		fprintf(stderr,
-			"%s could not initialize graphics library context: %s\n",
+		WDMError("%s could not initialize "
+			"graphics library context: %s\n",
 			ProgName, RMessageForError(RErrorCode));
 		return;
 	}
@@ -1334,14 +1327,14 @@ main(int argc, char **argv)
 	scr = WMOpenScreen(displayArg);
 	if(!scr)
 	{
-		fprintf(stderr, "could not initialize Screen\n");
+		WDMPanic("could not initialize Screen\n");
 		exit(2);
 	}
 
 	screen.pos.x = 0;
 	screen.pos.y = 0;
 	screen.size.width = WMScreenWidth(scr);
-	screen.size.height = WMScreenHeight(scr); 
+	screen.size.height = WMScreenHeight(scr);
 #ifdef HAVE_XINERAMA
 	if(XineramaIsActive(WMScreenDisplay(scr)))
 	{

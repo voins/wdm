@@ -35,7 +35,6 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include <dm.h>
-#include <dm_error.h>
 
 #ifdef XDMCP
 
@@ -61,6 +60,8 @@ in this Software without prior written authorization from The Open Group.
 
 #include <time.h>
 #define Time_t time_t
+
+#include <wdmlib.h>
 
 static int
 FormatBytes (
@@ -190,8 +191,8 @@ FormatChooserArgument (char *buf, int len)
 
     if (GetChooserAddr ((char *)addr_buf, &addr_len) == -1)
     {
-	LogError ("Cannot get return address for chooser socket\n");
-	Debug ("Cannot get chooser socket address\n");
+	WDMError("Cannot get return address for chooser socket\n");
+	WDMDebug("Cannot get chooser socket address\n");
 	return 0;
     }
     netfamily = NetaddrFamily((XdmcpNetaddr)addr_buf);
@@ -217,7 +218,7 @@ FormatChooserArgument (char *buf, int len)
 	break;
 #endif
     default:
-	Debug ("Chooser family %d isn't known\n", netfamily);
+	WDMDebug("Chooser family %d isn't known\n", netfamily);
 	return 0;
     }
 
@@ -247,11 +248,11 @@ IndirectChoice (
     for (c = choices; c; c = next)
     {
 	next = c->next;
-	Debug ("Choice checking timeout: %ld >? %d\n",
+	WDMDebug("Choice checking timeout: %ld >? %d\n",
 	    (long)(now - c->time), choiceTimeout);
 	if (now - c->time > (Time_t)choiceTimeout)
 	{
-	    Debug ("Timeout choice %ld > %d\n",
+	    WDMDebug("Timeout choice %ld > %d\n",
 		(long)(now - c->time), choiceTimeout);
 	    if (prev)
 		prev->next = next;
@@ -282,7 +283,7 @@ RegisterIndirectChoice (
     int		insert;
     int		found = 0;
 
-    Debug ("Got indirect choice back\n");
+    WDMDebug("Got indirect choice back\n");
     for (c = choices; c; c = c->next) {
 	if (XdmcpARRAY8Equal (clientAddress, &c->client) &&
 	    connectionType == c->connectionType) {
@@ -393,21 +394,21 @@ ProcessChooserSocket (int fd)
     int flags=0;
 #endif
 
-    Debug ("Process chooser socket\n");
+    WDMDebug("Process chooser socket\n");
     len = sizeof (buf);
 #if defined(STREAMSCONN)
     call = (struct t_call *)t_alloc( fd, T_CALL, T_ALL );
     if( call == NULL )
     {
 	t_error( "ProcessChooserSocket: t_alloc failed" );
-	LogError ("Cannot setup to listen on chooser connection\n");
+	WDMError("Cannot setup to listen on chooser connection\n");
 	return;
     }
     if( t_listen( fd, call ) < 0 )
     {
 	t_error( "ProcessChooserSocket: t_listen failed" );
 	t_free( (char *)call, T_CALL );
-	LogError ("Cannot listen on chooser connection\n");
+	WDMError("Cannot listen on chooser connection\n");
 	return;
     }
     client_fd = t_open ("/dev/tcp", O_RDWR, NULL);
@@ -415,21 +416,21 @@ ProcessChooserSocket (int fd)
     {
 	t_error( "ProcessChooserSocket: t_open failed" );
 	t_free( (char *)call, T_CALL );
-	LogError ("Cannot open new chooser connection\n");
+	WDMError("Cannot open new chooser connection\n");
 	return;
     }
     if( t_bind( client_fd, NULL, NULL ) < 0 )
     {
 	t_error( "ProcessChooserSocket: t_bind failed" );
 	t_free( (char *)call, T_CALL );
-	LogError ("Cannot bind new chooser connection\n");
+	WDMError("Cannot bind new chooser connection\n");
         t_close (client_fd);
 	return;
     }
     if( t_accept (fd, client_fd, call) < 0 )
     {
 	t_error( "ProcessChooserSocket: t_accept failed" );
-	LogError ("Cannot accept chooser connection\n");
+	WDMError("Cannot accept chooser connection\n");
 	t_free( (char *)call, T_CALL );
         t_unbind (client_fd);
         t_close (client_fd);
@@ -439,18 +440,18 @@ ProcessChooserSocket (int fd)
     client_fd = accept (fd, (struct sockaddr *)buf, (void *)&len);
     if (client_fd == -1)
     {
-	LogError ("Cannot accept chooser connection\n");
+	WDMError("Cannot accept chooser connection\n");
 	return;
     }
 #endif
-    Debug ("Accepted %d\n", client_fd);
+    WDMDebug("Accepted %d\n", client_fd);
     
 #if defined(STREAMSCONN)
     len = t_rcv (client_fd, buf, sizeof (buf),&flags);
 #else
     len = read (client_fd, buf, sizeof (buf));
 #endif
-    Debug ("Read returns %d\n", len);
+    WDMDebug("Read returns %d\n", len);
     if (len > 0)
     {
     	buffer.data = (BYTE *) buf;
@@ -464,23 +465,23 @@ ProcessChooserSocket (int fd)
 	if (XdmcpReadARRAY8 (&buffer, &clientAddress)) {
 	    if (XdmcpReadCARD16 (&buffer, &connectionType)) {
 		if (XdmcpReadARRAY8 (&buffer, &choice)) {
-		    Debug ("Read from chooser succesfully\n");
+		    WDMDebug("Read from chooser succesfully\n");
 		    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
 		    XdmcpDisposeARRAY8 (&choice);
 		} else {
-		    LogError ("Invalid choice response length %d\n", len);
+		    WDMError("Invalid choice response length %d\n", len);
 		}
 	    } else {
-		LogError ("Invalid choice response length %d\n", len);
+		WDMError("Invalid choice response length %d\n", len);
 	    }
 	    XdmcpDisposeARRAY8 (&clientAddress);
 	} else {
-	    LogError ("Invalid choice response length %d\n", len);
+	    WDMError("Invalid choice response length %d\n", len);
 	}
     }
     else
     {
-	LogError ("Choice response read error: %s\n", strerror(errno));
+	WDMError("Choice response read error: %s\n", strerror(errno));
     }
 
 #if defined(STREAMSCONN)
@@ -499,7 +500,7 @@ RunChooser (struct display *d)
     char    buf[1024];
     char    **env;
 
-    Debug ("RunChooser %s\n", d->name);
+    WDMDebug("RunChooser %s\n", d->name);
 #ifndef HAS_SETPROCTITLE
     SetTitle (d->name, "chooser", (char *) 0);
 #else
@@ -518,10 +519,10 @@ RunChooser (struct display *d)
     ForEachChooserHost (&d->clientAddr, d->connectionType, AddChooserHost,
 			(char *) &args);
     env = systemEnv (d, (char *) 0, (char *) 0);
-    Debug ("Running %s\n", args[0]);
+    WDMDebug("Running %s\n", args[0]);
     execute (args, env);
-    Debug ("Couldn't run %s\n", args[0]);
-    LogError ("Cannot execute %s\n", args[0]);
+    WDMDebug("Couldn't run %s\n", args[0]);
+    WDMError("Cannot execute %s\n", args[0]);
     exit (REMANAGE_DISPLAY);
 }
 

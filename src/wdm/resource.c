@@ -36,7 +36,8 @@ from The Open Group.
  */
 
 # include <dm.h>
-# include <dm_error.h>
+
+#include <wdmlib.h>
 
 # include <X11/Intrinsic.h>
 # include <X11/Xmu/CharSet.h>
@@ -416,7 +417,7 @@ GetResource (
 	len = strlen (string);
     }
 
-    Debug ("%s/%s value %*.*s\n", name, class, len, len, string);
+    WDMDebug("%s/%s value %*.*s\n", name, class, len, len, string);
 
     if (valueType == DM_STRING && *valuep)
     {
@@ -430,7 +431,7 @@ GetResource (
     case DM_STRING:
 	new_string = malloc ((unsigned) (len+1));
 	if (!new_string) {
-		LogOutOfMem ("GetResource");
+		WDMError("GetResource: out of memory");
 		return;
 	}
 	strncpy (new_string, string, len);
@@ -507,7 +508,7 @@ ReinitResources (void)
 
     argv = (char **) malloc ((originalArgc + 1) * sizeof (char *));
     if (!argv)
-	LogPanic ("no space for argument realloc\n");
+	WDMError("no space for argument realloc\n");
     for (argc = 0; argc < originalArgc; argc++)
 	argv[argc] = originalArgv[argc];
     argv[argc] = 0;
@@ -528,16 +529,16 @@ ReinitResources (void)
 	DmResourceDB = newDB;
     }
     else if (argc != originalArgc)
-	LogError ("Can't open configuration file %s\n", config );
+	WDMError("Can't open configuration file %s\n", config);
     XrmParseCommand (&DmResourceDB, optionTable,
 		     sizeof (optionTable) / sizeof (optionTable[0]),
 		     "DisplayManager", &argc, argv);
     if (argc > 1)
     {
-	LogError ("extra arguments on command line:");
+	WDMError("extra arguments on command line:");
 	for (a = argv + 1; *a; a++)
-		LogError (" \"%s\"", *a);
-	LogError ("\n");
+		WDMError(" \"%s\"", *a);
+	WDMError("\n");
     }
     free (argv);
 }

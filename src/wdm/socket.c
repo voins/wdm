@@ -36,7 +36,6 @@ from The Open Group.
  */
 
 #include <dm.h>
-#include <dm_error.h>
 
 #ifdef XDMCP
 #ifndef STREAMSCONN
@@ -53,6 +52,7 @@ from The Open Group.
 #endif
 #include <netdb.h>
 
+#include <wdmlib.h>
 
 extern int	xdmcpFd;
 extern int	chooserFd;
@@ -68,10 +68,10 @@ CreateWellKnownSockets (void)
 
     if (request_port == 0)
 	    return;
-    Debug ("creating socket %d\n", request_port);
+    WDMDebug("creating socket %d\n", request_port);
     xdmcpFd = socket (AF_INET, SOCK_DGRAM, 0);
     if (xdmcpFd == -1) {
-	LogError ("XDMCP socket creation failed, errno %d\n", errno);
+	WDMError("XDMCP socket creation failed, errno %d\n", errno);
 	return;
     }
     name = localHostname ();
@@ -87,7 +87,7 @@ CreateWellKnownSockets (void)
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
     if (bind (xdmcpFd, (struct sockaddr *)&sock_addr, sizeof (sock_addr)) == -1)
     {
-	LogError ("error %d binding socket address %d\n", errno, request_port);
+	WDMError("error %d binding socket address %d\n", errno, request_port);
 	close (xdmcpFd);
 	xdmcpFd = -1;
 	return;
@@ -96,10 +96,10 @@ CreateWellKnownSockets (void)
     FD_SET (xdmcpFd, &WellKnownSocketsMask);
 
     chooserFd = socket (AF_INET, SOCK_STREAM, 0);
-    Debug ("Created chooser socket %d\n", chooserFd);
+    WDMDebug("Created chooser socket %d\n", chooserFd);
     if (chooserFd == -1)
     {
-	LogError ("chooser socket creation failed, errno %d\n", errno);
+	WDMError("chooser socket creation failed, errno %d\n", errno);
 	return;
     }
     listen (chooserFd, 5);
@@ -119,7 +119,7 @@ GetChooserAddr (
     len = sizeof in_addr;
     if (getsockname (chooserFd, (struct sockaddr *)&in_addr, (void *)&len) < 0)
 	return -1;
-    Debug ("Chooser socket port: %d\n", ntohs(in_addr.sin_port));
+    WDMDebug("Chooser socket port: %d\n", ntohs(in_addr.sin_port));
     memmove( addr, (char *) &in_addr, len);
     *lenp = len;
 

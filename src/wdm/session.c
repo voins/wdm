@@ -37,7 +37,6 @@ from The Open Group.
 
 #include <dm.h>
 #include <dm_auth.h>
-#include <dm_error.h>
 #include <greet.h>
 
 #include <X11/Xlib.h>
@@ -65,6 +64,8 @@ from The Open Group.
 #define RTLD_NOW 1
 #endif
 #endif
+
+#include <wdmlib.h>
 
 static	int	runAndWait (char **args, char **environ);
 
@@ -114,13 +115,13 @@ pam_handle_t *thepamh()
 static	struct dlfuncs	dlfuncs = {
 	PingServer,
 	SessionPingFailed,
-	Debug,
+	WDMDebug,
 	RegisterCloseOnFork,
 	SecureDisplay,
 	UnsecureDisplay,
 	ClearCloseOnFork,
 	SetupDisplay,
-	LogError,
+	WDMError,
 	SessionExit,
 	DeleteXloginResources,
 	source,
@@ -130,7 +131,6 @@ static	struct dlfuncs	dlfuncs = {
 	parseArgs,
 	printEnv,
 	systemEnv,
-	LogOutOfMem,
 	setgrent,
 	getgrent,
 	endgrent,
@@ -203,7 +203,7 @@ AbortClient (int pid)
 	if (killpg (pid, sig) == -1) {
 	    switch (errno) {
 	    case EPERM:
-		LogError ("xdm can't kill client\n");
+		WDMError ("xdm can't kill client\n");
 	    case EINVAL:
 	    case ESRCH:
 		return;
@@ -246,7 +246,7 @@ SessionPingFailed (struct display *d)
 static int
 IOErrorHandler (Display *dpy)
 {
-    LogError("fatal IO error %d (%s)\n", errno, _SysErrorMsg(errno));
+    WDMError("fatal IO error %d (%s)\n", errno, _SysErrorMsg(errno));
     exit(RESERVER_DISPLAY);
     /*NOTREACHED*/
     return 0;
@@ -255,7 +255,7 @@ IOErrorHandler (Display *dpy)
 static int
 ErrorHandler(Display *dpy, XErrorEvent *event)
 {
-    LogError("X error\n");
+    WDMError("X error\n");
     if (XmuPrintDefaultErrorMessage (dpy, event, stderr) == 0) return 0;
     exit(UNMANAGE_DISPLAY);
     /*NOTREACHED*/
@@ -272,7 +272,7 @@ ManageSession (struct display *d)
     void		*greet_lib_handle;
 #endif
 
-    Debug ("ManageSession %s\n", d->name);
+    WDMDebug("ManageSession %s\n", d->name);
     (void)XSetIOErrorHandler(IOErrorHandler);
     (void)XSetErrorHandler(ErrorHandler);
 #ifndef HAS_SETPROCTITLE
@@ -288,13 +288,13 @@ ManageSession (struct display *d)
 #ifdef GREET_USER_STATIC
     greet_user_proc = GreetUser;
 #else
-    Debug("ManageSession: loading greeter library %s\n", greeterLib);
+    WDMDebug("ManageSession: loading greeter library %s\n", greeterLib);
     greet_lib_handle = dlopen(greeterLib, RTLD_NOW);
     if (greet_lib_handle != NULL)
 	greet_user_proc = (GreetUserProc)dlsym(greet_lib_handle, "GreetUser");
     if (greet_user_proc == NULL)
 	{
-	LogError("%s while loading %s\n", dlerror(), greeterLib);
+	WDMError("%s while loading %s\n", dlerror(), greeterLib);
 	exit(UNMANAGE_DISPLAY);
 	}
 #endif
@@ -316,7 +316,7 @@ ManageSession (struct display *d)
 	     *	   setting up environment and running the session
 	     */
 	    if (StartClient (&verify, d, &clientPid, greet.name, greet.password)) {
-		Debug ("Client Started\n");
+		WDMDebug("Client Started\n");
 
 #ifndef GREET_USER_STATIC
                 /* Save memory; close library */
@@ -351,7 +351,7 @@ ManageSession (struct display *d)
 			break;
 		}
 	    } else {
-		LogError ("session start failed\n");
+		WDMError("session start failed\n");
 	    }
 	} else {
 	    /*
@@ -364,7 +364,7 @@ ManageSession (struct display *d)
     /*
      * run system-wide reset file
      */
-    Debug ("Source reset program %s\n", d->reset);
+    WDMDebug("Source reset program %s\n", d->reset);
     source (verify.systemEnviron, d->reset);
     SessionExit (d, OBEYSESS_DISPLAY, TRUE);
 }
@@ -379,7 +379,7 @@ LoadXloginResources (struct display *d)
 	env = systemEnv (d, (char *) 0, (char *) 0);
 	args = parseArgs ((char **) 0, d->xrdb);
 	args = parseArgs (args, d->resources);
-	Debug ("Loading resource file: %s\n", d->resources);
+	WDMDebug("Loading resource file: %s\n", d->resources);
 	(void) runAndWait (args, env);
 	freeArgs (args);
 	freeEnv (env);
@@ -425,26 +425,26 @@ syncTimeout (int n)
 void
 SecureDisplay (struct display *d, Display *dpy)
 {
-    Debug ("SecureDisplay %s\n", d->name);
+    WDMDebug("SecureDisplay %s\n", d->name);
     (void) Signal (SIGALRM, syncTimeout);
     if (Setjmp (syncJump)) {
-	LogError ("WARNING: display %s could not be secured\n",
+	WDMError("WARNING: display %s could not be secured\n",
 		   d->name);
 	SessionExit (d, RESERVER_DISPLAY, FALSE);
     }
     (void) alarm ((unsigned) d->grabTimeout);
-    Debug ("Before XGrabServer %s\n", d->name);
+    WDMDebug("Before XGrabServer %s\n", d->name);
     XGrabServer (dpy);
     if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
 		       GrabModeAsync, CurrentTime) != GrabSuccess)
     {
 	(void) alarm (0);
 	(void) Signal (SIGALRM, SIG_DFL);
-	LogError ("WARNING: keyboard on display %s could not be secured\n",
+	WDMError("WARNING: keyboard on display %s could not be secured\n",
 		  d->name);
 	SessionExit (d, RESERVER_DISPLAY, FALSE);
     }
-    Debug ("XGrabKeyboard succeeded %s\n", d->name);
+    WDMDebug("XGrabKeyboard succeeded %s\n", d->name);
     (void) alarm (0);
     (void) Signal (SIGALRM, SIG_DFL);
     pseudoReset (dpy);
@@ -453,13 +453,13 @@ SecureDisplay (struct display *d, Display *dpy)
 	XUngrabServer (dpy);
 	XSync (dpy, 0);
     }
-    Debug ("done secure %s\n", d->name);
+    WDMDebug("done secure %s\n", d->name);
 }
 
 void
 UnsecureDisplay (struct display *d, Display *dpy)
 {
-    Debug ("Unsecure display %s\n", d->name);
+    WDMDebug("Unsecure display %s\n", d->name);
     if (d->grabServer)
     {
 	XUngrabServer (dpy);
@@ -500,24 +500,24 @@ SessionExit (struct display *d, int status, int removeAuth)
 
 	    code = Krb5DisplayCCache(d->name, &ccache);
 	    if (code)
-		LogError("%s while getting Krb5 ccache to destroy\n",
+		WDMError("%s while getting Krb5 ccache to destroy\n",
 			 error_message(code));
 	    else {
 		code = krb5_cc_destroy(ccache);
 		if (code) {
 		    if (code == KRB5_FCC_NOFILE) {
-			Debug ("No Kerberos ccache file found to destroy\n");
+			WDMDebug("No Kerberos ccache file found to destroy\n");
 		    } else
-			LogError("%s while destroying Krb5 credentials cache\n",
+			WDMError("%s while destroying Krb5 credentials cache\n",
 				 error_message(code));
 		} else
-		    Debug ("Kerberos ccache destroyed\n");
+		    WDMDebug("Kerberos ccache destroyed\n");
 		krb5_cc_close(ccache);
 	    }
 	}
 #endif /* K5AUTH */
     }
-    Debug ("Display %s exiting with status %d\n", d->name, status);
+    WDMDebug("Display %s exiting with status %d\n", d->name, status);
     exit (status);
 }
 
@@ -540,15 +540,15 @@ StartClient (
 #endif
 
     if (verify->argv) {
-	Debug ("StartSession %s: ", verify->argv[0]);
+	WDMDebug("StartSession %s: ", verify->argv[0]);
 	for (f = verify->argv; *f; f++)
-		Debug ("%s ", *f);
-	Debug ("; ");
+		WDMDebug ("%s ", *f);
+	WDMDebug("; ");
     }
     if (verify->userEnviron) {
 	for (f = verify->userEnviron; *f; f++)
-		Debug ("%s ", *f);
-	Debug ("\n");
+		WDMDebug("%s ", *f);
+	WDMDebug("\n");
     }
 #ifdef USE_PAM
     if (pamh) pam_open_session(pamh, 0);
@@ -579,21 +579,21 @@ StartClient (
 #ifndef HAS_SETUSERCONTEXT
 	if (setgid(verify->gid) < 0)
 	{
-	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
+	    WDMError("setgid %d (user \"%s\") failed, errno=%d\n",
 		     verify->gid, name, errno);
 	    return (0);
 	}
 #if defined(BSD) && (BSD >= 199103)
 	if (setlogin(name) < 0)
 	{
-	    LogError("setlogin for \"%s\" failed, errno=%d", name, errno);
+	    WDMError("setlogin for \"%s\" failed, errno=%d", name, errno);
 	    return(0);
 	}
 #endif
 #ifndef QNX4
 	if (initgroups(name, verify->gid) < 0)
 	{
-	    LogError("initgroups for \"%s\" failed, errno=%d\n", name, errno);
+	    WDMError("initgroups for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
 #endif   /* QNX4 doesn't support multi-groups, no initgroups() */
@@ -604,7 +604,7 @@ StartClient (
 #endif
 	if (setuid(verify->uid) < 0)
 	{
-	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",
+	    WDMError("setuid %d (user \"%s\") failed, errno=%d\n",
 		     verify->uid, name, errno);
 	    return (0);
 	}
@@ -618,7 +618,7 @@ StartClient (
 	{
 	    if (setusercontext(NULL, pwd, pwd->pw_uid, LOGIN_SETALL) < 0)
 	    {
-		LogError("setusercontext for \"%s\" failed, errno=%d\n", name,
+		WDMError("setusercontext for \"%s\" failed, errno=%d\n", name,
 		    errno);
 		return (0);
 	    }
@@ -626,7 +626,7 @@ StartClient (
 	}
 	else
 	{
-	    LogError("getpwnam for \"%s\" failed, errno=%d\n", name, errno);
+	    WDMError("getpwnam for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
 #endif /* HAS_SETUSERCONTEXT */
@@ -637,7 +637,7 @@ StartClient (
 	 */
 	if (setpcred(name, NULL) == -1)
 	{
-	    LogError("setpcred for \"%s\" failed, errno=%d\n", name, errno);
+	    WDMError("setpcred for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
 #endif /* AIXV3 */
@@ -655,12 +655,12 @@ StartClient (
 	    int     key_set_ok = 0;
 
 	    nameret = getnetname (netname);
-	    Debug ("User netname: %s\n", netname);
+	    WDMDebug("User netname: %s\n", netname);
 	    len = strlen (passwd);
 	    if (len > 8)
 		bzero (passwd + 8, len - 8);
 	    keyret = getsecretkey(netname,secretkey,passwd);
-	    Debug ("getsecretkey returns %d, key length %d\n",
+	    WDMDebug("getsecretkey returns %d, key length %d\n",
 		    keyret, strlen (secretkey));
 	    /* is there a key, and do we have the right password? */
 	    if (keyret == 1)
@@ -668,16 +668,16 @@ StartClient (
 		if (*secretkey)
 		{
 		    keyret = key_setsecret(secretkey);
-		    Debug ("key_setsecret returns %d\n", keyret);
+		    WDMDebug("key_setsecret returns %d\n", keyret);
 		    if (keyret == -1)
-			LogError ("failed to set NIS secret key\n");
+			WDMError("failed to set NIS secret key\n");
 		    else
 			key_set_ok = 1;
 		}
 		else
 		{
 		    /* found a key, but couldn't interpret it */
-		    LogError ("password incorrect for NIS principal \"%s\"\n",
+		    WDMError("password incorrect for NIS principal \"%s\"\n",
 			      nameret ? netname : name);
 		}
 	    }
@@ -734,17 +734,17 @@ StartClient (
 	home = getEnv (verify->userEnviron, "HOME");
 	if (home)
 	    if (chdir (home) == -1) {
-		LogError ("user \"%s\": cannot chdir to home \"%s\" (err %d), using \"/\"\n",
+		WDMError("user \"%s\": cannot chdir to home \"%s\" (err %d), using \"/\"\n",
 			  getEnv (verify->userEnviron, "USER"), home, errno);
 		chdir ("/");
 		verify->userEnviron = setEnv(verify->userEnviron, "HOME", "/");
 	    }
 	if (verify->argv) {
-		Debug ("executing session %s\n", verify->argv[0]);
+		WDMDebug("executing session %s\n", verify->argv[0]);
 		execute (verify->argv, verify->userEnviron);
-		LogError ("Session \"%s\" execution failed (err %d)\n", verify->argv[0], errno);
+		WDMError("Session \"%s\" execution failed (err %d)\n", verify->argv[0], errno);
 	} else {
-		LogError ("Session has no command/arguments\n");
+		WDMError("Session has no command/arguments\n");
 	}
 	failsafeArgv[0] = d->failsafeClient;
 	failsafeArgv[1] = 0;
@@ -752,13 +752,13 @@ StartClient (
 	exit (1);
     case -1:
 	bzero(passwd, strlen(passwd));
-	Debug ("StartSession, fork failed\n");
-	LogError ("can't start session on \"%s\", fork failed, errno=%d\n",
+	WDMDebug("StartSession, fork failed\n");
+	WDMError("can't start session on \"%s\", fork failed, errno=%d\n",
 		  d->name, errno);
 	return 0;
     default:
 	bzero(passwd, strlen(passwd));
-	Debug ("StartSession, fork succeeded %d\n", pid);
+	WDMDebug("StartSession, fork succeeded %d\n", pid);
 	*pidp = pid;
 	return 1;
     }
@@ -771,7 +771,7 @@ source (char **environ, char *file)
     int		ret;
 
     if (file && file[0]) {
-	Debug ("source %s\n", file);
+	WDMDebug("source %s\n", file);
 	args = parseArgs ((char **) 0, file);
 	if (!args)
 	{
@@ -796,11 +796,11 @@ runAndWait (char **args, char **environ)
     case 0:
 	CleanUpChild ();
 	execute (args, environ);
-	LogError ("can't execute \"%s\" (err %d)\n", args[0], errno);
+	WDMError("can't execute \"%s\" (err %d)\n", args[0], errno);
 	exit (1);
     case -1:
-	Debug ("fork failed\n");
-	LogError ("can't fork to execute \"%s\" (err %d)\n", args[0], errno);
+	WDMDebug("fork failed\n");
+	WDMError("can't fork to execute \"%s\" (err %d)\n", args[0], errno);
 	return 1;
     default:
 	while (wait (&result) != pid)
@@ -868,7 +868,7 @@ execute (char **argv, char **environ)
 	    p = "/bin/sh";
 	    optarg = 0;
 	}
-	Debug ("Shell script execution: %s (optarg %s)\n",
+	WDMDebug ("Shell script execution: %s (optarg %s)\n",
 		p, optarg ? optarg : "(null)");
 	for (av = argv, argc = 0; *av; av++, argc++)
 	    /* SUPPRESS 530 */

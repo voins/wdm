@@ -36,7 +36,6 @@ from The Open Group.
  */
 
 #include <dm.h>
-#include <dm_error.h>
 
 #ifdef XDMCP
 #ifdef STREAMSCONN
@@ -45,6 +44,8 @@ from The Open Group.
 #include <tiuser.h>
 #include <netconfig.h>
 #include <netdir.h>
+
+#include <wdmlib.h>
 
 extern int	xdmcpFd;
 extern int	chooserFd;
@@ -65,7 +66,7 @@ CreateWellKnownSockets ()
 
     if (request_port == 0)
 	return;
-    Debug ("creating UDP stream %d\n", request_port);
+    WDMDebug("creating UDP stream %d\n", request_port);
 
     nconf = getnetconfigent("udp");
     if (!nconf) {
@@ -75,7 +76,7 @@ CreateWellKnownSockets ()
 
     xdmcpFd = t_open(nconf->nc_device, O_RDWR, NULL);
     if (xdmcpFd == -1) {
-	LogError ("XDMCP stream creation failed\n");
+	WDMError("XDMCP stream creation failed\n");
 	t_error ("CreateWellKnownSockets(xdmcpFd): t_open failed");
 	return;
     }
@@ -97,7 +98,7 @@ CreateWellKnownSockets ()
     netdir_free((char *)servaddrs, ND_ADDRLIST);
     if (it < 0)
     {
-	LogError ("error binding STREAMS address %d\n", request_port);
+	WDMError("error binding STREAMS address %d\n", request_port);
 	t_error("CreateWellKNowSocket(xdmcpFd): t_bind failed");
 	t_close (xdmcpFd);
 	xdmcpFd = -1;
@@ -107,7 +108,7 @@ CreateWellKnownSockets ()
     FD_SET (xdmcpFd, &WellKnownSocketsMask);
 
     chooserFd = t_open ("/dev/tcp", O_RDWR, NULL);
-    Debug ("Created chooser fd %d\n", chooserFd);
+    WDMDebug("Created chooser fd %d\n", chooserFd);
     if (chooserFd == -1)
     {
 	LogError ("chooser stream creation failed\n");

@@ -36,9 +36,10 @@ from The Open Group.
  */
 
 # include	<dm.h>
-# include	<dm_error.h>
 
 # include	<ctype.h>
+
+#include <wdmlib.h>
 
 static int
 DisplayTypeMatch (DisplayType d1, DisplayType d2)
@@ -152,14 +153,14 @@ ParseDisplay (char *source, DisplayType *acceptableTypes, int numAcceptable)
 	return;
     if (!args[0])
     {
-	LogError ("Missing display name in servers file\n");
+	WDMError("Missing display name in servers file\n");
 	freeFileArgs (args);
 	return;
     }
     name = args[0];
     if (!args[1])
     {
-	LogError ("Missing display type for %s\n", args[0]);
+	WDMError("Missing display type for %s\n", args[0]);
 	freeFileArgs (args);
 	return;
     }
@@ -192,7 +193,7 @@ ParseDisplay (char *source, DisplayType *acceptableTypes, int numAcceptable)
     }
     if (!numAcceptable)
     {
-	LogError ("Unacceptable display type %s for display %s\n",
+	WDMError("Unacceptable display type %s for display %s\n",
 		  type, name);
     }
     d = FindDisplayByName (name);
@@ -211,20 +212,20 @@ ParseDisplay (char *source, DisplayType *acceptableTypes, int numAcceptable)
 		d->class = newclass;
 	    }
 	}
-	Debug ("Found existing display:  %s %s %s", d->name, d->class , type);
+	WDMDebug("Found existing display:  %s %s %s", d->name, d->class , type);
 	freeFileArgs (d->argv);
     }
     else
     {
 	d = NewDisplay (name, class);
-	Debug ("Found new display:  %s %s %s", 
+	WDMDebug("Found new display:  %s %s %s",
 		d->name, d->class ? d->class : "", type);
     }
     d->displayType = displayType;
     d->argv = copyArgs (argv);
     for (a = d->argv; a && *a; a++)
-	Debug (" %s", *a);
-    Debug ("\n");
+	WDMDebug(" %s", *a);
+    WDMDebug("\n");
     freeSomeArgs (args, argv - args);
 }
 

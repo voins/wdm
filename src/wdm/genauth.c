@@ -38,12 +38,13 @@ from The Open Group.
 
 # include   <dm.h>
 # include   <dm_auth.h>
-# include   <dm_error.h>
 
 #include <errno.h>
 
 #include <time.h>
 #define Time_t time_t
+
+#include <wdmlib.h>
 
 static unsigned char	key[8];
 
@@ -82,7 +83,7 @@ sumFile (char *name, long sum[2])
 
     fd = open (name, O_RDONLY);
     if (fd < 0) {
-	LogError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
+	WDMError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
 	return 0;
     }
 #ifdef FRAGILE_DEV_MEM
@@ -100,7 +101,7 @@ sumFile (char *name, long sum[2])
 	}
     }
     if (cnt < 0)
-	LogError("Cannot read randomFile \"%s\", errno = %d\n", name, errno);
+	WDMError("Cannot read randomFile \"%s\", errno = %d\n", name, errno);
     close (fd);
     return ret_status;
 }

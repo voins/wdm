@@ -36,7 +36,7 @@ from The Open Group.
  */
 
 # include <dm.h>
-# include <dm_error.h>
+# include <wdmlib.h>
 
 static struct display	*displays;
 static int no_xserver_started = 1;
@@ -187,13 +187,13 @@ NewDisplay (char *name, char *class)
 
     d = (struct display *) malloc (sizeof (struct display));
     if (!d) {
-	LogOutOfMem ("NewDisplay");
+	WDMError("NewDisplay: out of memory");
 	return 0;
     }
     d->next = displays;
     d->name = malloc ((unsigned) (strlen (name) + 1));
     if (!d->name) {
-	LogOutOfMem ("NewDisplay");
+	WDMError("NewDisplay: out of memory");
 	free ((char *) d);
 	return 0;
     }
@@ -202,7 +202,7 @@ NewDisplay (char *name, char *class)
     {
 	d->class = malloc ((unsigned) (strlen (class) + 1));
 	if (!d->class) {
-	    LogOutOfMem ("NewDisplay");
+	    WDMError("NewDisplay: out of memory");
 	    free (d->name);
 	    free ((char *) d);
 	    return 0;

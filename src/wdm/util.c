@@ -38,7 +38,6 @@ from The Open Group.
  */
 
 # include   <dm.h>
-# include   <dm_error.h>
 
 #include <X11/Xmu/SysUtil.h>	/* for XmuGetHostname */
 
@@ -60,11 +59,13 @@ from The Open Group.
 #define setpgrp setpgid
 #endif
 
+#include <wdmlib.h>
+
 void
 printEnv (char **e)
 {
 	while (*e)
-		Debug ("%s\n", *e++);
+		WDMDebug ("%s\n", *e++);
 }
 
 static char *
@@ -74,7 +75,7 @@ makeEnv (char *name, char *value)
 
 	result = malloc ((unsigned) (strlen (name) + strlen (value) + 2));
 	if (!result) {
-		LogOutOfMem ("makeEnv");
+		WDMError("makeEnv: out of memory");
 		return 0;
 	}
 	sprintf (result, "%s=%s", name, value);
@@ -108,7 +109,7 @@ setEnv (char **e, char *name, char *value)
 	l = strlen (name);
 	newe = makeEnv (name, value);
 	if (!newe) {
-		LogOutOfMem ("setEnv");
+		WDMError("setEnv: out of memory");
 		return e;
 	}
 	if (e) {
@@ -128,7 +129,7 @@ setEnv (char **e, char *name, char *value)
 		new = (char **) malloc (2 * sizeof (char *));
 	}
 	if (!new) {
-		LogOutOfMem ("setEnv");
+		WDMError("setEnv: out of memory");
 		free (newe);
 		return e;
 	}
@@ -150,7 +151,7 @@ putEnv(const char *string, char **env)
     nl = b - string;
     if ((n = malloc(nl + 1)) == NULL)
     {
-	LogOutOfMem ("putAllEnv");
+	WDMError("putAllEnv: out of memory");
 	return NULL;
     }
   
@@ -191,7 +192,7 @@ parseArgs (char **argv, char *string)
 	if (!argv) {
 		argv = (char **) malloc (sizeof (char *));
 		if (!argv) {
-			LogOutOfMem ("parseArgs");
+			WDMError("parseArgs: out of memory");
 			return 0;
 		}
 	}
@@ -203,7 +204,7 @@ parseArgs (char **argv, char *string)
 					(unsigned) ((i + 2) * sizeof (char *)));
 				save = malloc ((unsigned) (string - word + 1));
 				if (!newargv || !save) {
-					LogOutOfMem ("parseArgs");
+					WDMError("parseArgs: out of memory");
 					free ((char *) argv);
 					if (save)
 						free (save);

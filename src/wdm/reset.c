@@ -38,16 +38,17 @@ from The Open Group.
  */
 
 # include	<dm.h>
-# include	<dm_error.h>
 
 # include	<X11/Xlib.h>
 # include	<signal.h>
+
+#include <wdmlib.h>
 
 /*ARGSUSED*/
 static int
 ignoreErrors (Display *dpy, XErrorEvent *event)
 {
-	Debug ("ignoring error\n");
+	WDMDebug("ignoring error\n");
 	return 0;
 }
 
@@ -68,7 +69,7 @@ killWindows (Display *dpy, Window window)
 	       && nchildren > 0)
 	{
 		for (child = 0; child < nchildren; child++) {
-			Debug ("XKillClient 0x%lx\n", (unsigned long)children[child]);
+			WDMDebug("XKillClient 0x%lx\n", (unsigned long)children[child]);
 			XKillClient (dpy, children[child]);
 		}
 		XFree ((char *)children);
@@ -95,21 +96,21 @@ pseudoReset (Display *dpy)
 	int	screen;
 
 	if (Setjmp (resetJmp)) {
-		LogError ("pseudoReset timeout\n");
+		WDMError("pseudoReset timeout\n");
 	} else {
 		(void) Signal (SIGALRM, abortReset);
 		(void) alarm (30);
 		XSetErrorHandler (ignoreErrors);
 		for (screen = 0; screen < ScreenCount (dpy); screen++) {
-			Debug ("pseudoReset screen %d\n", screen);
+			WDMDebug("pseudoReset screen %d\n", screen);
 			root = RootWindow (dpy, screen);
 			killWindows (dpy, root);
 		}
-		Debug ("before XSync\n");
+		WDMDebug("before XSync\n");
 		XSync (dpy, False);
 		(void) alarm (0);
 	}
 	Signal (SIGALRM, SIG_DFL);
 	XSetErrorHandler ((XErrorHandler)0 );
-	Debug ("pseudoReset done\n");
+	WDMDebug("pseudoReset done\n");
 }
