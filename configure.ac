@@ -89,8 +89,8 @@ if test "$enable_pam" != "no" -a "$enable_shadow" != "yes" \
 		[
 			USE_PAM=yes
 			PASSWDLIB="-lpam -ldl"
-			AC_DEFINE_UNQUOTED(HAVE_PAM_LIB, 1, [Define if libpam is installed])],
-			AC_DEFINE(USE_PAM, 1, [Define if you want wdm to use pam for auth])
+			AC_DEFINE_UNQUOTED(HAVE_PAM_LIB, 1, [Define if libpam is installed])
+			AC_DEFINE(USE_PAM, 1, [Define if you want wdm to use pam for auth])],
 		,-ldl)
 
 fi
