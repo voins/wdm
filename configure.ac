@@ -109,9 +109,6 @@ AC_SUBST(USE_PAM)
 
 AC_CHECK_LIB(util, main) dnl for FreeBSD
 AC_CHECK_LIB(crypt, main) dnl for BSD and RHL
-AC_CHECK_FUNC(shmat,
-[],
-[AC_CHECK_LIB(ipc, shmat)]) dnl BSD??
 AC_CHECK_LIB(ucb, killpg) dnl for Solaris2.4
 
 AC_ARG_ENABLE(debug,
