@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.53)
-AC_INIT([wdm],[1.23],[voins@voins.program.ru])
+AC_INIT([wdm],[1.24],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
 AC_CONFIG_HEADERS(include/config.h)
 
@@ -384,9 +384,12 @@ if test "x$XGETTEXT" != "x"; then
 	fi
 fi
 
+I18N=no
 if test "x$MSGFMT" != "x" -a "x$HAVEGETTEXT" != "x"; then
 	AC_DEFINE(I18N, 1, [Define if you want internationalization support])
+	I18N=yes
 fi
+AC_SUBST(I18N)
 
 AC_ARG_WITH(nlsdir,
 	AC_HELP_STRING([--with-nlsdir=PATH],[specify where locale stuff should go]))
@@ -403,6 +406,23 @@ AC_DEFINE_UNQUOTED(NLSDIR, "$NLSDIR", [where to look for locale files])
 AC_SUBST(NLSDIR)
 AC_SUBST(XGETTEXT)
 AC_SUBST(MSGFMT)
+
+dnl this is hackaround for libfontconfig bug
+AC_ARG_WITH(fakehome,
+	AC_HELP_STRING([--with-fakehome=PATH],[path to use as home when no HOME is present. [/var/run/wdm] ]))
+
+FAKEHOME=/var/run/wdm
+if test "x$with_fakehome" != "x"; then
+	FAKEHOME=$with_fakehome
+fi
+AC_DEFINE_UNQUOTED(FAKEHOME, "$FAKEHOME", [what to use as HOME value])
+AC_SUBST(FAKEHOME)
+
+AC_ARG_ENABLE(aafont,
+	AC_HELP_STRING([--enable-aafont],[enable support for antialiased fonts.]))
+if test "$enable_aafont" = "yes"; then
+	AC_DEFINE(USE_AA, 1, [Define if you want support for antialiased fonts])
+fi
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -5,9 +5,9 @@
 int main(void)
 {
 	WDMDebug("\ntest debug functions %i\n\n", 1);
-	WDMDebugLevel(1);
+	WDMLogLevel(1);
 	WDMDebug("\ntest debug functions %i\n\n", 2);
-	WDMDebugLevel(0);
+	WDMLogLevel(0);
 	WDMDebug("\ntest debug functions %i\n\n", 3);
 	return 0;
 }

@@ -47,8 +47,8 @@ src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 
 	[make_line "bin/%.a: " [c_to_o [select_c %]]];
 	[make_action mkdir -p bin];
-	[make_action [make_var AR] cru bin/%.a [c_to_o [select_c %]]];
-	[make_action [make_var RANLIB] bin/%.a];
+	[make_action [make_var ar] cru bin/%.a [c_to_o [select_c %]]];
+	[make_action [make_var ranlib] bin/%.a];
 	[make_line];
 }
 
@@ -86,7 +86,7 @@ po/%.mo.M: etc/makefile.cook
 	rm -f [target];
 
 	[make_line po/%.mo\: po/%.po];
-	[make_action [make_var MSGFMT] -o \\$\\@ po/%.po];
+	[make_action [make_var msgfmt] -o \\$\\@ po/%.po];
 	[make_line];
 	[make_line [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo];
 	[make_action [make_var INSTALL_DATA] -D po/%.mo \\$\\@];
@@ -167,9 +167,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	cat [resolve etc/Makefile.head] >> [target];
 
 	[make_line];
-	[make_line all\: all-bin all-doc all-config all-nls];
+	[make_line all\: all-bin all-doc all-config all-nls-[make_var I18N]];
 	[make_line];
-	[make_line install\: install-bin install-config install-doc install-gfx install-nls];
+	[make_line install\: install-bin install-config install-doc install-gfx
+		install-nls-[make_var I18N]];
 
 	[make_line];
 	[make_line all-bin\: [addprefix bin/ [program_list]]];
@@ -197,8 +198,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line all-doc\: [g_manfiles]];
 
 
-	echo >> [target];
-	[make_line all-nls\: [mo_files]];
+	[make_line];
+	[make_line all-nls-yes\: [mo_files]];
+	[make_line];
+	[make_line all-nls-no\:];
 
 
 	[make_line];
@@ -210,7 +213,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 
 
 	[make_line];
-	[make_line install-nls\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]]];
+	[make_line install-nls-yes\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]]];
+	
+	[make_line];
+	[make_line install-nls-no\:];
 
 
 	[make_line];

@@ -21,6 +21,8 @@
  */
 
 #include <wdmconfig.h>
+#include <wdmlib.h>
+#include <wdmLogin.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -40,7 +42,6 @@
 #ifdef HAVE_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
-#include <wdmlib.h>
 /* temporary hack {{{ */
 #include <WINGs/WINGsP.h>
 /* }}} */
@@ -54,13 +55,8 @@
 
 #define FOREVER 1
 
-#define P_WIDTH 530
-#define P_HEIGTH 240
-
 WMRect screen;
-static int panel_width = P_WIDTH, panel_heigth = P_HEIGTH;
 static int help_heigth = 140;
-static int panel_X = 0, panel_Y = 0;
 static int text_width = 150, text_heigth = 26;
 
 static char displayArgDefault[] = "";
@@ -178,6 +174,8 @@ static char *configFile = NULL;
 #ifdef HAVE_XINERAMA
 static int xinerama_head = 0;
 #endif
+
+static WDMLoginConfig *cfg;
 
 static int exit_request = 0;
 
@@ -430,17 +428,23 @@ PrintErrMsg(LoginPanel * panel, char *msg)
 		{
 			for(x = 2; x <= 30; x += 10)
 			{
-				WMMoveWidget(panel->win, panel_X + x, panel_Y);
+				WMMoveWidget(panel->win,
+					cfg->geometry.pos.x + x,
+					cfg->geometry.pos.y);
 				nanosleep(&timeReq, NULL);
 			}
 			for(x = 30; x >= -30; x -= 10)
 			{
-				WMMoveWidget(panel->win, panel_X + x, panel_Y);
+				WMMoveWidget(panel->win,
+					cfg->geometry.pos.x + x,
+					cfg->geometry.pos.y);
 				nanosleep(&timeReq, NULL);
 			}
 			for(x = -28; x <= 0; x += 10)
 			{
-				WMMoveWidget(panel->win, panel_X + x, panel_Y);
+				WMMoveWidget(panel->win,
+					cfg->geometry.pos.x + x,
+					cfg->geometry.pos.y);
 				nanosleep(&timeReq, NULL);
 			}
 			XFlush(WMScreenDisplay(panel->scr));
@@ -577,17 +581,20 @@ startoverPressed(WMWidget * self, LoginPanel * panel)
 static void
 helpPressed(WMWidget * self, LoginPanel * panel)
 {
-	if(panel_heigth == P_HEIGTH)
+	static Bool helpshown = False;
+	if(!helpshown)
 	{
-		panel_heigth = P_HEIGTH + help_heigth;
+		helpshown = True;
 		WMSetButtonText(panel->helpBtn, _("Close Help"));
-		WMResizeWidget(panel->win, panel_width, panel_heigth);
+		WMResizeWidget(panel->win, WMWidgetWidth(panel->win),
+				WMWidgetHeight(panel->win) + help_heigth);
 	}
 	else
 	{
-		panel_heigth = P_HEIGTH;
+		helpshown = False;
 		WMSetButtonText(panel->helpBtn, _("Help"));
-		WMResizeWidget(panel->win, panel_width, panel_heigth);
+		WMResizeWidget(panel->win, WMWidgetWidth(panel->win),
+				WMWidgetHeight(panel->win) - help_heigth);
 	}
 }
 
@@ -752,7 +759,7 @@ CreateAuthFrame(LoginPanel * panel)
 	WMSetFrameRelief(panel->authF, WRGroove);
 	WMSetFrameTitlePosition(panel->authF, WTPAtTop);
 	WMSetFrameTitle(panel->authF, _("Login Authentication"));
-	WMMoveWidget(panel->authF, (panel_width - 290), 10);
+	WMMoveWidget(panel->authF, (WMWidgetWidth(panel->win) - 290), 10);
 	WMResizeWidget(panel->authF, 275, 120);
 
 	gethostname(str, 127);
@@ -821,7 +828,7 @@ CreateMsgsFrames(LoginPanel * panel)
 	panel->msgF = WMCreateFrame(panel->winF1);
 	WMSetFrameRelief(panel->msgF, WRFlat);
 	WMSetFrameTitlePosition(panel->msgF, WTPAtBottom);
-	WMMoveWidget(panel->msgF, (panel_width - 290), 136);
+	WMMoveWidget(panel->msgF, (WMWidgetWidth(panel->win) - 290), 136);
 	WMResizeWidget(panel->msgF, 275, 40);
 	WMSetFrameTitle(panel->msgF, "");
 
@@ -890,7 +897,7 @@ CreateButtons(LoginPanel * panel)
 	panel->cmdF = WMCreateFrame(panel->winF1);
 	WMSetFrameRelief(panel->cmdF, WRFlat);
 	WMSetFrameTitlePosition(panel->cmdF, WTPAtTop);
-	WMMoveWidget(panel->cmdF, (panel_width - 290), 185);
+	WMMoveWidget(panel->cmdF, (WMWidgetWidth(panel->win) - 290), 185);
 	WMResizeWidget(panel->cmdF, 282, 38);
 
 	i = 3;
@@ -924,11 +931,12 @@ CreateHelpFrames(LoginPanel * panel)
 
 	panel->helpF = WMCreateFrame(panel->win);
 	WMSetFrameRelief(panel->helpF, WRRaised);
-	WMMoveWidget(panel->helpF, 0, P_HEIGTH);
-	WMResizeWidget(panel->helpF, P_WIDTH, help_heigth);
+	WMMoveWidget(panel->helpF, 0, WMWidgetHeight(panel->win));
+	WMResizeWidget(panel->helpF, WMWidgetWidth(panel->win), help_heigth);
 
 	panel->helpSV = WMCreateScrollView(panel->helpF);
-	WMResizeWidget(panel->helpSV, (P_WIDTH - 10), (help_heigth - 10));
+	WMResizeWidget(panel->helpSV,
+			(WMWidgetWidth(panel->win) - 10), (help_heigth - 10));
 	WMMoveWidget(panel->helpSV, 5, 5);
 	WMSetScrollViewRelief(panel->helpSV, WRSunken);
 	WMSetScrollViewHasVerticalScroller(panel->helpSV, True);
@@ -943,11 +951,13 @@ CreateHelpFrames(LoginPanel * panel)
 	WMSetLabelTextAlignment(panel->helpTextL, WALeft);
 
 	height = W_GetTextHeight(WMDefaultSystemFont(panel->scr),
-				 HelpText, (P_WIDTH - 60), True) + 10;
+			HelpText, (WMWidgetWidth(panel->win) - 60), True) + 10;
 
-	WMResizeWidget(panel->helpTextF, (P_WIDTH - 50), height);
+	WMResizeWidget(panel->helpTextF,
+			(WMWidgetWidth(panel->win) - 50), height);
 	WMMoveWidget(panel->helpTextL, 2, 1);
-	WMResizeWidget(panel->helpTextL, (P_WIDTH - 60), height - 5);
+	WMResizeWidget(panel->helpTextL,
+			(WMWidgetWidth(panel->win) - 60), height - 5);
 
 	WMSetLabelText(panel->helpTextL, HelpText);
 	WMSetLabelWraps(panel->helpTextL, True);
@@ -956,7 +966,7 @@ CreateHelpFrames(LoginPanel * panel)
 }
 
 static LoginPanel *
-CreateLoginPanel(WMScreen * scr)
+CreateLoginPanel(WMScreen *scr, WDMLoginConfig *cfg)
 {
 	LoginPanel *panel;
 
@@ -969,10 +979,12 @@ CreateLoginPanel(WMScreen * scr)
 	/* basic window and frames */
 
 	panel->win = WMCreateWindow(scr, ProgName);
-	WMResizeWidget(panel->win, panel_width, panel_heigth);
+	WMResizeWidget(panel->win,
+			cfg->geometry.size.width, cfg->geometry.size.height);
 
 	panel->winF1 = WMCreateFrame(panel->win);
-	WMResizeWidget(panel->winF1, panel_width, panel_heigth);
+	WMResizeWidget(panel->winF1,
+			cfg->geometry.size.width, cfg->geometry.size.height);
 	WMSetFrameRelief(panel->winF1, WRRaised);
 
 	CreateAuthFrame(panel);
@@ -1016,7 +1028,7 @@ CreateLoginPanel(WMScreen * scr)
 static void
 DestroyLoginPanel(LoginPanel * panel)
 {
-	int width = panel_width, heigth = panel_heigth;
+	int width, height;
 	struct timespec timeReq;
 
 	/* roll up the window before destroying it */
@@ -1025,10 +1037,11 @@ DestroyLoginPanel(LoginPanel * panel)
 		timeReq.tv_sec = 0;
 		timeReq.tv_nsec = 400;
 		XSynchronize(WMScreenDisplay(panel->scr), True);	/* slow things up */
-		for(width = panel_width - 2, heigth = panel_heigth - 1;
-		    (heigth > 0 && width > 0); heigth -= 15, width -= 30)
+		for(width = WMWidgetWidth(panel->win) - 2,
+			height = WMWidgetHeight(panel->win) - 1;
+		    (height > 0 && width > 0); height -= 15, width -= 30)
 		{
-			WMResizeWidget(panel->win, width, heigth);
+			WMResizeWidget(panel->win, width, height);
 			nanosleep(&timeReq, NULL);
 		}
 		XSynchronize(WMScreenDisplay(panel->scr), False);
@@ -1272,21 +1285,6 @@ SignalTerm(int ignored)		/* all done */
 	exit_request = 1;	/* corrects some hanging problems, thanks to A. Kabaev */
 }
 
-/**
- * this function tries to load configuration file.
- * Loaded data is not used anywhere still.
- */
-WMPropList *
-LoadConfiguration(char *configFile)
-{
-	char *filename = configFile ? configFile : DEF_WDMLOGIN_CONFIG;
-	WMPropList *db;
-
-	db = WMReadPropListFromFile(filename);
-
-	return db;
-}
-
 /*###################################################################*/
 
 /*  M A I N  */
@@ -1295,7 +1293,6 @@ int
 main(int argc, char **argv)
 {
 	WMScreen *scr;
-	WMPropList *configdb;
 	int xine_count;
 
 #ifdef HAVE_XINERAMA
@@ -1317,9 +1314,15 @@ main(int argc, char **argv)
 	animate = False;
 	LoginArgs(argc, argv);	/* process our args */
 
-	configdb = LoadConfiguration(configFile);	/* load configs */
-	if(configdb)
-		WMReleasePropList(configdb);	/* configs not used still, so free it */
+	cfg = LoadConfiguration(configFile);	/* load configs */
+	if(cfg)
+	{
+		printf("geometry: %ix%i+%i+%i\n",
+				cfg->geometry.size.width,
+				cfg->geometry.size.height,
+				cfg->geometry.pos.x,
+				cfg->geometry.pos.y);
+	}
 
 	SetupWm();		/* and init the startup list */
 
@@ -1330,6 +1333,30 @@ main(int argc, char **argv)
 		WDMPanic("could not initialize Screen\n");
 		exit(2);
 	}
+
+#ifdef USE_AA
+	if(cfg->multibyte)
+		scr->useMultiByte = True;
+
+	if(cfg->aaenabled)
+	{
+		scr->antialiasedText = True;
+		scr->normalFont = WMSystemFontOfSize(scr,
+				WINGsConfiguration.defaultFontSize);
+
+		scr->boldFont = WMBoldSystemFontOfSize(scr, 
+				WINGsConfiguration.defaultFontSize);
+
+		if(!scr->boldFont)
+			scr->boldFont = scr->normalFont;
+
+		if(!scr->normalFont)
+		{
+			WDMError("could not load any fonts.");
+			exit(2);
+		}
+	}
+#endif
 
 	screen.pos.x = 0;
 	screen.pos.y = 0;
@@ -1353,8 +1380,13 @@ main(int argc, char **argv)
 	}
 #endif
 
-	panel_X = screen.pos.x + (screen.size.width - panel_width)/2;
-	panel_Y = screen.pos.y + (screen.size.height - panel_heigth)/2;
+	if(cfg->geometry.pos.x == INT_MIN || cfg->geometry.pos.y == INT_MIN)
+	{
+		cfg->geometry.pos.x = screen.pos.x +
+			(screen.size.width - cfg->geometry.size.width)/2;
+		cfg->geometry.pos.y = screen.pos.y +
+			(screen.size.height - cfg->geometry.size.height)/2;
+	}
 
 	XSynchronize(WMScreenDisplay(scr), False);
 
@@ -1362,8 +1394,8 @@ main(int argc, char **argv)
 	XWarpPointer(WMScreenDisplay(scr), None,
 		     scr->rootWin,
 		     0, 0, 0, 0,
-		     (panel_X + (panel_width - 10)),
-		     (panel_Y + (panel_heigth - 10)));
+		     (cfg->geometry.pos.x + (cfg->geometry.size.width - 10)),
+		     (cfg->geometry.pos.y + (cfg->geometry.size.height - 10)));
 	/* use of scr->rootWin is temporary hack */
 	XDefineCursor(WMScreenDisplay(scr),
 		      scr->rootWin,
@@ -1373,15 +1405,15 @@ main(int argc, char **argv)
 	setBG(scr);
 
 
-	panel = CreateLoginPanel(scr);
+	panel = CreateLoginPanel(scr, cfg);
 	WMSetWindowTitle(panel->win, ProgName);
 	/* the following Resize and the one following the Move fake out WINGs */
 	/* so that the move is not visible */
 	WMResizeWidget(panel->win, 1, 1);
 	WMMapWidget(panel->win);
 	WMSetWindowTitle(panel->win, ProgName);
-	WMMoveWidget(panel->win, panel_X, panel_Y);
-	WMResizeWidget(panel->win, panel_width, panel_heigth);
+	WMMoveWidget(panel->win, cfg->geometry.pos.x, cfg->geometry.pos.y);
+	WMResizeWidget(panel->win, cfg->geometry.size.width, cfg->geometry.size.height);
 	WMSetFocusToWidget(panel->entryText);
 	XSetInputFocus(WMScreenDisplay(scr), WMWidgetXID(panel->win),
 		       RevertToParent, CurrentTime);
