@@ -81,7 +81,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include <malloc.h>
 #include <syslog.h>
 #include <wdmlib.h>
 #include <unistd.h>
