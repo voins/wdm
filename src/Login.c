@@ -24,16 +24,8 @@
 #include <X11/xpm.h>
 #include <X11/keysym.h>
 #include <X11/cursorfont.h>
-#ifdef HAVE_X11_WINGS_H
-#include <X11/WINGs.h>
-#else
-#include <WINGs.h>
-#endif
-#ifdef HAVE_X11_WUTIL_H
-#include <X11/WUtil.h>
-#else
-#include <WUtil.h>
-#endif
+#include <WINGs/WINGs.h>
+#include <WINGs/WUtil.h>
 #include <limits.h>
 
 #if (WINGS_H_VERSION == 980901)

@@ -22,10 +22,8 @@ AM_SANITY_CHECK
 AC_PROG_INSTALL
 
 AC_PROG_CC
-AC_PROG_INSTALL
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h \
-		WINGs.h WUtil.h X11/WINGs.h X11/WUtil.h \
 		syslog.h)
 
 AC_DECL_SYS_SIGLIST
