@@ -175,6 +175,8 @@ static int animate = False;
 static int smoothScale = True;
 static char *configFile = NULL;
 
+static int exit_request = 0;
+
 char *ProgName = "Login";
 
 char *
@@ -1247,7 +1249,7 @@ SignalUsr1(int ignored)		/* oops, an error */
 static void
 SignalTerm(int ignored)		/* all done */
 {
-	exit(0);		/* corrects some hanging problems, thanks to A. Kabaev */
+	exit_request = 1;	/* corrects some hanging problems, thanks to A. Kabaev */
 }
 
 /**
@@ -1378,13 +1380,19 @@ main(int argc, char **argv)
 	WMCreateEventHandler(WMWidgetView(panel->entryText), KeyPressMask,
 			     handleKeyPress, panel);
 
+	exit_request = 0;
 	signal(SIGUSR1, SignalUsr1);
 	signal(SIGTERM, SignalTerm);
 	signal(SIGINT, SignalTerm);
 	signal(SIGPIPE, SIG_DFL);
 
-	WMScreenMainLoop(scr);
+	while(!exit_request)
+	{
+		XEvent event;
+		WMNextEvent(WMScreenDisplay(scr), &event);
+		WMHandleEvent(&event);
+	}
 	DestroyLoginPanel(panel);
 
-	return 0;		/* never get here but keeps compiler happy */
+	return 0;
 }
