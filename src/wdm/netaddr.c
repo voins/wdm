@@ -172,27 +172,4 @@ addressEqual (XdmcpNetaddr a1, int len1, XdmcpNetaddr a2, int len2)
     return TRUE;
 }
 
-#ifdef DEBUG
-/*ARGSUSED*/
-void
-PrintSockAddr (struct sockaddr *a, int len)
-{
-    unsigned char    *t, *p;
-
-    Debug ("family %d, ", a->sa_family);
-    switch (a->sa_family) {
-#ifdef AF_INET
-    case AF_INET:
-
-	p = (unsigned char *) &((struct sockaddr_in *) a)->sin_port;
-	t = (unsigned char *) &((struct sockaddr_in *) a)->sin_addr;
-
-	Debug ("port %d, host %d.%d.%d.%d\n",
-		(p[0] << 8) + p[1], t[0], t[1], t[2], t[3]);
-	break;
-    }
-#endif
-}
-#endif
-
 #endif /* XDMCP */
