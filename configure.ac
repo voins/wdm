@@ -55,7 +55,7 @@ AC_SUBST(SYSTEM_SHELL)
 
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h syslog.h)
+AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h syslog.h libintl.h)
 
 AC_CHECK_DECLS([sys_siglist])
 
