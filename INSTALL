@@ -183,8 +183,17 @@ help me :-)
 	specify a (colon separated) list of window managers which can be
 	started ... overrides ./configure's search for window managers.
 
---with-nlsdir=PAT
-	specify path wher to look for locale specific .mo-files.
+--with-nlsdir=PATH
+	specify path where to look for locale specific .mo-files.
+
+--with-fakeroot=PATH
+	That option allows to change path that will be passed to wdmLogin
+	in HOME environment variable. This is workaround for bug in
+	fontconfig. By default it points to /var/run/wdm.
+
+--enable-aafont
+	Enable support for antialiased fonts. This will work only with
+	post-0.80.2 cvs snapshots of libWINGs.
 
 ***NOTE***********************************************************NOTE****
 
@@ -267,10 +276,16 @@ DisplayManager*wdmLogin:	<locate of the Login program>
 DisplayManager*wdmBg:		<background specification>
 DisplayManager*wdmLogo:		<path of Logo pixmap>
 DisplayManager*wdmWm:		<list of window managers separated by colons>
-DisplayManager*wdm*Reboot:	<command to execute to reboot>
+DisplayManager*wdmReboot:	<command to execute to reboot>
 DisplayManager*wdmHalt:		<command to execute to halt>
 DisplayManager*wdmVerify:	<true/false> -- Verify user for reboot/halt/exit
 DisplayManager*wdmRoot:		<true/false> -- user must be verified root to exit
+DisplayManager*wdmLoginConfig:	<path to configuration file for wdmLogin>
+DisplayManager*wdmHelpFile:	<path to file displayed in help window>
+DisplayManager*wdmAnimations:	<true/false> -- Enable animations for events.
+DisplayManager*wdmLocale:	<locale to use with wdmLogin>
+DisplayManager*wdmCursorTheme:  <XFree86 4.3.x cursor theme to use>
+DisplayManager*wdmXineramaHead: <display on which login panel will appear>
 
 background specifications:
 	pixmap:full_path_to_background_pixmap
@@ -280,6 +295,22 @@ background specifications:
 	dgradient:<list of colors separated by commas>
 		h=horizontal, v=vertical, d=diagonal
 		multi-gradients.
+
+3. wdmLogin program uses separate configuration file in proplist format.
+Filename is defined with wdmLoginConfig resource in wdm-config file.
+Here's example of that file with all options filled with default values.
+
+{
+	geometry = (530, 240);
+	aa = no;
+	multibyte = no;
+}
+
+"aa" and "multibyte" options available if wdm was compiled with --enable-aafont option.
+"geometry" option can also have two addittional integers, that will specify screen 
+position of login panel.  Like:
+geometry = (530, 240, 50, 100);
+
 
 Compilers and Options
 =====================
