@@ -54,10 +54,6 @@ in this Software without prior written authorization from The Open Group.
 #include <ctype.h>
 #include <errno.h>
 
-#if defined(STREAMSCONN)
-# include       <tiuser.h>
-#endif
-
 #include <time.h>
 #define Time_t time_t
 
@@ -389,68 +385,18 @@ ProcessChooserSocket (int fd)
     ARRAY8	clientAddress;
     CARD16	connectionType;
     ARRAY8	choice;
-#if defined(STREAMSCONN)
-    struct t_call *call;
-    int flags=0;
-#endif
 
     WDMDebug("Process chooser socket\n");
     len = sizeof (buf);
-#if defined(STREAMSCONN)
-    call = (struct t_call *)t_alloc( fd, T_CALL, T_ALL );
-    if( call == NULL )
-    {
-	t_error( "ProcessChooserSocket: t_alloc failed" );
-	WDMError("Cannot setup to listen on chooser connection\n");
-	return;
-    }
-    if( t_listen( fd, call ) < 0 )
-    {
-	t_error( "ProcessChooserSocket: t_listen failed" );
-	t_free( (char *)call, T_CALL );
-	WDMError("Cannot listen on chooser connection\n");
-	return;
-    }
-    client_fd = t_open ("/dev/tcp", O_RDWR, NULL);
-    if (client_fd == -1)
-    {
-	t_error( "ProcessChooserSocket: t_open failed" );
-	t_free( (char *)call, T_CALL );
-	WDMError("Cannot open new chooser connection\n");
-	return;
-    }
-    if( t_bind( client_fd, NULL, NULL ) < 0 )
-    {
-	t_error( "ProcessChooserSocket: t_bind failed" );
-	t_free( (char *)call, T_CALL );
-	WDMError("Cannot bind new chooser connection\n");
-        t_close (client_fd);
-	return;
-    }
-    if( t_accept (fd, client_fd, call) < 0 )
-    {
-	t_error( "ProcessChooserSocket: t_accept failed" );
-	WDMError("Cannot accept chooser connection\n");
-	t_free( (char *)call, T_CALL );
-        t_unbind (client_fd);
-        t_close (client_fd);
-	return;
-    }
-#else
     client_fd = accept (fd, (struct sockaddr *)buf, (void *)&len);
     if (client_fd == -1)
     {
 	WDMError("Cannot accept chooser connection\n");
 	return;
     }
-#endif
     WDMDebug("Accepted %d\n", client_fd);
     
-#if defined(STREAMSCONN)
-    len = t_rcv (client_fd, buf, sizeof (buf),&flags);
-#else
     len = read (client_fd, buf, sizeof (buf));
-#endif
     WDMDebug("Read returns %d\n", len);
     if (len > 0)
     {
@@ -484,13 +430,7 @@ ProcessChooserSocket (int fd)
 	WDMError("Choice response read error: %s\n", strerror(errno));
     }
 
-#if defined(STREAMSCONN)
-    t_unbind (client_fd);
-    t_free( (char *)call, T_CALL );
-    t_close (client_fd);
-#else
     close (client_fd);
-#endif
 }
 
 void

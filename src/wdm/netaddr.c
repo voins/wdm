@@ -62,12 +62,7 @@ from The Open Group.
 
 int NetaddrFamily(XdmcpNetaddr netaddrp)
 {
-#ifdef STREAMSCONN
-    short family = *(short *)netaddrp;
-    return family;
-#else
     return ((struct sockaddr *)netaddrp)->sa_family;
-#endif
 }
 
 
@@ -77,10 +72,6 @@ int NetaddrFamily(XdmcpNetaddr netaddrp)
 
 char * NetaddrPort(XdmcpNetaddr netaddrp, int *lenp)
 {
-#ifdef STREAMSCONN
-    *lenp = 2;
-    return netaddrp+2;
-#else
     switch (NetaddrFamily(netaddrp))
     {
     case AF_INET:
@@ -90,7 +81,6 @@ char * NetaddrPort(XdmcpNetaddr netaddrp, int *lenp)
 	*lenp = 0;
 	return NULL;
     }
-#endif
 }
 
 
@@ -99,10 +89,6 @@ char * NetaddrPort(XdmcpNetaddr netaddrp, int *lenp)
 
 char * NetaddrAddress(XdmcpNetaddr netaddrp, int *lenp)
 {
-#ifdef STREAMSCONN
-    *lenp = 4;
-    return netaddrp+4;
-#else
     switch (NetaddrFamily(netaddrp)) {
 #ifdef UNIXCONN
     case AF_UNIX:
@@ -126,7 +112,6 @@ char * NetaddrAddress(XdmcpNetaddr netaddrp, int *lenp)
 	*lenp = 0;
 	return NULL;
     }
-#endif /* STREAMSCONN else */
 }
 
 
@@ -141,11 +126,6 @@ int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
     if (len == NULL)
         return -1;
     *addr = NetaddrAddress(saddr, len);
-#ifdef STREAMSCONN
-    /* kludge */
-    if (NetaddrFamily(saddr) == 2)
-	retval = FamilyInternet;
-#else
     switch (NetaddrFamily(saddr))
     {
 #ifdef AF_UNSPEC
@@ -179,7 +159,6 @@ int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
 	retval = -1;
         break;
     }
-#endif /* STREAMSCONN else */
     WDMDebug("ConvertAddr returning %d for family %d\n", retval,
 	   NetaddrFamily(saddr));
     return retval;

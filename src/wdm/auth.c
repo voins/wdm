@@ -50,7 +50,7 @@ from The Open Group.
 
 #include <wdmlib.h>
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN)
 # include <dm_socket.h>
 #endif
 #ifdef DNETCONN
@@ -755,30 +755,6 @@ ifioctl (int fd, int cmd, char *arg)
 #define ifioctl ioctl
 #endif /* SYSV_SIOCGIFCONF */
 
-#if defined(STREAMSCONN) && !defined(SYSV_SIOCGIFCONF) && !defined(NCR)
-
-#include <tiuser.h>
-
-/* Define this host for access control.  Find all the hosts the OS knows about 
- * for this fd and add them to the selfhosts list.
- * TLI version, written without sufficient documentation.
- */
-static void
-DefineSelf (int fd, FILE *file, Xauth *auth)
-{
-    struct netbuf	netb;
-    char		addrret[1024]; /* easier than t_alloc */
-    
-    netb.maxlen = sizeof(addrret);
-    netb.buf = addrret;
-    if (t_getname (fd, &netb, LOCALNAME) == -1)
-	t_error ("t_getname");
-    /* what a kludge */
-    writeAddr (FamilyInternet, 4, netb.buf+4, file, auth);
-}
-
-#else
-
 #ifdef WINTCP /* NCR with Wollongong TCP */
 
 #include <sys/un.h>
@@ -978,7 +954,6 @@ DefineSelf (int fd, int file, int auth)
 
 #endif /* SIOCGIFCONF else */
 #endif /* WINTCP else */
-#endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
 
 
 static void
@@ -1016,13 +991,6 @@ writeLocalAuth (FILE *file, Xauth *auth, char *name)
 
     WDMDebug("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
-#ifdef STREAMSCONN
-    fd = t_open ("/dev/tcp", O_RDWR, 0);
-    t_bind(fd, NULL, NULL);
-    DefineSelf (fd, file, auth);
-    t_unbind (fd);
-    t_close (fd);
-#endif
 #ifdef TCPCONN
     fd = socket (AF_INET, SOCK_STREAM, 0);
     DefineSelf (fd, file, auth);

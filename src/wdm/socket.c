@@ -38,7 +38,6 @@ from The Open Group.
 #include <dm.h>
 
 #ifdef XDMCP
-#ifndef STREAMSCONN
 
 #include <errno.h>
 #include <dm_socket.h>
@@ -126,5 +125,4 @@ GetChooserAddr (
     return 0;
 }
 
-#endif /* !STREAMSCONN */
 #endif /* XDMCP */

@@ -93,15 +93,6 @@ in this Software without prior written authorization from The Open Group.
 #include    <arpa/inet.h>
 
 #include    <sys/ioctl.h>
-#ifdef STREAMSCONN
-#ifdef WINTCP /* NCR with Wollongong TCP */
-#include    <netinet/ip.h>
-#endif
-#include    <stropts.h>
-#include    <tiuser.h>
-#include    <netconfig.h>
-#include    <netdir.h>
-#endif
 
 #ifdef CSRG_BASED
 #include <sys/param.h>
@@ -783,50 +774,12 @@ InitXDMCP (char **argv)
 	header.length += 2 + AuthenticationNames.data[i].length;
     XdmcpWriteHeader (&directBuffer, &header);
     XdmcpWriteARRAYofARRAY8 (&directBuffer, &AuthenticationNames);
-#if defined(STREAMSCONN)
-    if ((socketFD = t_open ("/dev/udp", O_RDWR, 0)) < 0)
-	return 0;
-
-    if (t_bind( socketFD, NULL, NULL ) < 0)
-	{
-	t_close(socketFD);
-	return 0;
-	}
-
-    /*
-     * This part of the code looks contrived. It will actually fit in nicely
-     * when the CLTS part of Xtrans is implemented.
-     */
-    {
-    struct netconfig *nconf;
-
-    if( (nconf=getnetconfigent("udp")) == NULL )
-	{
-	t_unbind(socketFD);
-	t_close(socketFD);
-	return 0;
-	}
-
-    if( netdir_options(nconf, ND_SET_BROADCAST, socketFD, NULL) )
-	{
-	freenetconfigent(nconf);
-	t_unbind(socketFD);
-	t_close(socketFD);
-	return 0;
-	}
-
-    freenetconfigent(nconf);
-    }
-#else
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
-#endif
-#ifndef STREAMSCONN
 #ifdef SO_BROADCAST
     soopts = 1;
     if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, (char *)&soopts, sizeof (soopts)) < 0)
 	perror ("setsockopt");
-#endif
 #endif
     
     XtAddInput (socketFD, (XtPointer) XtInputReadMask, ReceivePacket,
@@ -854,9 +807,6 @@ Choose (HostName *h)
 	char		buf[1024];
 	XdmcpBuffer	buffer;
 	char		*xdm;
-#if defined(STREAMSCONN)
-        struct  t_call  call, rcv;
-#endif
 
 	xdm = (char *) app_resources.xdmAddress->data;
 	family = (xdm[0] << 8) + xdm[1];
@@ -872,36 +822,6 @@ Choose (HostName *h)
 	    len = sizeof (in_addr);
 	    break;
 	}
-#if defined(STREAMSCONN)
-	if ((fd = t_open ("/dev/tcp", O_RDWR, NULL)) == -1)
-	{
-	    fprintf (stderr, "Cannot create response endpoint\n");
-	    fflush(stderr);
-	    exit (REMANAGE_DISPLAY);
-	}
-	if (t_bind (fd, NULL, NULL) == -1)
-	{
-	    fprintf (stderr, "Cannot bind response endpoint\n");
-	    fflush(stderr);
-	    t_close (fd);
-	    exit (REMANAGE_DISPLAY);
-	}
-	call.addr.buf=(char *)addr;
-	call.addr.len=len;
-	call.addr.maxlen=len;
-	call.opt.len=0;
-	call.opt.maxlen=0;
-	call.udata.len=0;
-	call.udata.maxlen=0;
-	if (t_connect (fd, &call, NULL) == -1)
-	{
-	    t_error ("Cannot connect to xdm\n");
-	    fflush(stderr);
-	    t_unbind (fd);
-	    t_close (fd);
-	    exit (REMANAGE_DISPLAY);
-	}
-#else
 	if ((fd = socket (family, SOCK_STREAM, 0)) == -1)
 	{
 	    fprintf (stderr, "Cannot create response socket\n");
@@ -912,7 +832,6 @@ Choose (HostName *h)
 	    fprintf (stderr, "Cannot connect to xdm\n");
 	    exit (REMANAGE_DISPLAY);
 	}
-#endif
 	buffer.data = (BYTE *) buf;
 	buffer.size = sizeof (buf);
 	buffer.pointer = 0;
@@ -920,24 +839,8 @@ Choose (HostName *h)
 	XdmcpWriteARRAY8 (&buffer, app_resources.clientAddress);
 	XdmcpWriteCARD16 (&buffer, (CARD16) app_resources.connectionType);
 	XdmcpWriteARRAY8 (&buffer, &h->hostaddr);
-#if defined(STREAMSCONN)
-	if( t_snd (fd, (char *)buffer.data, buffer.pointer, 0) < 0 )
-	{
-	    fprintf (stderr, "Cannot send to xdm\n");
-	    fflush(stderr);
-	    t_unbind (fd);
-	    t_close (fd);
-	    exit (REMANAGE_DISPLAY);
-	}
-	sleep(5);	/* Hack because sometimes the connection gets
-			   closed before the data arrives on the other end. */
-	t_snddis (fd,NULL);
-	t_unbind (fd);
-	t_close (fd);
-#else
 	write (fd, (char *)buffer.data, buffer.pointer);
 	close (fd);
-#endif
     }
     else
     {
