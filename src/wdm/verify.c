@@ -45,7 +45,7 @@ from The Open Group.
 # include	<security/pam_appl.h>
 # include	<stdlib.h>
 #else
-# ifdef USESHADOW
+# ifdef HAVE_SHADOW_H
 #  include	<shadow.h>
 #  include	<errno.h>
 # endif
@@ -291,7 +291,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 #ifdef USE_PAM
 	pam_handle_t **pamhp = thepamhp();
 #else
-#ifdef USESHADOW
+#ifdef HAVE_SHADOW_H
 	struct spwd	*sp;
 #endif
 	char		*user_pass = NULL;
@@ -363,7 +363,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	}
 #endif
 #ifndef USE_PAM
-#ifdef USESHADOW
+#ifdef HAVE_SHADOW_H
 	errno = 0;
 	sp = getspnam(greet->name);
 	if (sp == NULL) {

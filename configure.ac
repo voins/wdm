@@ -99,13 +99,8 @@ if test -z "$PASSWDLIB" \
 	&& ( test "$enable_shadow" != "no" -a "$enable_pam" != "yes" \
 	|| test "$enable_pam" = "yes" -a "$enable_shadow" = "yes" ); then
 
-	AC_CHECK_LIB(shadow, main,
-		[
-			PASSWDLIB="-lshadow"
-			AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB, 1, [Define if libshadow is installed])
-			AC_DEFINE(USESHADOW, 1, [Define if you wand wdm to use shadow for auth])
-		])
-
+	AC_CHECK_LIB(shadow, main,[PASSWDLIB="-lshadow"])
+	AC_CHECK_HEADERS(shadow.h)
 fi
 
 AC_SUBST(PASSWDLIB)

@@ -78,10 +78,10 @@ extern	struct group	*getgrent(void);
 extern	void	endgrent(void);
 #endif
 
-#ifdef USESHADOW
-extern	struct spwd	*getspnam(GETSPNAM_ARGS);
-extern	void	endspent(void);
+#ifdef HAVE_SHADOW_H
+#include <shadow.h>
 #endif
+
 #if defined(CSRG_BASED)
 #include <pwd.h>
 #include <unistd.h>
@@ -134,7 +134,7 @@ static	struct dlfuncs	dlfuncs = {
 	setgrent,
 	getgrent,
 	endgrent,
-#ifdef USESHADOW
+#ifdef HAVE_SHADOW_H
 	getspnam,
 #ifndef QNX4
 	endspent,
