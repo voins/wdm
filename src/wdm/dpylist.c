@@ -36,7 +36,7 @@ from the X Consortium.
  * a simple linked list of known displays
  */
 
-# include "dm.h"
+# include <dm.h>
 
 static struct display	*displays;
 

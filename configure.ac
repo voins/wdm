@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.53)
 AC_INIT([wdm],[1.20.1],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
-AC_CONFIG_HEADERS(config.h)
+AC_CONFIG_HEADERS(include/config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
@@ -312,8 +312,12 @@ AC_CHECK_LIB(Xft2, XftDrawCreate,
 ],$XCFLAGS $XLDFLAGS $XLIBS)
 
 
-WMLIBS=
-AC_CHECK_LIB(wraster, RCreateImage,,
+LIBWINGS=
+LIBWRASTER=
+AC_CHECK_LIB(wraster, RCreateImage,
+[
+	dummy=
+],
 [
 	AC_MSG_ERROR([wraster lib required and not found])
 ],$GFXLDFLAGS $XLDFLAGS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
@@ -321,36 +325,39 @@ AC_CHECK_LIB(wraster, RCreateImage,,
 AC_CHECK_LIB(wrasterg, RCreateImage,
 [
 	if test "$enable_debug" = yes; then
-		WMLIBS="$WMLIBS -lwrasterg"
+		LIBWRASTER="-lwrasterg"
 	else
-		WMLIBS="$WMLIBS -lwraster"
+		LIBWRASTER="-lwraster"
 	fi
 ],[
-	WMLIBS="$WMLIBS -lwraster"
+	LIBWRASTER="-lwraster"
 ],$GFXLDFLAGS $XLDFLAGS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
 
-AC_CHECK_LIB(WINGs, WMCreateScreen,,
+AC_CHECK_LIB(WINGs, WMCreateScreen,
+[
+	dummy=
+],
 [
 	AC_MSG_ERROR([WINGs lib required and not found])
-],$GFXLDFLAGS $XLDFLAGS $WMLIBS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
+],$GFXLDFLAGS $XLDFLAGS $LIBWRASTER $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
 
 AC_CHECK_LIB(WINGsg, WMCreateScreen,
 [
 	if test "$enable_debug" = yes; then
-		WMLIBS="$WMLIBS -lWINGsg"
+		LIBWINGS="-lWINGsg"
 	else
-		WMLIBS="$WMLIBS -lWINGs"
+		LIBWINGS="-lWINGs"
 	fi
 ],[
-	WMLIBS="$WMLIBS -lWINGs"
-],$GFXLDFLAGS $XLDFLAGS $WMLIBS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
+	LIBWINGS="$WMLIBS -lWINGs"
+],$GFXLDFLAGS $XLDFLAGS $LIBWRASTER $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
 
 if ! test "x$LIBPROPLIST" = "x"; then
 	AC_MSG_CHECKING([if we really need libPropList])
 	tmpLDFLAGS=$LDFLAGS
 	tmpLIBS=$LIBS
 	LDFLAGS="$GFXLDFLAGS $XLDFLAGS"
-	LIBS="$WMLIBS $XLIBS $GFXLIBS $XFTLIBS"
+	LIBS="$LIBWINGS $LIBWRASTER $XLIBS $GFXLIBS $XFTLIBS"
 	AC_TRY_LINK_FUNC(WMCreateScreen,
 	[
 		AC_MSG_RESULT(no)
@@ -367,7 +374,7 @@ if ! test "x$XFTLIBS" = "x"; then
 	tmpLDFLAGS=$LDFLAGS
 	tmpLIBS=$LIBS
 	LDFLAGS="$GFXLDFLAGS $XLDFLAGS"
-	LIBS="$WMLIBS $XLIBS $GFXLIBS $LIBPROPLIST"
+	LIBS="$LIBWINGS $LIBWRASTER $XLIBS $GFXLIBS $LIBPROPLIST"
 	AC_TRY_LINK_FUNC(WMCreateScreen,
 	[
 		AC_MSG_RESULT(no)
@@ -379,7 +386,7 @@ if ! test "x$XFTLIBS" = "x"; then
 	LDFLAGS=$tmpLDFLAGS
 	LIBS=$tmpLIBS
 fi
-GFXLIBS="$WMLIBS $XFTLIBS $LIBPROPLIST $GFXLIBS"
+GFXLIBS="$LIBWINGS $LIBWRASTER $XFTLIBS $LIBPROPLIST $GFXLIBS"
 GFXCFLAGS="$GFXCFLAGS $XFTCFLAGS"
 
 AC_SUBST(GFXCFLAGS)

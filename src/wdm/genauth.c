@@ -37,7 +37,7 @@ from the X Consortium.
 
 # include   <X11/Xauth.h>
 # include   <X11/Xos.h>
-# include   "dm.h"
+# include   <dm.h>
 
 #include <errno.h>
 

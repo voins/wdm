@@ -39,7 +39,7 @@ from the X Consortium.
  * maintain the authorization generation daemon
  */
 
-#include "dm.h"
+#include <dm.h>
 #include <X11/X.h>
 #include <sys/types.h>
 #include <sys/stat.h>

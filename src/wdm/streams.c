@@ -37,7 +37,7 @@ from the X Consortium.
  * streams.c - Support for STREAMS
  */
 
-#include "dm.h"
+#include <dm.h>
 
 #ifdef XDMCP
 #ifdef STREAMSCONN

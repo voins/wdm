@@ -39,7 +39,7 @@ from the X Consortium.
  * typical unix verification routine.
  */
 
-# include	"dm.h"
+# include	<dm.h>
 # include	<pwd.h>
 #ifdef USE_PAM
 # include	<security/pam_appl.h>
@@ -56,7 +56,7 @@ extern int errno;
 #endif
 #endif /* USE_PAM */
 
-# include	"greet.h"
+# include	<greet.h>
 
 #ifdef X_NOT_STDC_ENV
 char *getenv();

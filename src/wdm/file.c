@@ -36,7 +36,7 @@ from the X Consortium.
  * file.c
  */
 
-# include	"dm.h"
+# include	<dm.h>
 # include	<ctype.h>
 
 DisplayTypeMatch (d1, d2)

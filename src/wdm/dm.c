@@ -37,7 +37,7 @@ from the X Consortium.
  * display manager
  */
 
-# include	"dm.h"
+# include	<dm.h>
 
 # include	<stdio.h>
 #ifdef X_POSIX_C_SOURCE

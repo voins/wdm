@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
  * started.
  */
 
-#include "dm.h"
+#include <dm.h>
 
 #ifdef XDMCP
 

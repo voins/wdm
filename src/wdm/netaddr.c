@@ -36,7 +36,7 @@ from the X Consortium.
  * netaddr.c - Interpretation of XdmcpNetaddr object.
  */
 
-#include "dm.h"
+#include <dm.h>
 
 #include <X11/X.h>		/* FamilyInternet, etc. */
 

@@ -37,8 +37,8 @@ from the X Consortium.
  * session.c
  */
 
-#include "dm.h"
-#include "greet.h"
+#include <dm.h>
+#include <greet.h>
 #include <X11/Xlib.h>
 #include <signal.h>
 #include <X11/Xatom.h>

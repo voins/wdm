@@ -7,7 +7,7 @@
 /*###################################################################*/
 
 
-#include "wdmconfig.h"
+#include <wdmconfig.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,7 +33,7 @@ void WMSetScrollViewLineScroll(WMScrollView *sPtr, int amount);
 void WMSetScrollViewPageScroll(WMScrollView *sPtr, int amount);
 #endif
 
-#include "pixmaps/gnuLogo.xpm"
+#include <pixmaps/gnuLogo.xpm>
 
 /*###################################################################*/
 
@@ -76,11 +76,11 @@ static int WmDefUser = False;	       /* default username */
 static char *helpArg = NULL;
 static char *HelpFile = NULL;
 static char  *HelpMsg =
-		PACKAGE
+		PACKAGE_NAME
 		" --- Version "
-		VERSION
+		PACKAGE_VERSION
 		"\n\n\n\n\n"
-		PACKAGE
+		PACKAGE_NAME
 		" is a graphical "
 		"interface used to authenticate a user to "
 		"the system and perform the login process.\n\n\n"

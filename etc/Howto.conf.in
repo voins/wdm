@@ -16,3 +16,12 @@ PASSWDLIB = @PASSWDLIB@;
 LIBSOCKET = @LIBSCOKET@;
 LIBUCB = @LIBUCB@;
 LIBUTIL = @LIBUTIL@;
+CC = @CC@;
+PACKAGE_NAME = @PACKAGE_NAME@;
+PACKAGE_VERSION = @PACKAGE_VERSION@;
+
+cc = [CC];
+cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];
+ldflags = [LDFLAGS];
+libs = [LIBS];
+

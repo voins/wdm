@@ -1,3 +1,6 @@
+set mkdir;
+set time-adjust-back;
+
 if [not [defined search_path]] then search_path=;
 
 search_list = .;
@@ -16,8 +19,7 @@ loop
 	search_name = [search_name]bl;
 }
 
-if [not [defined aclocal]] then aclocal=aclocal;
-if [not [defined automake]] then automake=automake;
+
 if [not [defined autoheader]] then autoheader=autoheader_2.5;
 if [not [defined autoconf]] then autoconf=autoconf_2.5;
 
@@ -25,17 +27,49 @@ change_files = [collect aegis -list cf -terse -p [project] -c [change]];
 project_files = [collect aegis -list pf -terse -p [project]];
 source_files = [sort [stringset [change_files] [project_files]]];
 
-#include-cooked-nowarn [resolve etc/Howto.conf]
+
+if [not [defined cflags]] then cflags=;
+if [not [defined ldflags]] then ldflags=;
+if [not [defined libs]] then libs=;
+if [not [defined cc]] then cc=gcc;
+if [not [defined XCFLAGS]] then XCFLAGS=;
+if [not [defined GFXCFLAGS]] then GFXCFLAGS=;
+if [not [defined XLDFLAGS]] then XLDFLAGS=;
+if [not [defined XLIBS]] then XLIBS=;
+if [not [defined GFXLDFLAGS]] then GFXLDFLAGS=;
+if [not [defined GFXLIBS]] then GFXLIBS=;
+if [not [defined LIBCRYPT]] then LIBCRYPT=;
+if [not [defined LIBUCB]] then LIBUCB=;
+if [not [defined LIBUTIL]] then LIBUTIL=;
+if [not [defined PASSWDLIB]] then PASSWDLIB=;
+
+#include-cooked-nowarn etc/Howto.conf
+
+cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
+
+wdmLogin_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
+wdmLogin_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
+wdmLogin_libs = [libs] [XLIBS] [GFXLIBS];
+
+TestLogin_cflags = [cflags];
+TestLogin_ldflags = [ldflags];
+TestLogin_libs = [libs];
+
+wdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
+wdm_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
+wdm_libs = [libs] [XLIBS] [GFXLIBS] [LIBCRYPT] \
+	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
+	-lXmu -lXau -lXdmcp;
 
 wdm_config_files = src/config/wdm-config src/config/Xclients \
 	src/config/Xsetup_0 src/config/Xsession src/config/Xservers \
 	src/config/Xservers.ws src/config/wdmReconfig;
 
+program_list = bin/wdmLogin bin/TestLogin bin/wdm;
 
-all: [wdm_config_files]
+all: [wdm_config_files] include/config.h [program_list]
 {
 }
-
 
 if [exists /usr/local/share/autoconf/install-sh] then
 	install-sh = /usr/local/share/autoconf/install-sh;
@@ -45,7 +79,6 @@ if [exists /usr/local/share/automake/install-sh] then
 	install-sh = /usr/local/share/automake/install-sh;
 else 
 	install-sh = /usr/share/automake/install-sh;
-
 
 install-sh: [install-sh]
 {
@@ -73,25 +106,33 @@ config.status : configure etc/Howto.cook
 		--srcdir\=.;
 }
 
-config.h.in : configure.ac etc/Howto.cook
+include/config.h.in : configure.ac etc/Howto.cook
 {
 	[autoheader] [resolve configure.ac] > [target];
 	rm -rf autom4te*.cache;
+}
+
+include/config.h : include/config.h.in config.status
+{
+	CONFIG_FILES\= CONFIG_HEADERS\=[target]\:[resolve include/config.h.in]
+		[pathname [resolve config.status]];
+	rm -f config.log;
 }
 
 src/config/% : src/config/%.in config.status
 {
 	CONFIG_FILES\=[target]\:[resolve src/config/%.in] CONFIG_HEADERS\=
 		[pathname [resolve config.status]];
-	rm config.log;
+	rm -f config.log;
 }
 
 etc/Howto.conf : etc/Howto.conf.in config.status
 {
 	CONFIG_FILES\=[target]\:[resolve etc/Howto.conf.in] CONFIG_HEADERS\=
 		[pathname [resolve config.status]];
-	rm config.log;
+	rm -f config.log;
 }
+
 
 Makefile.in : etc/Howto.conf
 {
@@ -102,7 +143,7 @@ Makefile : Makefile.in config.status
 {
 	CONFIG_FILES\=[target]\:[resolve Makefile.in] CONFIG_HEADERS\=
 		[pathname [resolve config.status]];
-	rm config.log;
+	rm -f config.log;
 }
 
 archive_files =
@@ -125,5 +166,82 @@ wdm-[release].tar.gz : [archive_files]
 			[prepost "-rp=" "" [search_list]]
 		| gzip -9 > [target];
 }
+
+function c_to_o = 
+{
+	return [fromto %0%.c %0%.o [arg]];
+}
+
+function select_c =
+{
+	return [match_mask src/[@1]/%.c [source_files]];
+}
+
+function get_cflags =
+{
+	if [defined [@1]_cflags] then
+		return [[@1]_cflags];
+	return [cflags];
+}
+
+function get_ldflags =
+{
+	if [defined [@1]_ldflags] then
+		return [[@1]_ldflags];
+	return [ldflags];
+}
+
+function get_libs =
+{
+	if [defined [@1]_libs] then
+		return [[@1]_libs];
+	return [libs];
+}
+
+function get_program =
+{
+	echo [@1];
+	if [matches src/%/ [@1]] then
+		return [fromto src/%/ % [@1]];
+	return none;
+}
+
+%0%.o : %0%.c include/config.h
+{
+	[cc] -c [get_cflags [get_program %0]] [resolve %0%.c] -o [target];
+}
+
+%0%.c.dep : %0%.c etc/Howto.cook set nocascade
+{
+	c_incl -nc -ns -eia -nrec
+		[prepost -I /include [search_list]]
+		--prefix "'cascade %0%.c = '"
+		--suffix "';'"
+		[resolve %0%.c]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+%0%.h.dep : %0%.h etc/Howto.cook set nocascade
+{
+	c_incl -nc -ns -eia -nrec
+		[prepost -I /include [search_list]]
+		--prefix "'cascade %0%.h = '"
+		--suffix "';'"
+		[resolve %0%.h]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+#include-cooked-nowarn [fromto %0% %0%.dep [match_mask include/%.h [source_files]] [match_mask src/%0%.c [source_files]]]
+cascade include/wdmconfig.h = include/config.h;
+
+bin/% : [c_to_o [select_c %]]
+{
+	[cc] [get_cflags %] [get_ldflags %] [c_to_o [select_c %]] [get_libs %] -o [target];
+}
+
 
 

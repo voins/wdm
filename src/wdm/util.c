@@ -39,7 +39,7 @@ from the X Consortium.
  * various utility routines
  */
 
-# include   "dm.h"
+# include   <dm.h>
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>

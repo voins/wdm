@@ -94,8 +94,8 @@ from the X Consortium.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
-#include "dm.h"
-#include "greet.h"
+#include <dm.h>
+#include <greet.h>
 
 /* wdm additions */
 #include <stdio.h>
@@ -175,10 +175,10 @@ static void guaranteed_read(int fd, char *buf, size_t count)
         LogError ("Greet: guarenteed_read error, UNMANAGE DISPLAY\n");
         LogError ("Greet: pipe read error with %s\n",wdmLogin);
 #ifdef HAVE_SYSLOG_H
-        openlog(PACKAGE,LOG_CONS|LOG_PERROR,LOG_DAEMON);
+        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
         syslog(LOG_DAEMON|LOG_INFO,
                 "%s pipe read error with program %s, %s terminating\n", 
-                PACKAGE, wdmLogin, PACKAGE);
+                PACKAGE_NAME, wdmLogin, PACKAGE_NAME);
 #endif
         SessionExit (Save_d, RESERVER_DISPLAY, FALSE);  /* this exits */
         exit (UNMANAGE_DISPLAY);                        /* should not happen */
@@ -379,7 +379,7 @@ greet_user_rtn GreetUser(struct display *d, Display **dpy, struct verify_info
                    case 2:              /* reboot */
                         CloseGreet (pid);
 #ifdef HAVE_SYSLOG_H
-                        openlog(PACKAGE,LOG_CONS|LOG_PERROR,LOG_DAEMON);
+                        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
                         syslog(LOG_DAEMON|LOG_NOTICE,
                                 "reboot(%s) by %s\n", exitArg, name);
 #endif
@@ -389,7 +389,7 @@ greet_user_rtn GreetUser(struct display *d, Display **dpy, struct verify_info
                    case 3:              /* halt */
                         CloseGreet (pid);
 #ifdef HAVE_SYSLOG_H
-                        openlog(PACKAGE,LOG_CONS|LOG_PERROR,LOG_DAEMON);
+                        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
                         syslog(LOG_DAEMON|LOG_NOTICE,
                                 "halt(%s) by %s\n", exitArg, name);
 #endif
@@ -400,10 +400,10 @@ greet_user_rtn GreetUser(struct display *d, Display **dpy, struct verify_info
                         CloseGreet (pid);
                         Debug("UNMANAGE_DISPLAY\n");
 #ifdef HAVE_SYSLOG_H
-                        openlog(PACKAGE,LOG_CONS|LOG_PERROR,LOG_DAEMON);
+                        openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
                         syslog(LOG_DAEMON|LOG_INFO,
                                 "%s exit(%s) by %s\n", 
-                                PACKAGE, exitArg, name);
+                                PACKAGE_NAME, exitArg, name);
 #endif
 #if 0
                         SessionExit (d, UNMANAGE_DISPLAY, FALSE);

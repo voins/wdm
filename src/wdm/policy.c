@@ -37,7 +37,7 @@ from the X Consortium.
  * policy.c.  Implement site-dependent policy for XDMCP connections
  */
 
-# include "dm.h"
+# include <dm.h>
 
 #ifdef XDMCP
 

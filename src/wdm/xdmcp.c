@@ -37,7 +37,7 @@ from the X Consortium.
  * xdmcp.c - Support for XDMCP
  */
 
-# include "dm.h"
+# include <dm.h>
 
 #ifdef XDMCP
 

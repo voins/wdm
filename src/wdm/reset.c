@@ -38,7 +38,7 @@ from the X Consortium.
  * a client remains connected with no windows.
  */
 
-# include	"dm.h"
+# include	<dm.h>
 # include	<X11/Xlib.h>
 # include	<signal.h>
 

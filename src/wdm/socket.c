@@ -37,7 +37,7 @@ from the X Consortium.
  * socket.c - Support for BSD sockets
  */
 
-#include "dm.h"
+#include <dm.h>
 
 #ifdef XDMCP
 #ifndef STREAMSCONN

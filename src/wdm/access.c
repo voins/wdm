@@ -33,7 +33,7 @@ in this Software without prior written authorization from the X Consortium.
  * and (potentially) a list of hosts to send ForwardQuery packets to
  */
 
-# include   "dm.h"
+# include   <dm.h>
 
 #ifdef XDMCP
 

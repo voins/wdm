@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * xdm interface to chooser program
  */
 
-#include "dm.h"
+#include <dm.h>
 
 #ifdef XDMCP
 

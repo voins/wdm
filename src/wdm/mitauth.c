@@ -40,7 +40,7 @@ from the X Consortium.
  */
 
 # include   <X11/Xos.h>
-# include   "dm.h"
+# include   <dm.h>
 
 # define AUTH_DATA_LEN	16	/* bytes of authorization data */
 static char	auth_name[256];

@@ -30,7 +30,7 @@ from the X Consortium.
 
 */
 
-#include "wdmconfig.h"
+#include <wdmconfig.h>
 
 /*
  * xdm - display manager daemon

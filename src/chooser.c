@@ -62,7 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 #include    <X11/Xaw/Box.h>
 #include    <X11/Xaw/Command.h>
 
-#include    "dm.h"
+#include    <dm.h>
 
 #include    <X11/Xdmcp.h>
 

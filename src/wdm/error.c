@@ -39,7 +39,7 @@ from the X Consortium.
  * we generally do not have a terminal to talk to
  */
 
-# include "dm.h"
+# include <dm.h>
 # include <stdio.h>
 #if NeedVarargsPrototypes
 # include <stdarg.h>
