@@ -24,6 +24,11 @@
 
 extern Bool WDMCheckPLBool(WMPropList *pl, Bool defval);
 extern char *WDMCheckPLString(WMPropList *pl, char *defval);
+extern WMArray *WDMCheckPLArray(
+	WMPropList *pl, void *(*check)(void *, void *), void *data);
+extern WMArray *WDMCheckPLArrayWithDestructor(
+	WMPropList *pl, WMFreeDataProc *destructor,
+	void *(*check)(void *, void *), void *data);
 
 #endif
 

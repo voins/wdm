@@ -74,3 +74,60 @@ WDMCheckPLString(WMPropList *pl, char *defval)
 	return value;
 }
 
+/** @brief check if proplist is array and is correct
+ *
+ * If pl is an array all elements of it will be passed
+ * through check function, and appended to newly created
+ * array. Note that, array being returned is not PropList
+ * array, but ordinary WMArray.
+ *
+ * check function should check correctness of array element
+ * and return value that should be stored in resulting array.
+ * data is passed to check function as second parameter.
+ *
+ * If check function allocates space for returned data it will
+ * not be freed. Use WDMCheckPLArrayWithDestructor for that.
+ */
+WMArray *
+WDMCheckPLArray(WMPropList *pl, void *(*check)(void *, void *), void *data)
+{
+	return WDMCheckPLArrayWithDestructor(pl, NULL, check, data);
+}
+
+/** @brief check if proplist is array and is correct
+ *
+ * This function behaves exactly the same as WDMCheckPLArray with
+ * one exception. It takes additional destructor parameter, that
+ * will be used to free space allocated by check function.
+ * It can help prevent memory leaks.
+ */
+WMArray *
+WDMCheckPLArrayWithDestructor(
+	WMPropList *pl, WMFreeDataProc *destructor,
+	void *(*check)(void *, void *), void *data)
+{
+	WMArray *value = NULL;
+	void *entry = NULL;
+	int i, count;
+
+	if(pl && WMIsPLArray(pl))
+	{
+		count = WMGetPropListItemCount(pl);
+		value = WMCreateArrayWithDestructor(count, destructor);
+
+		for(i = 0; i < count; ++i)
+		{
+			entry = (*check)(WMGetFromPLArray(pl, i), data);
+			if(!entry)
+			{
+				WMFreeArray(value);
+				value = NULL;
+				break;
+			}
+			WMAddToArray(value, entry);
+		}
+	}
+
+	return value;
+}
+
