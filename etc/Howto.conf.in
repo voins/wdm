@@ -45,3 +45,4 @@ wdm_libs = [libs] [XLIBS] [GFXLIBS] [LIBCRYPT] \
 	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
 	-lXmu -lXau -lXdmcp;
 
+libwdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
