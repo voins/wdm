@@ -1,6 +1,9 @@
 configuration_directory = "etc/config.d";
 
-create_symlinks_before_build = false;
+development_directory_style = 
+{
+	source_file_symlink = false;
+};
 
 new_test_filename = "test/${zpad $hundred 2}/t${zpad $number 4}${left $type 1}.hh";
 test_command = "$sh -c \"LDFLAGS='' CFLAGS='' $shell ${s etc/runtest.sh} $fn $p $c $spe\"";
