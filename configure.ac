@@ -135,11 +135,16 @@ XCFLAGS="$X_CFLAGS"
 XLDFLAGS="$X_LIBS"
 XLIBS="$X_PRE_LIBS -lXext -lX11 -lm $X_EXTRA_LIBS"
 
-AC_CHECK_LIB(Xinerama, XineramaIsActive,
-[
-	XLIBS="$XLIBS -lXinerama"
-	AC_DEFINE(HAVE_XINERAMA, 1, Define if Xinerama library is installed)
-],,[$XLDFLAGS $XLIBS])
+AC_ARG_ENABLE(xinerama,
+	AC_HELP_STRING([--disable-xinerama],[explicit disable use of libXinerama]))
+
+if test "$enable_xinerama" = "yes" -o -z "$enable_xinerama"; then
+	AC_CHECK_LIB(Xinerama, XineramaIsActive,
+	[
+		XLIBS="$XLIBS -lXinerama"
+		AC_DEFINE(HAVE_XINERAMA, 1, Define if Xinerama library is installed)
+	],,[$XLDFLAGS $XLIBS])
+fi
 
 dnl		WINGs support
 AC_CHECK_PROG(GETWINGSFLAGS,get-wings-flags,get-wings-flags,,[$PATH])
