@@ -149,7 +149,7 @@ fi
 dnl		WINGs support
 AC_CHECK_PROG(GETWINGSFLAGS,get-wings-flags,get-wings-flags,,[$PATH])
 if test -z "$GETWINGSFLAGS"; then
-	AC_MSG_ERROR(['get-wings-flags' command was nor found in \$PATH, please upgrade your WindowMaker.])
+	AC_MSG_ERROR(['get-wings-flags' command was not found in \$PATH, please upgrade your WindowMaker.])
 fi
 
 WCFLAGS=`get-wings-flags --cflags`
