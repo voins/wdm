@@ -1,0 +1,91 @@
+wdm -- WINGs Display Manager
+
+Wdm combines the functions of a graphical display manager identifying and
+authenticating a user on a system with some of the functions of a
+session manager in selecting and starting a window manager.  Optionally,
+wdm can shutdwn (rebott or halt) the system.
+
+
+Wdm is a modification of XFree86's xdm package for graphically
+handling authentication and system login.  Most of xdm has been
+preserved (XFree86 3.3.2.3) with the Login interface based on a WINGs
+implementation using Tom Rothamel's "external greet" interface (see
+AUTHORS).
+
+See file COPYING for license and warranty information.
+
+This package was developed and tested on RedHat Intel Linux 5.1.  However,
+some attempt has been made to enable it to execute on other systems such
+as Linux on other hardware, FreeBSD, OpenBSD, etc.
+
+See the ChangeLog, NEWS, and TODO files for additional information.
+
+See the INSTALL file for information about configuration adn installation.
+
+***NOTE***********************************************************NOTE****
+
+Please examine (and modify if necessary) the Xsession, Xclients, and
+wdm-config files in the wdm config directory (by default: /usr/local/etc/wdm).  Also,
+NOTE that the Xsession and Xclients (or ~./Xclients) files MUST be marked
+executable.  These files are the shell files which actually create
+the user's environment and start the window manager.  In addition, there
+can be a ~/.xsession or a ~/.Xclients file for each user
+in which case these files are executed (and MUST be marked executable).
+
+**************************************************************************
+
+Comments, bug reports, and corrections (patches) for other systems
+are appreciated.
+
+Gene Czarcinski, <genec@mindspring.com>
+
+ATTENTION: As of 01 June 1999 it appears that wdm is no longer maintained
+by its original author Gene Czarcinski who doesn't answer to any mail
+concerning this software. So, I, Jerome Alet <alet@unice.fr>, becomes
+the 'de facto' new maintainer. Please now send bug reports, corrections,
+and other things to me <alet@unice.fr> instead of Gene.
+
+You can download Jerome's latest wdm from: 
+http://cortex.unice.fr/~jerome/WindowMaker/wdm/
+
+You can subscribe to wdm's mailing list, filling the form at:
+http://cortex.unice.fr/wdm/subscribe.html
+
+ ************************************************************************
+ * The interface protocol:
+ *
+ *      A) wdm -> wdmLogin
+ *              1. SIGTERM to terminate sucessfully
+ *              2. SIGUSR1 to indicate failure; retry
+ *              3. "variables" which are needed by Login
+ *                 are passes as command-line arguments (that is,
+ *                 as argc, *argv[]).  This has been used to make
+ *                 it simple for Login. The values to be passed
+ *                 can be set as Xresources
+ *
+ *      B) wdm <- wdmLogin ...
+ *         This is performed via a pipe with
+ *         xdm/greet doing reads and Login doing writes.  The
+ *         stream of bytes follows the following protocol:
+ *              1. A String is defined as a one byte length field
+ *                 followed by a string of non-zero bytes.
+ *              2. Transmission is ended with a single byte
+ *                 with a zero value.
+ *              3. Two strings are first transmitted which are
+ *                 the username and password.
+ *              4. This is followed by an extension byte.  The following
+ *                 extension codes are supported:
+ *                      0 - end of data (not really an extension code)
+ *                      1 - xsession parameter (original)
+ *                      2 - reboot (added) - shutdown -r now
+ *                      3 - halt (added) - shutdown -h now
+ *                      4 - exit (added) - exit Gdm/xdm
+ *              5. The extension byte is followed by a string.
+ *              6. The string is followed by another extension byte
+ *                 or a zero to indicate end-of-data.  Normally, there
+ *                 will be only one non-zero extension code but
+ *                 the protocol does not limit this.
+ *
+ *************************************************************************
+ * The above protocol was defined by Tom Rothamel.  Additions include
+ * extension codes other than 0 or 1, and passing args to Login.

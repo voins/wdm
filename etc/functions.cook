@@ -1,0 +1,58 @@
+function c_to_o = 
+{
+	return [fromto %0%.c %0%.o [arg]];
+}
+
+function select_c =
+{
+	return [match_mask src/[@1]/%.c [source_files]];
+}
+
+function get_cflags =
+{
+	if [defined [@1]cflags] then
+		return [[@1]cflags];
+	return [cflags];
+}
+
+function get_ldflags =
+{
+	if [defined [@1]ldflags] then
+		return [[@1]ldflags];
+	return [ldflags];
+}
+
+function get_libs =
+{
+	if [defined [@1]libs] then
+		return [[@1]libs];
+	return [libs];
+}
+
+function get_program =
+{
+	echo [@1];
+	if [matches src/%/ [@1]] then
+		return [fromto src/%/ % [@1]]_;
+	return;
+}
+
+function octal = 
+{
+	result =;
+	number = [@1];
+	loop
+	{
+		if [expr [number] \=\= 0] then loopstop;
+		result = [expr [number] & 7][result];
+		number = [expr [number] / 8];
+	}
+	
+	return 0[result];
+}
+
+function stripext =
+{
+	return [fromto %0%.%1 %0% [@1]];
+}
+

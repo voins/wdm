@@ -1,0 +1,70 @@
+.TH wdmLogin 1x "August 1998"
+.SH NAME
+wdmLogin \- wdm login panel
+.SH SYNOPSIS
+\fBwdmLogin\fP [-d \fIdisplay\fP] [-l \fIlogo\fP] [-w \fI<window managers>\fP] [-b \fIbackground\fP] [-h \fIhelpfile\fP] [-u \fIusername\fP] [-p \fIpassword\fP]
+.SH DESCRIPTION
+\fBwdmLogin\fP is greeter designed to work with \fBwdm\fP(1x). It has
+several features not found on xdm's greeter. wdmLogin should not be
+called directly, that's wdm's task.
+.SH OPTIONS
+.TP
+.B \-d
+starts on the specified \fIdisplay\fP
+.TP
+.B \-l
+uses the specified \fIlogo\fP for the panel. The logo will be \fBresized\fP
+to 200 by 130 pixels.
+.TP
+.B \-w
+presents the \fBcolon separated\fP list of \fIwindow managers\fP, for
+the user to pick one, or None if you want only NoChange to appear.
+.TP
+.B \-a
+enables animations consisting of 
+shaking the Login panel (if an error) and 
+rolling up the image (when closing the panel).
+.TP
+.B \-h
+uses the specified text file to display in the help panel instead of
+the static help message which is in the sources. Take care of long lines
+which may cause display trouble in the help panel.
+.TP
+.B \-u
+use the default username and password as specified in wdm-config if nothing is typed
+by the user. USE WITH EXTREME CAUTION.
+.TP
+.B \-b
+uses the specified background image (see the next section).  If this is
+not specified, then the background is \fBNOT\fP set.
+.SH BACKGROUND IMAGE SPECIFICATION
+There are several possible ways of specifing a background image. The
+generic format is \-b\fItype\fP:\fIimage\fP. \fItype\fP can be any of:
+.TP
+.B none
+do not set the background.  This user can still set the background
+via other means.
+.TP
+.B solid
+it renders a solid backgroud, and \fIimage\fP is a color name
+.TP
+\fBhgradient\fP, \fBvgradient\fP, \fBdgradient\fP
+a gradient (either horizontal, vertical or diagonal) will be
+rendered. \fIimage\fP is \fBcomma separated\fP of color names, and any
+number of colors can be specified.
+.TP
+\fBpixmap\fP
+a pixmap will be used for the background. \fIimage\fP is the full path
+to an image file (tiff, png, jpeg and xpm allowed) and it will be
+scaled to use the full screen.
+.SH FILES
+\fBwdmLogin\fP can be customized by modifying \fI/etc/X11/wdm/wdm-config\fP.
+.SH SEE ALSO
+.BR wdm (1x)
+.SH AUTHOR
+wmdLogin was written by Gene Czarcinski <genec@mindspring.com>. wdm is
+based on work by Tom Rothamel (xdm's external greeter protocol) and
+xdm itself, (c) 1988 X Consortium
+.PP
+This man page was written by Marcelo Magallon <mmagallo@debian.org>
+and modified by Jerome Alet <alet@unice.fr>

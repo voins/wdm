@@ -1,0 +1,23 @@
+archive_files =
+	configure
+	Makefile.in
+	include/config.h.in
+	[source_files];
+
+if [not [defined PACKAGE_VERSION]] then PACKAGE_VERSION=0;
+tarball: wdm-[PACKAGE_VERSION].tar.gz;
+
+wdm-[PACKAGE_VERSION].tar.bz2 : wdm-[PACKAGE_VERSION].tar.gz
+{
+	gunzip < wdm-[PACKAGE_VERSION].tar.gz | bzip2 > [target];
+}
+
+wdm-[PACKAGE_VERSION].tar.gz : [archive_files]
+{
+	tar --create --file - --dereference [resolve [archive_files]]
+		| tardy -unu 0 -gnu 0 -una Alexey -gna Voinov 
+			-p wdm-[PACKAGE_VERSION] -ms 644 -mc 07022 -now
+			[prepost "-rp=" "" [search_list]]
+		| gzip -9 > [target];
+}
+

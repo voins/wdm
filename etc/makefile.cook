@@ -1,0 +1,178 @@
+%0%.c.Md: %0%.c etc/makefile.cook 
+{
+	c_incl -nc -ns -eia
+		[prepost -I /include [search_list]]
+		[resolve %0%.c]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+%0%.c.M: %0%.c.Md etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+{
+	rm -f [target];
+	echo "%0%.o: %0%.c" [collect cat [resolve %0%.c.Md]] > [target];
+	echo -e "\"\\t\"" \\$\\(CC\\) -c \\$\\([get_program %0]cflags\\) %0%.c -o %0%.o >> [target];
+	echo >> [target];
+}
+
+destbindir = \\$\\(DESTDIR\\)\\$\\(bindir\\)/;
+destman1dir = \\$\\(DESTDIR\\)\\$\\(MANDIR\\)/man1;
+configdir = \\$\\(DESTDIR\\)\\$\\(DMDIR\\);
+gfxdir = [configdir]/pixmaps;
+pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
+
+src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+{
+	echo "bin/%: " [c_to_o [select_c %]] > [target];
+	echo -e "\"\\t\""mkdir -p bin >> [target];
+	echo -e "\"\\t\""\\$\\(CC\\) \\$\\(%_ldflags\\) [c_to_o [select_c %]] \\$\\(%_libs\\) -o bin/% >> [target]; 
+	echo >> [target];
+	echo [destbindir]%\: bin/% >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL_PROGRAM\\) -D bin/% \\$\\@ >> [target];
+	echo >> [target];
+	
+}
+
+doc/%.man.M: etc/makefile.cook
+{
+	rm -f [target];
+	if [in doc/%.man [g_manfiles]] then
+	{
+		echo doc/%.man\: doc/%.man.in > [target];
+		echo -e "\"\\t\""CONFIG_FILES\=\\$\\@\:doc/%.man.in \
+			CONFIG_HEADERS\= ./config.status >> [target];
+		echo >> [target];
+	}
+	echo [destman1dir]/%.1\: doc/%.man >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D doc/%.man \\$\\@ >> [target];
+	echo >> [target];
+}
+
+configs/%.M: etc/makefile.cook etc/functions.cook
+{
+	rm -f [target];
+	if [in configs/% [g_configs]] then
+	{
+		echo configs/%\: configs/%.in >> [target];
+		echo -e "\"\\t\""CONFIG_FILES\=\\$\\@\:configs/%.in \
+			CONFIG_HEADERS\= ./config.status >> [target];
+		echo >> [target];
+	}
+
+	perm = 0644;
+	if [in configs/% [exe_configs]] then perm = [octal [expr [perm] | 0111]];
+	if [in configs/% [sec_configs]] then perm = [octal [expr [perm] & 0700]];
+
+	if [in configs/% [pam_configs]] then
+	{
+		echo [pamdir]/[stripext %]\: configs/% >> [target];
+		echo -e "\"\\t\""\\$\\(INSTALL\\) -m [perm] -D configs/% \\$\\@ >> [target];
+		echo >> [target];
+	}
+	else
+	{
+		echo [configdir]/%\: configs/% >> [target];
+		echo -e "\"\\t\""\\$\\(INSTALL\\) -m [perm] -D configs/% \\$\\@ >> [target];
+		echo >> [target];
+	}
+	echo >> [target];
+}
+
+function is_xpm =
+{
+	return [matches %.xpm [@1]];
+}
+
+pixmaps/%.M: etc/makefile.cook
+{
+	rm -f [target];
+	if [is_xpm %] then
+	{
+		echo include/%\: pixmaps/% >> [target];
+		echo -e "\"\\t\""ln -s ../pixmaps/% \\$\\@ >> [target];
+		echo >> [target];
+	}
+	echo [gfxdir]/%\: pixmaps/% >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D pixmaps/% \\$\\@ >> [target];
+	echo >> [target];
+}
+
+m_files = 
+	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
+	[fromto % src/%.M [program_list]]
+	[fromto %0% %0%.M [manfiles]]
+	[fromto %0% %0%.M [gfxfiles]]
+	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]];
+
+clean_files = [fromto %0%.c %0%.o [match_mask src/%0%.c [source_files]]];
+dist_clean_files = [clean_files] [addprefix bin/ [program_list]] [g_manfiles] 
+	[g_configs] config.status config.log include/config.h include/gnuLogo.xpm
+	Makefile;
+
+Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
+	[m_files]
+{
+	rm -f [target];
+	sed [resolve etc/Howto.conf.in] \
+		-e "'s@\\[prepost.*\\[.*\\]\\]@-I./include@'" \
+		-e "'s@\\[\\([^\\[]*\\)\\]@\\$(\\1)@g'" \
+		-e "'s@;$@@'" \
+		-e "'s@/\\*\\*\\(.*\\)\\*/@\\1@'" \
+		-e "'s@/\\*\\(.*\\)\\*/@# \\1@'" \
+		>> [target];
+	cat [resolve etc/Makefile.head] >> [target];
+
+	echo >> [target];
+	echo all\: all-bin all-doc all-config >> [target];
+	echo >> [target];
+	echo install\: install-bin install-config install-doc install-gfx >> [target];
+
+	echo >> [target];
+	echo all-bin\: [addprefix bin/ [program_list]] >> [target];
+	echo >> [target];
+	echo install-bin\: [addprefix [destbindir] [stringset [program_list] - [i_program_list]]] >> [target];
+	echo >> [target];
+
+
+	echo >> [target];
+	echo all-config\: [g_configs] >> [target];
+	echo >> [target];
+	echo install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
+			install-pam-\\$\\(USE_PAM\\)
+			[configdir]/authdir >> [target];
+	echo >> [target];
+	echo install-pam-no\: >> [target];
+	echo >> [target];
+	echo install-pam-yes\: [fromto %0%.pamd [pamdir]/% [pam_configs]] >> [target];
+	echo >> [target];
+	echo [configdir]/authdir\: >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL\\) -m 700 -D -d \\$\\@ >> [target];
+	
+
+	echo >> [target];
+	echo all-doc\: [g_manfiles] >> [target];
+	echo >> [target];
+	echo install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]] >> [target];
+
+	
+	echo >> [target];
+	echo install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]] >> [target];
+
+
+	echo >> [target];
+	cat [resolve [m_files]] >> [target];
+
+
+	echo >> [target];
+	echo clean\: >> [target];
+	echo -e "\"\\t\""rm -f [clean_files] >> [target];
+
+
+	echo >> [target];
+	echo distclean\: >> [target];
+	echo -e "\"\\t\""rm -f [dist_clean_files] >> [target];
+	echo -e "\"\\tif test -e bin; then rmdir bin; fi\"" >> [target];
+
+}
+

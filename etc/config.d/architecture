@@ -1,0 +1,23 @@
+/*
+ *	aegis - project change supervisor
+ *	This file is in the Public Domain, 1995, 1998 Peter Miller.
+ *
+ * MANIFEST: example architecture definitions for the project config file
+ *
+ * Delete those entries which you do not want to enforce.
+ * Additions to this file are most welcome.
+ *
+ * Remember, if you use heterogeneous development, you will need to pass the
+ * architecture to the build_command, and you will need to extensively re-write
+ * the DMT rules.  Aegis expects that the development directory and the
+ * baseline contains object files and executables for all architectures
+ * simultaneously.
+ */
+
+architecture =
+[
+	{
+		name = "linux-intel";
+		pattern = "Linux*i[3-9]86*";
+	},
+];

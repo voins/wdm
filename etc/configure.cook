@@ -1,0 +1,74 @@
+if [not [defined autoheader]] then autoheader=autoheader_2.5;
+if [not [defined autoconf]] then autoconf=autoconf_2.5;
+
+if [exists /usr/local/share/autoconf/install-sh] then
+	install-sh = /usr/local/share/autoconf/install-sh;
+else if [exists /usr/share/autoconf/install-sh] then
+	install-sh = /usr/share/autoconf/install-sh;
+if [exists /usr/local/share/automake/install-sh] then
+	install-sh = /usr/local/share/automake/install-sh;
+else 
+	install-sh = /usr/share/automake/install-sh;
+
+install-sh: [install-sh]
+{
+	cp [need] [target];
+	chmod 755 [target];
+}
+
+configure: configure.ac etc/configure.cook install-sh
+{
+	if [not [exists install-sh]] then
+		ln -s [resolve install-sh] install-sh
+			set clearstat;
+
+	rm -f [target];
+	[autoconf] [resolve configure.ac] > [target];
+	chmod 755 [target];
+	rm -rf autom4te*.cache;
+}
+
+config.status : configure etc/configure.cook
+{
+	[pathname [resolve configure]]
+		--no-create
+		--cache-file\=/dev/null
+		--verbose
+		--srcdir\=.;
+}
+
+include/config.h.in : configure.ac etc/configure.cook
+{
+	[autoheader] [resolve configure.ac] > [target];
+	rm -rf autom4te*.cache;
+}
+
+include/config.h : include/config.h.in config.status etc/configure.cook
+{
+	CONFIG_FILES\= CONFIG_HEADERS\=[target]\:[resolve include/config.h.in]
+		[pathname [resolve config.status]];
+	rm -f config.log;
+}
+
+src/config/% : src/config/%.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve src/config/%.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+	rm -f config.log;
+}
+
+
+Makefile : Makefile.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve Makefile.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+	rm -f config.log;
+}
+
+doc/% : doc/%.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve doc/%.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+	rm -f config.log;
+}
+

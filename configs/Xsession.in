@@ -1,0 +1,89 @@
+#!@SHELL_LOGIN@
+# @configure_input@
+# $XConsortium: Xsession /main/10 1995/12/18 18:21:28 gildea $
+
+# This is the basic login script for a user.  Much of the logic/code
+# for selecting and invoking the window manager is in the related file
+# Xclients.  The reason for the separate file is so that individual
+# users can have tailored Xclients files in their home directories as
+# ~/.Xclients.
+
+# cleanup wdm resources
+        @XRDB_PATH@ -load /dev/null
+
+
+case $# in
+1)
+        case $1 in
+        failsafe)
+                exec @FAILSAFE@ -geometry 80x24-0-0
+                ;;
+        esac
+        echo $1 >$HOME/.wm_style
+esac
+
+# redirect errors to a file in user's home directory if we can
+for errfile in "$HOME/.xsession-errors" "${TMPDIR-/tmp}/xses-$USER" "/tmp/xses-$USER"
+do
+        if ( cp /dev/null "$errfile" 2> /dev/null )
+        then
+                chmod 600 "$errfile"
+                exec > "$errfile" 2>&1
+                break
+        fi
+done
+
+# clean up after xbanner
+# (RedHat code: need freetemp executed IF xbanner is run by Xsetup_0)
+# wdm sets the background itself so xbanner is not needed and
+# should not be run.  For other backgrounds, you are on your own.
+# freetemp
+
+# Note that ~/.xsession  and ~/.Xclients really serve the same function.
+# The ~/.xsession file comes from xdm and is intended as the user's
+# means of starting X programs such as a session or window manager.
+# X also creates an xinitrc file for use when starting x with 'startx'.
+# Red Hat Linux adds a package called xinitrc (and does not install
+# the xinitrc from XFree86).  The xinitrc package defines two files
+# xinitrc (which is started by startx) and Xclients (and ~/.Xclients).
+#
+# The code below will use the "standard" ~/.xsession or ~/.Xclients
+# so that a user can use a single script whether startx or xdm is
+# used.
+
+# In the code below, note that control will be transfered to the first 
+# program (shell script) found to exist and the programs that follow
+# are never executed.  If a user wants to execute some other program
+# or script before starting a window manager and then continue with 
+# the execution of the login script, this program should be executed
+# by a user's ~./Xclients or ~/.xsession file and then the window manager
+# should be started.
+#
+# For example, the following could be used as a ~/.Xclients
+#       #!/bin/sh
+#       if [ -x $HOME/.mystartup ]; then
+#           . $HOME/.mystartup
+#       fi
+#       exec @DMDIR@/Xclients
+
+startup=$HOME/.xsession
+resources=$HOME/.Xresources
+
+if [ -f $resources ]; then
+        @XRDB_PATH@ -load $resources
+fi
+
+if [ -x $startup ]; then
+        exec $startup
+fi
+
+if [ -x $HOME/.Xclients ]; then
+        exec $HOME/.Xclients
+fi
+
+if [ -x @DMDIR@/Xclients ]; then
+        exec @DMDIR@/Xclients
+fi
+
+# if nothing else, start X's standard session manager
+exec xsm

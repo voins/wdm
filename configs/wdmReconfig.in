@@ -1,0 +1,113 @@
+#!@SHELL_LOGIN@
+# @configure_input@
+
+#################################################################
+# This is a "simple" script which is intended to be run by rpm
+# as a post install function to look at the system where wdm is
+# being installed and create Xclients and wdm-config files which
+# reflect the window managers available on that system.
+
+#    This software is Copyright (C) 1998 by Gene Czarcinski.
+# This software falls under the GNU Public License. Please read
+#              the COPYING file for more information
+#################################################################
+
+save_ifs="$IFS"
+IFS=:
+path=$PATH:/usr/local/bin:/usr/bin:/usr/X11R6/bin:
+
+WMLIST=""
+
+rc_word=wmaker
+WMAKER_PATH="wmaker"
+    for rc_dir in $path; do
+      if test -x $rc_dir/$rc_word; then
+        WMAKER_PATH=$rc_dir/$rc_word
+	WMLIST=WindowMaker
+	break
+      fi
+    done
+
+rc_word=afterstep
+AFTERSTEP_PATH="afterstep"
+    for rc_dir in $path; do
+      if test -x $rc_dir/$rc_word; then
+        AFTERSTEP_PATH=$rc_dir/$rc_word
+	WMLIST="$WMLIST:AfterStep"
+	break
+      fi
+    done
+
+rc_word=blackbox
+BLACKBOX_PATH="blackbox"
+    for rc_dir in $path; do
+      if test -x $rc_dir/$rc_word; then
+        BLACKBOX_PATH=$rc_dir/$rc_word
+	WMLIST="$WMLIST:BlackBox"
+	break
+      fi
+    done
+
+rc_word=icewm
+ICEWM_PATH="icewm"
+    for rc_dir in $path; do
+      if test -x $rc_dir/$rc_word; then
+        ICEWM_PATH=$rc_dir/$rc_word
+	WMLIST="$WMLIST:IceWm"
+	break
+      fi
+    done
+
+rc_word=xsession
+XSESSION_PATH="xsession"
+    for rc_dir in $path; do
+      if test -x $rc_dir/$rc_word; then
+        XSESSION_PATH=$rc_dir/$rc_word
+	WMLIST="$WMLIST:Xsession"
+	break
+      fi
+    done
+
+rc_word=startkde
+STARTKDE_PATH="startkde"
+    for rc_dir in $path; do
+      if test -x $rc_dir/$rc_word; then
+        STARTKDE_PATH=$rc_dir/$rc_word
+	WMLIST="$WMLIST:KDE"
+	break
+      fi
+    done
+
+# update wdm-config
+	configfile=@DMDIR@/wdm-config
+	rm -f $configfile
+	sed \
+		-e "s:@DMDIR\@:@DMDIR@:" \
+		-e "s:@BINDIR\@:@BINDIR@:" \
+		-e "s:@SHUTDOWN\@:@SHUTDOWN@:" \
+		-e "s:@LOGDIR\@:@LOGDIR@:" \
+		-e "s:@RUNDIR\@:@RUNDIR@:" \
+		-e "s:@PIXMAPFILE\@:@PIXMAPFILE@:" \
+		-e "s:@PIXMAPCOMMENT\@:@PIXMAPCOMMENT@:" \
+		-e "s:@exec_prefix\@:@exec_prefix@:" \
+		-e "s/@WMLIST\@/$WMLIST/" \
+		$configfile.in \
+		> $configfile
+	chmod 644 $configfile
+
+# update Xclients
+	configfile=@DMDIR@/Xclients
+	rm -f $configfile
+	sed -e "s:@XRDB_PATH\@:@XRDB_PATH@:" \
+	    -e "s'@WMAKER_PATH\@'$WMAKER_PATH'" \
+	    -e "s'@AFTERSTEP_PATH\@'$AFTERSTEP_PATH'" \
+	    -e "s'@BLACKBOX_PATH\@'$BLACKBOX_PATH'" \
+	    -e "s'@ICEWM_PATH\@'$ICEWM_PATH'" \
+	    -e "s'@XSESSION_PATH\@'$XSESSION_PATH'" \
+	    -e "s'@STARTKDE_PATH\@'$STARTKDE_PATH'" \
+		-e "s:@WINMGR_NAME\@::" \
+		-e "s:@WINMGR_PATH\@::" \
+		$configfile.in \
+		> $configfile
+	chmod 755 $configfile
+

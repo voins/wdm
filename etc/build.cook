@@ -1,0 +1,48 @@
+include/%.xpm: pixmaps/%.xpm
+{
+	rm -f [target];
+	ln -s ../[need] [target]
+		set clearstat; 
+}
+
+cascade src/wdmLogin/Login.c = include/gnuLogo.xpm;
+
+%0%.o : %0%.c etc/functions.cook etc/Howto.conf
+{
+	[cc] -c [get_cflags [get_program %0]] [resolve %0%.c] -o [target];
+}
+
+%0%.c.dep : %0%.c etc/build.cook 
+{
+	c_incl -nc -ns -eia -nrec
+		[prepost -I /include [search_list]]
+		--prefix "'cascade %0%.c = '"
+		--suffix "';'"
+		[resolve %0%.c]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+%0%.h.dep : %0%.h etc/build.cook
+{
+	c_incl -nc -ns -eia -nrec
+		[prepost -I /include [search_list]]
+		--prefix "'cascade %0%.h = '"
+		--suffix "';'"
+		[resolve %0%.h]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+#include-cooked-nowarn [fromto %0% %0%.dep [match_mask include/%.h [source_files]]]
+#include-cooked-nowarn [fromto %0% %0%.dep [match_mask src/%0%.c [source_files]]]
+cascade include/wdmconfig.h = include/config.h;
+
+bin/% : [c_to_o [select_c %]] etc/Howto.conf
+{
+	[cc] [get_cflags %_] [get_ldflags %_]
+		[resolve [c_to_o [select_c %]]]
+		[get_libs %_] -o [target];
+}

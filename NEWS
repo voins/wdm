@@ -1,0 +1,151 @@
+See TODO, README, README.pam, and ChangeLog
+wdm-1.20 -- Feb 29 2000
+	- a problem which forbid for some wdm's resources to be set
+	  differently for multiple displays was corrected.
+	- a problem with incorrect user permissions being set on
+	  devices (e.g. mixer) was corrected by replacing some
+	  xdm-3.3.2 code with xdm-3.3.6. I think all the xdm stuff
+	  definitely should be updated to the latest version.
+	- a problem with random wdm hangs under at least FreeBSD
+	  was corrected.
+	- more detailed installation instructions are given for
+	  Linux systems. Feel free to send anything useful for other systems.
+	- some messages weren't centered one to each other on the login panel,
+	  this looked ugly.
+
+wdm-1.19 -- Sep 21 1999
+	- a security problem was present when using the default
+	  username and password: they were passed in clear on wdmLogin's
+	  command line whenever wdm launched wdmLogin. Now wdm reads them
+	  as before, but uses them internally instead of passing them
+	  to wdmLogin which passed them back to wdm: it was stupid
+	  and was a big security hole, so it's corrected now. ENJOY.
+	- a Makefile problem caused wdm-login to not be created at all.
+	  This problem was only noticed by new users. It works fine now.
+
+wdm-1.18 -- Sep 16 1999
+	- a problem about login name length was corrected
+	- a default username / default password can now be
+	  set in wdm-config. USE WITH EXTREME CAUTION AND
+	  WITH A VERY RESTRICTED ACCOUNT (e.g. no shell, etc...)
+	  ELSE YOU COULD VERY WELL OPEN A HUGE SECURITY HOLE TO
+	  ANYONE WHO HAS A PHYSICAL ACCESS TO THE MACHINE.
+	  AND DON'T FORGET TO: chmod 600 wdm-config
+			       chown root.root wdm-config
+
+wdm-1.17 -- Sep 8 1999
+	- user environnement settings in /etc/login.conf now
+	  propagate correctly to the client session.
+	- some modifications were done to compile for Irix.
+	- a problem about libz and libpng when configuring
+	  was corrected.
+	- some cleanups to the source trees and the code.
+
+wdm-1.16 -- Jul 7 1999
+	- GFX_LIB_PATH and GFX_INC_PATH now
+	  are set correctly in configure.
+
+wdm-1.15 -- Jul 6 1999
+	- the pixmaps weren't installed anymore,
+	  now it's corrected.
+	- wdm's Xsession didn't load X resources
+	  before running ~user/.xsession but after.
+	- a mailing list was set up (see README)
+
+wdm-1.14 -- Jul 1 1999
+	- the warning when compiling TestLogin.c is gone
+	- cosmetic changes to the doc
+	- the primary site from 1.1 and above becomes:
+	  http://cortex.unice.fr/~jerome/WindowMaker/wdm/
+
+wdm-1.13 -- Jun 30 1999
+	- the tab key now moves from username to password and back
+	- the debian patches to allow MD5 passwords have been incorporated
+
+wdm-1.12 -- Jun 18 1999
+	- the configure script seems to be corrected now
+
+wdm-1.11 -- Jun 18 1999
+	- the login panel now has the focus
+
+wdm-1.1 -- Jun 11 1999
+	- modified the sources to work with WindowMaker 0.60
+	- fixed a buffer overflow bug in Login.c
+	- added the support for None in the window managers list
+	  to allow only NoChange to be displayed
+	- added the support for external help file to be displayed in
+	  the help panel
+	- modified the manpages accordingly
+
+wdm-1.0 -- Sep 13 1998
+	- added support for GIF (both libgif and libungif)
+	- add check for libtiff34 as well as libtiff
+	- "RollUp" animation finalized as diagonal
+	- wdm Xresourses now cleaned up when Xsession is started
+	- to simlify configuration/installation on FreeBSD, -lXt is
+	  now included (will not hurt even if it is not used)
+	- bugfixes
+	- configuration changes to make it easier to install and run
+	  wdm on different systems
+	- minor changes in the "look" of the login and help panels to
+	  make them a bit more symetrical.
+
+wdm-0.90 -- beta eight, pre Rel 1.0, Sep 06 1998
+	- wdmReconfig for rpm install auto update of Xclients and wdm-config
+	- adjust Login panel's "look" to make it more symetrical
+	- new "rollup" .. diagonal
+	- many changes to ./configure to make it more system independent
+	- added --with-local for using /usr/local/{bin,include,lib}
+	  appropriately
+	- made --enable-debug handle WINGs debug also
+	- more into in INSTALL
+	- some bugfixes
+
+wdm-0.18 -- beta seven -- Aug 29 1998
+	- new look for the panel ... both "flatter" and 3d as well.
+	- help now uses a scrolled view for the text and a single button
+	  is used to open and close the help panel.
+	- many changes to configure for different systems
+	- bugfixes
+	- new ./configure options --with-winmgr to specify arbitrary
+	  windowmanager
+	- new wdmAnimations Xresource to enable/disable shake and rollup
+	  animations
+	- changed wdmBg Xresource so that if it is missing of has the value
+	  none, then the background is not set (the user can still set it via
+	  other means)
+	- chooser is no longer compiled by wdm .. it was not installed
+	  anyway.
+
+wdm-0.12 -- beta six -- Aug 24 1998
+	- ./configure will now look for a number of window managers and
+	  use the found path in Xclients.  It also build WMLIST based on
+	  the found window managers.  This can continue to be overriden by
+	  the --with-wmlist=<...> option.
+	- added Xsession.XFree86 example.
+	- INSTALL and README so that INSTALL now contains the
+	  configuration and installation information
+	- ./configure --with-wmlist=<...> can be used to specify
+	  a list of optional window managers which the user can specify.
+	  The list is placed into wdm-config.  The default (if
+	  not specified is wmaker:afterstep
+	- ./configure --with-Logo=<...> can be used to specify
+	  alternate file (from .../wdm/pixmaps directory) to be
+	  used as the Logo.
+	- The Logo will now try to keep the aspect ratio the same
+	  as the original image.  Smaller images are not resized.
+	  The resulting image is centered in the Logo area.
+	- some configure parameters changed to lower case:
+	  --with-wdmdir=, --with-defuserpath= and
+	  --withsystempath=
+
+wdm 0.11 - Aug 20 1998 Gene Czarcinski
+	- fifth public beta ... first release next
+	- more porting stuff so this can be compiled on other systems
+	- updated Login so it will work with both WINGs 980730
+	  (WindowMaker 0.18.1b) and WINGs 980722 (WindowMaker 0.17.5)
+	- When compiled with WINGs 980730, the Password Text Entry area
+	  uses the new "Secure" mode which displays better
+	- The default distributed mode for the wdmVeryify xresources is
+	  true -- this requires entering a valid username/password
+	  when performing Reboot/Halt/ExitLogin.

@@ -1,0 +1,460 @@
+Basic Installation
+==================
+
+   The `configure' shell script attempts to guess correct values for
+various system-dependent variables used during compilation.  It uses
+those values to create a `Makefile' in each directory of the package.
+It may also create one or more `.h' files containing system-dependent
+definitions.  Finally, it creates a shell script `config.status' that
+you can run in the future to recreate the current configuration, a file
+`config.cache' that saves the results of its tests to speed up
+reconfiguring, and a file `config.log' containing compiler output
+(useful mainly for debugging `configure').
+
+This package requires the following:
+
+1. XFree86 installed (it was developed with 3.3.2)
+
+2. WindowMaker => 0.17.5 (for WINGs and wraster libraries and header files).
+   There are no other dependencies on WindowMaker and wdm can
+   any other window manager such as AfterStep, icewm, BlackBox, etc.
+
+3. automake => 1.3 and autoconf => 2.12 for maintenance (any building)...
+   the same needed to build/maintain WindowMaker.
+
+4. libPropList is required if you are using WindowMaker => 0.18.x since
+   WINGs will require it.
+
+NOTE: The wdm tarball currently contains the xdm source tarball.  For
+      rpm installation and maintenance this should be removed and made
+      a separate file.	However, since some users of this package
+      will not have rpm, the xdm tarball will currently be included.
+
+   If you need to do unusual things to compile the package, please try
+to figure out how `configure' could check whether to do them, and mail
+diffs or instructions to the address given in the `README' so they can
+be considered for the next release.  If at some point `config.cache'
+contains results you don't want to keep, you may remove or edit it.
+
+   The file `configure.in' is used to create `configure' by a program
+called `autoconf'.  You only need `configure.in' if you want to change
+it or regenerate `configure' using a newer version of `autoconf'.
+
+The simplest way to compile this package is:
+
+  1. `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.  If you're
+     using `csh' on an old version of System V, you might need to type
+     `sh ./configure' instead to prevent `csh' from trying to execute
+     `configure' itself.
+
+     Running `configure' takes awhile.	While running, it prints some
+     messages telling which features it is checking for.
+
+*****Examine (and optionally modify) the configuration files in
+     ./src/config
+
+     Optionally, untar the supplied XFree86 source xdm-3.3.2.tar.gz
+     or its equivalent for your system.	 This creates the source tree
+     for xdm which is used in creating wdm.  ./configure will try
+     to do this if it has not been done.  If the source tree does
+     not exist, configuree will fail.
+
+     ./configure --help can be used to see what options are
+     available.
+
+     Note that --with-gfx-libs and --with-gfx-incs can be used to specify
+     the paths for "non-standard" locations (one not expected by
+     ./configure).  For example, if you have tiff under /usr/local, try
+     ./configure --with-gfx-libs="-L/usr/local/lib -ltiff" \
+     --with-gfx-incs="-I/usr/local/include"
+
+     Note that if you have some library in a place such as /usr/local/lib
+     which supercedes the version in a place such as /usr/X11R6/lib, then
+     you will need to "play" with the options.
+
+     TIP:  On some systems it may be necessary to specify additional
+     include directories.  Besides specifying these with --with-gfx-incs,
+     you can use:
+
+     CPPFLAGS="-I/usr/local/include" ./configure <the rest of you options>
+
+     See information below about some of the configure options.
+
+     Under pam aware systems, like RedHat based Linux distros, don't forget
+     to run configure with the --enable-pam option
+
+     If your system don't use pam but uses shadow passwords, run configure
+     with --enable-shadow (e.g. Debian or SuSe Linux)
+
+  2. Type `make' to compile the package.  A number of the configure options
+     can be overriden (or just plain specified) on the make command line.
+
+  3. Type `make install' to install the programs and any data files and
+     documentation.  To install into a path other than that specified by
+     ./configure --prefix=<...> (such as testing the install), you can
+     use make DESTDIR=<...> install.  For exmaple:
+
+     make DESTDIR=/tmp/wdm-root install
+
+     will install the binaries into /tmp/wdm-root/usr/local/bin.
+
+  4. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.  There is
+     also a `make maintainer-clean' target, but that is intended mainly
+     for the package's developers.  If you use it, you may have to get
+     all sorts of other programs in order to regenerate files that came
+     with the distribution.
+
+  5. Modify system initialization (/etc/inittab on RedHat Linux) to
+     invoke wdm at system startup or start wdm (as root) with
+     the following command line:
+
+     wdm -nodaemon
+
+     or
+
+     wdm -nodaemon -config /usr/local/etc/wdm/wdm-config
+
+     Please note:  if you start wdm "detached", you will be unable
+     to actually terminate the wdm process.
+
+     for Debian GNU/Linux systems, what I find easier is to modify
+     /etc/init.d/xdm to launch wdm instead of xdm (if you don't need both)
+
+     for RedHat based Linux systems, modify /etc/inittab the following way:
+     ensure this file contains the following lines (don't duplicate existing
+     lines beginning with 'id' or 'x', modify them in place):
+
+     id:5:initdefault:
+     x:5:respawn:/usr/local/bin/wdm -nodaemon
+
+     for other systems, I don't know.
+
+     By default, wdm installs into /usr/local/bin, /usr/local/man,
+     /usr/local/etc/wdm (configuration files), and (if pam is enabled),
+     /etc/pam.d
+
+*****************************************
+
+ATTENTION: According to Bevan Broun (bevanb@ee.uwa.edu.au) there's a problem
+compiling wdm under Irix 6.5.2 because setpgrp needs no argument under Irix.
+It's a problem in xdm's code, not wdm's code, so no patch was made by me (Jerome)
+but the temporary solution is to modify the lines where setpgrp is called and
+it works fine. A better solution would be to put some new autoconf/automake
+test but I don't know how to do. If you're an autoconf guru don't hesitate to
+help me :-)
+
+	Jerome ALET - alet@unice.fr
+	July 1st 1999
+*****************************************
+
+*** ./configure options more or less specific to wdm *********************
+
+--prefix=PREFIX
+	specifies the path prefix for installation [/usr/local/
+
+--enable-debug
+	sets parameters for debugging and (if they exist) the non-standard
+	names for the debug versions of the WINGs libraries
+
+--enable-shadow
+	use shadow passwords (default is regular passwords in /etc/passwd)
+
+--enable-pam
+	use PAM (password) authentication; mutulally exclusive with
+	shadow
+
+--with-pamdir=PAMDIR
+	if PAM is enabled, this specifies the path for the PAM directory
+	[/etc/pam.d]
+
+--with-local
+	use /usr/local/{bin,include,lib} paths appropriately
+
+--with-gfx-libs=PATH
+	can be used to specify "non-standard" paths for libraries
+
+--with-gfx-incs=PATH
+	can be used to specify "non-standard" paths for header files.
+
+--disable-xpm
+	disables use of the XPM library even if it is available on
+	your system ... same as for Windowmaker
+
+--disable-jpeg
+	disables use of the jpeg library even if it is available on
+	your system ... same as for Windowmaker
+
+--disable-png
+	disables use of the PNG library even if it is available on
+	your system ... same as for Windowmaker
+
+--disable-tiff
+	disables use of the tiff library even if it is available on
+	your system ... same as for Windowmaker
+
+--with-tiff-libs=LIB
+	specifies a special path for accessing the tiff library
+
+--with-logdir=PATH
+	specifies the directory where the logfile goes
+
+--with-runlockdir=PATH
+	specify the directory where run lock goes
+
+--with-defuserpath=PATHLIST
+	specify list of paths for user sessions
+
+--with-defsystempath=PATHLIST
+	specify list of paths for superuser sessions
+
+--with-wdmdir=PATH
+	specify the full directory pathname for wdm's configuration files
+	[/etc/X11/wdm]
+
+--with-Logo=PIXMAP_FILENAME
+	specify a file to be loaded as the "logo" from the pixmap directory
+
+--with-winmgr=NAME_OF_WM
+	specify an arbitrary window manager
+
+--with-winmgr_path=WINMGR_PATH
+	specify path for the arbitrary window manager
+
+--with-wmlist=LIST_OF_WMs
+	specify a (colon separated) list of window managers which can be
+	started ... overrides ./configure's search for window managers.
+
+***NOTE***********************************************************NOTE****
+
+Please examine (and modify if necessary) the Xsession* and Xclients* files
+in the wdm config directory (by default: /usr/local/etc/wdm).  Also,
+note that this files MUST be marked executable.	 These files are the
+shell files which actually create the user's environment and start
+the window manager.  The can also have a ~/.xsession or a ~/.Xclients file
+in which case these files are executed (and MUST be marked executable).
+
+In addition, review the other other files (especially wdm-config)
+in the wdm config directory and change them as necessary for your
+system.	 For example, if installing on a non Linux system such as
+FreeBSD, you will need to change the parameters for the shutdown
+commands.
+
+You may also need to edit Xsession and Xclients to change how
+the shell program is called and its parameters.
+
+Xsession and Xclients are separate so that a user can create their own
+version of Xclients and put it in their home directory as ~/.Xclients
+
+./configure attempts to properly configure the files in wdm's config
+directory but differences between systems can result in the need to
+manually tailor these files for your system.  Please examine these
+files before trying wdm.
+
+**************************************************************************
+
+Authentication options
+======================
+
+wdm supports three options:
+
+   1. default: use the password in the passwd file
+
+   2. --enable-shadow to use the password in the shadow file
+
+   3. --enable-pam to use the pam authentication
+
+   Note:  The patch implementing the pam interface is installed
+   automatically but --enable-pam must be specified when
+   running configure to pam to be compiled in.
+
+Window Manager Options
+======================
+
+./configure and Xclients include startup code for a number of window managers.
+This includes the programs named wmaker, afterstep, blackbox, icewm, xsession,
+and kde (really startkde).  ./configure trys to locate these programs but
+if not found Xclients will have their respective startup code commented out.
+
+There are also two options for specifying an arbitrary window manager:
+--with-winmgr=NAME and --with-winmgr_path=PATH.	 If specified, this name
+will be added to the list of available window managers.
+
+If --with-wmlist=<...> is used to specify a list of window manager program
+names (colon separated), then be sure to check/modify Xsession and Xclients
+so that the window managers start properly.
+
+Graphics options
+================
+
+   wdm uses the WINGs and wraster libraries.  Therefore, ./configure
+   should be run with the same graphic options you used to install
+   WindowMaker.
+
+   --with-Logo=<...> can be used to specify a Logo pixmap.
+
+NOTE
+====
+
+1. The Xsession and Xclients distributed scripts are configured for
+running on RedHat Linux 5.1.  If this is what you are running, it should
+work.  Otherwise, they may need some modification.
+
+2. The primary configuration file is wdm/wdm-config.  This is an
+Xresource file.	 The new (added) options are:
+
+DisplayManager*wdmLogin:	<locate of the Login program>
+DisplayManager*wdmBg:		<background specification>
+DisplayManager*wdmLogo:		<path of Logo pixmap>
+DisplayManager*wdmWm:		<list of window managers separated by colons>
+DisplayManager*wdm*Reboot:	<command to execute to reboot>
+DisplayManager*wdmHalt:		<command to execute to halt>
+DisplayManager*wdmVerify:	<true/false> -- Verify user for reboot/halt/exit
+DisplayManager*wdmRoot:		<true/false> -- user must be verified root to exit
+
+background specifications:
+	pixmap:full_path_to_background_pixmap
+	solid:<a color>
+	hgradient:<list of colors separated by commas>
+	vgradient:<list of colors separated by commas>
+	dgradient:<list of colors separated by commas>
+		h=horizontal, v=vertical, d=diagonal
+		multi-gradients.
+
+Compilers and Options
+=====================
+
+   Some systems require unusual options for compilation or linking that
+the `configure' script does not know about.  You can give `configure'
+initial values for variables by setting them in the environment.  Using
+a Bourne-compatible shell, you can do that on the command line like
+this:
+     CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+
+Or on systems that have the `env' program, you can do it like this:
+     env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+
+Compiling For Multiple Architectures
+====================================
+
+   You can compile the package for more than one kind of computer at the
+same time, by placing the object files for each architecture in their
+own directory.	To do this, you must use a version of `make' that
+supports the `VPATH' variable, such as GNU `make'.  `cd' to the
+directory where you want the object files and executables to go and run
+the `configure' script.	 `configure' automatically checks for the
+source code in the directory that `configure' is in and in `..'.
+
+   If you have to use a `make' that does not supports the `VPATH'
+variable, you have to compile the package for one architecture at a time
+in the source code directory.  After you have installed the package for
+one architecture, use `make distclean' before reconfiguring for another
+architecture.
+
+Installation Names
+==================
+
+   By default, `make install' will install the package's files in
+`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+installation prefix other than `/usr/local' by giving `configure' the
+option `--prefix=PATH'.
+
+   You can specify separate installation prefixes for
+architecture-specific files and architecture-independent files.	 If you
+give `configure' the option `--exec-prefix=PATH', the package will use
+PATH as the prefix for installing programs and libraries.
+Documentation and other data files will still use the regular prefix.
+
+   There is a separate option to specify the location of wdm's
+configuration directory: --with-wdmdir=<...>.  For example, if you
+use --prefix=/usr/X11R6 but you want the configuration directory in
+/etc/X11, use --with-wdm-dir=/etc/X11.
+
+   There is also a special option for the pam directory --with-pamdir=.
+Be default, the pam configuration file is installed in /etc/pam.d if
+--enable-pam is specified.  Use --with-pamdir=<...> to put it somewhere else.
+
+   In addition, if you use an unusual directory layout you can give
+options like `--bindir=PATH' to specify different values for particular
+kinds of files.	 Run `configure --help' for a list of the directories
+you can set and what kinds of files go in them.
+
+Optional Features
+=================
+
+   Some packages pay attention to `--enable-FEATURE' options to
+`configure', where FEATURE indicates an optional part of the package.
+They may also pay attention to `--with-PACKAGE' options, where PACKAGE
+is something like `gnu-as' or `x' (for the X Window System).  The
+`README' should mention any `--enable-' and `--with-' options that the
+package recognizes.
+
+   For packages that use the X Window System, `configure' can usually
+find the X include and library files automatically, but if it doesn't,
+you can use the `configure' options `--x-includes=DIR' and
+`--x-libraries=DIR' to specify their locations.
+
+Specifying the System Type
+==========================
+
+   There may be some features `configure' can not figure out
+automatically, but needs to determine by the type of host the package
+will run on.  Usually `configure' can figure that out, but if it prints
+a message saying it can not guess the host type, give it the
+`--host=TYPE' option.  TYPE can either be a short name for the system
+type, such as `sun4', or a canonical name with three fields:
+     CPU-COMPANY-SYSTEM
+
+See the file `config.sub' for the possible values of each field.  If
+`config.sub' isn't included in this package, then this package doesn't
+need to know the host type.
+
+   If you are building compiler tools for cross-compiling, you can also
+use the `--target=TYPE' option to select the type of system they will
+produce code for and the `--build=TYPE' option to select the type of
+system on which you are compiling the package.
+
+Sharing Defaults
+================
+
+   If you want to set default values for `configure' scripts to share,
+you can create a site shell script called `config.site' that gives
+default values for variables like `CC', `cache_file', and `prefix'.
+`configure' looks for `PREFIX/share/config.site' if it exists, then
+`PREFIX/etc/config.site' if it exists.	Or, you can set the
+`CONFIG_SITE' environment variable to the location of the site script.
+A warning: not all `configure' scripts look for a site script.
+
+Operation Controls
+==================
+
+   `configure' recognizes the following options to control how it
+operates.
+
+`--cache-file=FILE'
+     Use and save the results of the tests in FILE instead of
+     `./config.cache'.	Set FILE to `/dev/null' to disable caching, for
+     debugging `configure'.
+
+`--help'
+     Print a summary of the options to `configure', and exit.
+
+`--quiet'
+`--silent'
+`-q'
+     Do not print messages saying which checks are being made.	To
+     suppress all normal output, redirect it to `/dev/null' (any error
+     messages will still be shown).
+
+`--srcdir=DIR'
+     Look for the package's source code in directory DIR.  Usually
+     `configure' can determine that directory automatically.
+
+`--version'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`configure' also accepts some other, not widely useful, options.

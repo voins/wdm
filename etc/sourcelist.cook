@@ -1,0 +1,44 @@
+change_files = [collect aegis -list cf -terse -p [project] -c [change]];
+project_files = [collect aegis -list pf -terse -p [project] -c [change]];
+source_files = [sort [stringset [change_files] [project_files]]];
+
+/* generated man files */
+g_manfiles = [fromto %0%.man.in %0%.man [match_mask doc/%.man.in [source_files]]];
+
+/* all man files */
+manfiles = [match_mask doc/%.man [source_files]] [g_manfiles];
+
+/* generated config files */
+g_configs = [fromto %0%.in %0% [match_mask configs/%.in [source_files]]];
+
+/* all config files */
+configs = [filter_out %0%.in [match_mask configs/% [source_files]]] [g_configs];
+
+/* configuration for pam (count generated configs as well) */
+pam_configs = [match_mask %0%.pamd [configs]];
+
+/* filter out pam configs from all others */
+configs = [filter_out %0%.pamd [configs]];
+
+/* list of executable scripts in config */
+exe_configs = [addprefix configs/ Xclients Xsession Xsession.XFree86 wdmReconfig 
+	Xsetup_0 GiveConsole TakeConsole];
+
+/* list of config files with restricted access */
+sec_configs = [addprefix configs/ wdm-config];
+
+/* list of config files sources to install along with generated files*/
+i_configs = [addprefix configs/ wdm-config.in Xclients.in];
+
+/* list of graphics files */
+gfxfiles = [match_mask pixmaps/% [source_files]];
+
+/* list of programs in project list */
+program_list = [stringset [fromto src/%1/%2.c %1 [match_mask src/%1/%2.c [source_files]]]];
+
+/* internal programs that is will not be installed */
+i_program_list = TestLogin;
+
+
+all = tarball [addprefix bin/ [program_list]];
+

@@ -1,0 +1,43 @@
+set mkdir;
+set time-adjust-back;
+
+if [not [defined search_path]] then search_path=;
+
+search_list = .;
+search_path = [tail [split ':' [search_path]]];
+search_name = bl;
+loop
+{
+	search_dir = [head [search_path]];
+	if [not [search_dir]] then
+		loopstop;
+	search_path = [tail [search_path]];
+	if [not [exists [search_name]]] then
+		ln -s [search_dir] [search_name]
+			set clearstat;
+	search_list = [search_list] [search_name];
+	search_name = [search_name]bl;
+}
+
+#include-cooked-nowarn etc/Howto.conf
+#include-cooked [resolve etc/sourcelist.cook]
+
+if [not [defined all]] then all=;
+
+all: [all];
+{
+}
+
+etc/Howto.conf : etc/Howto.conf.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve etc/Howto.conf.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+	rm -f config.log;
+}
+
+#include-cooked [resolve etc/configure.cook]
+#include-cooked [resolve etc/archive.cook]
+#include-cooked [resolve etc/functions.cook]
+#include-cooked [resolve etc/build.cook]
+#include-cooked [resolve etc/makefile.cook]
+

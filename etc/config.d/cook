@@ -1,0 +1,25 @@
+/*
+ *	aegis - project change supervisor
+ *	This file is in the Public Domain, 1995, Peter Miller.
+ *
+ * MANIFEST: example use of cook in project config file
+ */
+
+/*
+ * The build_command field of the config file is used to invoke the relevant
+ * build command.  The following command tells cook where to find the recipes.
+ * The ${s Howto.cook} expands to a path into the baseline during development
+ * if the file is not in the change.  Look in aesub(5) for more information
+ * about command substitutions.
+ */
+build_command =
+	"cook -b ${s etc/Howto.cook} -nl project=$p change=$c version=$v search_path=$sp";
+
+/*
+ * The recipes in the User Guide will all remove their targets before
+ * constructing them, which qualifies them to use the following entry in the
+ * config file.  The targets MUST be removed first if this field is true,
+ * otherwise the baseline would cease to be self-consistent.
+ *
+link_integration_directory = true;
+ */
