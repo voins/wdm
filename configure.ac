@@ -613,9 +613,41 @@ fi
 AC_SUBST(WMLIST)
 
 
+dnl 
+dnl gettext tests (partially copy/paste from WindowMaker's configure.ac)
+dnl
+INTLIBS=""
+AC_CHECK_FUNC(gettext, [HAVEGETTEXT="yes"],
+	AC_CHECK_LIB(intl, gettext, [INTLIBS="-lintl" HAVEGETTEXT="yes"],
+		INTLIBS=""))
 
+AC_CHECK_PROG(XGETTEXT, xgettext, xgettext)
 
+if test "x$XGETTEXT" != "x"; then
+	if $XGETTEXT --help 2>&1 | grep illegal &> /dev/null; then
+		echo "xgettext isn't GNU version"
+		XGETTEXT=""
+	fi
+fi
 
+if test "x$XGETTEXT" != "x" -a "x$HAVEGETTEXT" != "x"; then
+	AC_DEFINE(I18N, 1, [Define if you want internationalization support])
+fi
+
+AC_ARG_WITH(nlsdir,
+	AC_HELP_STRING([--with-nlsdir=PATH],[specify where locale stuff should go]))
+
+if test "x$NLSDIR" = "x"; then
+	if test "x$with_nlsdir" != "x"; then
+		NLSDIR=$with_nlsdir
+	else
+		NLSDIR=$prefix/lib/locale
+	fi
+fi
+
+AC_DEFINE_UNQUOTED(NLSDIR, "$NLSDIR", [where to look for locale files])
+AC_SUBST(NLSDIR)
+AC_SUBST(XGETTEXT)
 
 dnl ==========================================================
 AC_MSG_RESULT(full gfx include paths and flags are $XCFLAGS $GFXFLAGS)
