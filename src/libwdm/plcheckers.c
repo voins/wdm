@@ -120,7 +120,6 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 	WDMDictionaryStruct *fields = spec->fields;
 	void **data = (void**)target;
 	WMPropList *key = NULL, *value = NULL;
-	void *fresult = NULL;
 
 	WDMDebug("WDMCheckPLDictionary(%p, %p, %p)\n", (void*)pl, def, target);
 	if(!pl || !WMIsPLDictionary(pl)) return False;
@@ -132,9 +131,7 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 		key = WMCreatePLString(fields->key);
 		value = WMGetFromPLDictionary(pl, key);
 
-		if((*fields->checker)(value, fields->data, &fresult))
-			*((unsigned*)(*(unsigned char **)data + fields->offset))
-				= (unsigned)fresult;
+		(*fields->checker)(value, fields->data, *data + fields->offset);
 
 		WMReleasePropList(key);
 		key = NULL;
