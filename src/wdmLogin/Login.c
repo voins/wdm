@@ -306,7 +306,6 @@ static void SetupWm()
 
 static void LoginArgs(int argc, char *argv[])
 {
-    char *tmp;
     int c;
 
 
@@ -322,55 +321,25 @@ static void LoginArgs(int argc, char *argv[])
 		smoothScale = False;
 	    break;
 	    case 'd':				/* display */
-		tmp = strchr(optarg,'=');
-		if (tmp==NULL)
-		    tmp=optarg;
-		else
-		    tmp++;
-		displayArg = wstrdup(tmp);
+		displayArg = wstrdup(optarg);
 	    break;
 	    case 'h':				/* helpfile */
-		tmp = strchr(optarg,'=');
-		if (tmp==NULL)
-		    tmp=optarg;
-		else
-		    tmp++;
-		helpArg = wstrdup(tmp);
+		helpArg = wstrdup(optarg);
 	    break;
 	    case 'l':				/* logo */
-		tmp = strchr(optarg,'=');
-		if (tmp==NULL)
-		    tmp=optarg;
-		else
-		    tmp++;
-		logoArg = wstrdup(tmp);
+		logoArg = wstrdup(optarg);
 	    break;
 	    case 'u':				/* default user */
 		WmDefUser = True;
 	    break;
 	    case 'w':				/* wm list */
-		tmp = strchr(optarg,'=');
-		if (tmp==NULL)
-		    tmp=optarg;
-		else
-		    tmp++;
-		WmArg = wstrdup(tmp);
+		WmArg = wstrdup(optarg);
 	    break;
 	    case 'b':				/* background */
-		tmp = strchr(optarg,'=');
-		if (tmp==NULL)
-		    tmp=optarg;
-		else
-		    tmp++;
-		bgArg = wstrdup(tmp);
+		bgArg = wstrdup(optarg);
 	    break;
 	    case 'c':				/* configfile */
-		tmp = strchr(optarg,'=');
-		if (tmp==NULL)
-		    tmp=optarg;
-		else
-		    tmp++;
-		configFile = wstrdup(tmp);
+		configFile = wstrdup(optarg);
 	    break;
 	    default:
 		fprintf(stderr,"bad option: %c\n",c);
