@@ -53,3 +53,24 @@ WDMCheckPLBool(WMPropList *pl, Bool defval)
 	return value;
 }
 
+/** @brief check if proplist is a string
+ *
+ * If pl is a string it will be duplicated with wstrdup
+ * and returned. It's caller responsibility to wfree that
+ * space.
+ * In all other cases defval is returned. defval is not
+ * duplicated.
+ */
+char *
+WDMCheckPLString(WMPropList *pl, char *defval)
+{
+	char *value = defval;
+
+	if(pl && WMIsPLString(pl))
+	{
+		value = wstrdup(WMGetFromPLString(pl));
+	}
+
+	return value;
+}
+

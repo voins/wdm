@@ -23,6 +23,7 @@
 #include <WINGs/WUtil.h>
 
 extern Bool WDMCheckPLBool(WMPropList *pl, Bool defval);
+extern char *WDMCheckPLString(WMPropList *pl, char *defval);
 
 #endif
 
