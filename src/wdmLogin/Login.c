@@ -177,7 +177,6 @@ static char *ExitStr[5]	   = {ExitLogin,ExitReboot,ExitHalt,ExitExit,
 			      NULL};
 
 static int   WmOptionCode  = 0;
-static char  WmOption[256] = "NoChange";
 static char  WmNoChange[]  = "NoChange";
 static char  WmFailSafe[]  = "failsafe";
 static char  WmDefault[]   = "wmaker:afterstep:xsession";
@@ -566,8 +565,6 @@ static void helpPressed(WMWidget *self, LoginPanel *panel)
 static void changeWm(WMWidget *self, LoginPanel *panel)
 {
     WmOptionCode = WMGetPopUpButtonSelectedItem(self);
-    strncpy(WmOption,WmStr[WmOptionCode],255);
-    WmOption[255] = '\0';
     WMSetFocusToWidget(panel->entryText);
 }
 
