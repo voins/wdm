@@ -36,6 +36,7 @@ from The Open Group.
  */
 
 # include	<dm.h>
+#include <wdm.h>
 # include	<dm_auth.h>
 
 # include	<stdio.h>
@@ -162,6 +163,8 @@ main (int argc, char **argv)
 		else
 			WDMLogStream(fdopen(f, "w"));
 	}
+	/* redirect any messages for stderr into standard logging functions. */
+	WDMRedirectStderr(WDM_LEVEL_ERROR);
 
     if (nofork_session == 0) {
 	/* Clean up any old Authorization files */
