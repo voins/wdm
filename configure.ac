@@ -117,10 +117,6 @@ LIBUTIL=
 AC_CHECK_LIB(util, main, [LIBUTIL="-lutil"]) dnl for FreeBSD
 AC_SUBST(LIBUTIL)
 
-LIB_LIBS=
-AC_CHECK_LIB(s, main, [LIB_LIBS="-ls"]) dnl for AIX
-AC_SUBST(LIB_LIBS)
-
 dnl crypt is a password and data encryption function
 dnl the related header file is unistd.h
 
@@ -144,9 +140,9 @@ AC_CHECK_LIB(z, gzread, [LIBZLIB="-lz"])
 AC_SUBST(LIB_ZLIB)
 
 AC_PATH_XTRA
-XCFLAGS="$CFLAGS $X_CFLAGS"
-XLDFLAGS="$LDFLAGS $X_LIBS"
-XLIBS="$LIBS $X_PRE_LIBS -lXext -lXt -lX11 -lm $X_EXTRA_LIBS"
+XCFLAGS="$X_CFLAGS"
+XLDFLAGS="$X_LIBS"
+XLIBS="$X_PRE_LIBS -lXext -lXt -lX11 -lm $X_EXTRA_LIBS"
 AC_SUBST(XLIBS)
 AC_SUBST(XCFLAGS)
 AC_SUBST(XLDFLAGS)
