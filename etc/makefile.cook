@@ -22,7 +22,7 @@ configdir = \\$\\(DESTDIR\\)\\$\\(DMDIR\\);
 gfxdir = [configdir]/pixmaps;
 pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
 
-bin/M/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
 	echo "bin/%: " [c_to_o [select_c %]] > [target];
 	echo -e "\"\\t\""mkdir -p bin >> [target];
@@ -98,12 +98,15 @@ pixmaps/%.M: etc/makefile.cook
 	echo >> [target];
 }
 
-Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
+m_files = 
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
-	[fromto % bin/M/%.M [program_list]]
+	[fromto % src/%.M [program_list]]
 	[fromto %0% %0%.M [manfiles]]
 	[fromto %0% %0%.M [gfxfiles]]
-	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]]
+	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]];
+
+Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
+	[m_files]
 {
 	rm -f [target];
 	sed [resolve etc/Howto.conf.in] \
@@ -116,12 +119,15 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	cat [resolve etc/Makefile.head] >> [target];
 
 	echo >> [target];
-	echo all\: [addprefix bin/ [program_list]] all-doc all-config >> [target];
+	echo all\: all-bin all-doc all-config >> [target];
 	echo >> [target];
+	echo install\: install-bin install-config install-doc install-gfx >> [target];
 
-	cat [resolve [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]] >> [target];
-	cat [resolve [fromto % bin/M/%.M [program_list]]] >> [target];
-	echo install\: [addprefix [destbindir] [program_list]] install-config install-doc install-gfx>> [target];
+	echo >> [target];
+	echo all-bin\: [addprefix bin/ [program_list]] >> [target];
+	echo >> [target];
+	echo install-bin\: [addprefix [destbindir] [stringset [program_list] - [i_program_list]]] >> [target];
+	echo >> [target];
 
 
 	echo >> [target];
@@ -137,21 +143,18 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	echo >> [target];
 	echo [configdir]/authdir\: >> [target];
 	echo -e "\"\\t\""\\$\\(INSTALL\\) -m 700 -D -d \\$\\@ >> [target];
-	echo >> [target];
-	cat [resolve [fromto %0% %0%.M [configs] [pam_configs] [i_configs]]] >> [target];
 	
 
 	echo >> [target];
 	echo all-doc\: [g_manfiles] >> [target];
 	echo >> [target];
 	echo install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]] >> [target];
-	echo >> [target];
-	cat [resolve [fromto %0% %0%.M [manfiles]]] >> [target];
 
 	
 	echo >> [target];
 	echo install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]] >> [target];
+
 	echo >> [target];
-	cat [resolve [fromto %0% %0%.M [gfxfiles]]] >> [target];
+	cat [resolve [m_files]] >> [target];
 }
 

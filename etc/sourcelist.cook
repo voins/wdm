@@ -33,7 +33,12 @@ i_configs = [addprefix configs/ wdm-config.in Xclients.in];
 /* list of graphics files */
 gfxfiles = [match_mask pixmaps/% [source_files]];
 
-program_list = wdmLogin TestLogin wdm;
+/* list of programs in project list */
+program_list = [stringset [fromto src/%1/%2.c %1 [match_mask src/%1/%2.c [source_files]]]];
+
+/* internal programs that is will not be installed */
+i_program_list = TestLogin;
+
 
 all = tarball [addprefix bin/ [program_list]];
 
