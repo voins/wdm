@@ -40,7 +40,9 @@ WDMLogMessages(int level, char *buffer, int n)
 
 	while((pos = memchr(buffer, '\n', n)) != NULL)
 	{
-		tmpmsg = wstrndup(buffer, pos - buffer + 1);
+		tmpmsg = wmalloc(pos - buffer + 2);
+		strncpy(tmpmsg, buffer, pos - buffer + 1);
+		tmpmsg[pos - buffer + 1] = '\0';
 		WDMLogMessage(level, "%s", tmpmsg);
 		wfree(tmpmsg);
 
