@@ -47,8 +47,8 @@ src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 
 	[make_line "bin/%.a: " [c_to_o [select_c %]]];
 	[make_action mkdir -p bin];
-	[make_action [make_var AR] cru bin/%.a [c_to_o [select_c %]]];
-	[make_action [make_var RANLIB] bin/%.a];
+	[make_action [make_var ar] cru bin/%.a [c_to_o [select_c %]]];
+	[make_action [make_var ranlib] bin/%.a];
 	[make_line];
 }
 
@@ -86,7 +86,7 @@ po/%.mo.M: etc/makefile.cook
 	rm -f [target];
 
 	[make_line po/%.mo\: po/%.po];
-	[make_action [make_var MSGFMT] -o \\$\\@ po/%.po];
+	[make_action [make_var msgfmt] -o \\$\\@ po/%.po];
 	[make_line];
 	[make_line [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo];
 	[make_action [make_var INSTALL_DATA] -D po/%.mo \\$\\@];
