@@ -19,17 +19,12 @@ loop
 	search_name = [search_name]bl;
 }
 
-
 #include-cooked-nowarn etc/Howto.conf
 #include-cooked [resolve etc/sourcelist.cook]
 
-wdm_config_files = src/config/wdm-config src/config/Xclients \
-	src/config/Xsetup_0 src/config/Xsession src/config/Xservers \
-	src/config/Xservers.ws src/config/wdmReconfig;
+if [not [defined all]] then all=;
 
-program_list = wdmLogin TestLogin wdm;
-
-all: [wdm_config_files] wdm-[PACKAGE_VERSION].tar.gz [addprefix bin/ [program_list]];
+all: [all];
 {
 }
 
