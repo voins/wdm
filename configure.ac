@@ -106,7 +106,27 @@ fi
 AC_SUBST(PASSWDLIB)
 AC_SUBST(USE_PAM)
 
+AC_MSG_CHECKING(for SELinux support)
+AC_ARG_ENABLE(selinux,
+	AC_HELP_STRING([--enable-selinux], [enable SELinux support]),
+   [
+   	AC_MSG_RESULT(yes)
+      	AC_CHECK_LIB(selinux, is_selinux_enabled, [SELINUX_LIBS="-lselinux"
+         	AC_DEFINE_UNQUOTED(HAVE_SELINUX_LIB, 1, [Define if libselinux is installed])
+			AC_DEFINE(WITH_SELINUX, 1, [Define if you want wdm to be compiled with SELinux support])
+            	SELINUX_CFLAGS="-DWITH_SELINUX -I/usr/include/selinux"
+               ],
+               [
+			AC_MSG_WARN([libselinux not found, compiling without SELinux support])
+            	])
+   ],
+   [
+   	AC_MSG_RESULT(no)
+   ])
+AC_SUBST(SELINUX_LIBS)
+AC_SUBST(SELINUX_CFLAGS)
 
+            
 AC_CHECK_LIB(util, main) dnl for FreeBSD
 AC_CHECK_LIB(crypt, main) dnl for BSD and RHL
 AC_CHECK_LIB(ucb, killpg) dnl for Solaris2.4

@@ -83,6 +83,12 @@ extern	void	endgrent(void);
 #include <shadow.h>
 #endif
 
+#ifdef WITH_SELINUX
+#include <selinux/get_context_list.h>
+#include <selinux/selinux.h>
+#endif
+
+
 #if defined(CSRG_BASED)
 #include <pwd.h>
 #include <unistd.h>
@@ -647,6 +653,27 @@ StartClient (
 	}
 #endif /* AIXV3 */
 
+	/*
+	 * for Security Enhanced Linux,
+	 * set the default security context for this user.
+    */
+#ifdef WITH_SELINUX
+	if (is_selinux_enabled())
+	{
+		security_context_t scontext;
+		if (get_default_context(name,NULL,&scontext))
+			WDMError("Failed to get default security context"
+					" for %s.", name);
+		WDMDebug("setting security context to %s", scontext);
+		if (setexeccon(scontext))
+		{
+			freecon(scontext);
+			WDMError("Failed to set exec security context %s "
+					"for %s.", scontext, name);
+		}
+		freecon(scontext);
+	}
+#endif
 	/*
 	 * for user-based authorization schemes,
 	 * use the password to get the user's credentials.
