@@ -998,8 +998,8 @@ writeRemoteAuth (FILE *file, Xauth *auth, XdmcpNetaddr peer, int peerlen, char *
     WDMDebug("writeRemoteAuth: family %d\n", family);
     if (family != FamilyLocal)
     {
-	WDMDebug("writeRemoteAuth: %d, %d, %x\n",
-		family, peerlen, *(int *)addr);
+/*	WDMDebug("writeRemoteAuth: %d, %d, %x\n",
+		family, peerlen, *(int *)addr);*/
 	writeAddr (family, peerlen, addr, file, auth);
     }
     else
