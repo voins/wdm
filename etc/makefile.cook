@@ -133,12 +133,6 @@ pixmaps/%.M: etc/makefile.cook
 {
 	rm -f [target];
 
-	if [is_xpm %] then
-	{
-		[make_line include/%\: pixmaps/%];
-		[make_action ln -s ../pixmaps/% \\$\\@];
-		[make_line];
-	}
 	[make_line [gfxdir]/%\: pixmaps/%];
 	[make_action [make_var INSTALL_DATA] -D pixmaps/% \\$\\@];
 	[make_line];

@@ -49,9 +49,6 @@
 #include <locale.h>
 #include <time.h>
 
-#include <gnuLogo.xpm>
-
-
 /*###################################################################*/
 
 /** Global Variables and Constants **/
@@ -671,7 +668,16 @@ CreateLogo(LoginPanel * panel)
 		image1 = RLoadImage(context, logoArg, 0);
 	}
 	if(image1 == NULL)
-		image1 = RGetImageFromXPMData(context, gnuLogo_xpm);
+	{
+		RColor first, second;
+		first.red = 0xae;
+		first.green = 0xaa;
+		first.blue = 0xc0;
+		second.red = 0xae;
+		second.green = 0xaa;
+		second.blue = 0xae;
+		image1 = RRenderGradient(200, 300, &first, &second, RDiagonalGradient);
+	}
 	if(image1 == NULL)
 		return;
 
@@ -703,7 +709,7 @@ CreateLogo(LoginPanel * panel)
 #endif
 		/* if image is too small, do not reallly resize since this looks bad */
 		/* the image will be centered */
-		if((image1->width < 200) && (image1->height < 130))
+	if((image1->width < 200) && (image1->height < 130))
 	{
 		w = image1->width;
 		h = image1->height;
@@ -717,7 +723,7 @@ CreateLogo(LoginPanel * panel)
 	fprintf(stderr, "new: ratio=%.5f,width=%i,heigth=%i\n", ratio, w, h);
 	/*DEBUG*/
 #endif
-		if(smoothScale)
+	if(smoothScale)
 		image2 = RSmoothScaleImage(image1, w, h);
 	else
 		image2 = RScaleImage(image1, w, h);
