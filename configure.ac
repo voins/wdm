@@ -139,22 +139,16 @@ LIBUCB=
 AC_CHECK_LIB(ucb, killpg, [LIBUCB="-lucb"]) dnl for Solaris2.4
 AC_SUBST(LIBUCB)
 
-LIB_ZLIB=
-AC_CHECK_LIB(z, gzread, [LIBZLIB="-lz"])
-AC_SUBST(LIB_ZLIB)
+AC_ARG_ENABLE(debug,
+	AC_HELP_STRING([--enable-debug],[enable debugging]),
+	[
+		CFLAGS="$CFLAGS -g -DDEBUG"
+	])
 
 AC_PATH_XTRA
 XCFLAGS="$X_CFLAGS"
 XLDFLAGS="$X_LIBS"
 XLIBS="$X_PRE_LIBS -lXext -lXt -lX11 -lm $X_EXTRA_LIBS"
-AC_SUBST(XLIBS)
-AC_SUBST(XCFLAGS)
-AC_SUBST(XLDFLAGS)
-
-GFXCFLAGS=
-GFXLDFLAGS=
-GFXLIBS=
-supported_gfx=
 
 AC_CHECK_LIB(Xinerama, XineramaIsActive,
 	[LIBXINERAMA=-lXinerama
@@ -163,256 +157,22 @@ AC_CHECK_LIB(Xinerama, XineramaIsActive,
 	[$XLDFLAGS $XLIBS])
 AC_SUBST(LIBXINERAMA)
 
-dnl an option to handle /usr/local/{bin,include,lib}
-AC_MSG_CHECKING([for using /usr/local/{bin,include,lib} paths])
-AC_ARG_WITH(local,
-	AC_HELP_STRING([--with-local],[set appropriate /usr/local/{bin,include,lib}]),
-	[
-		AC_MSG_RESULT(yes)
-		GFXLDFLAGS="$GFXLDFLAGS -L/usr/local/lib"
-		GFXCFLAGS="$GFXCFLAGS -I/usr/local/include"
-		LOCAL_PATH="/usr/local/bin"
-	],
-	[
-		AC_MSG_RESULT(no)
-	])
-
-dnl Specify paths to look for graphic format libraries
-AC_MSG_CHECKING(for gfx-libs)
-AC_ARG_WITH(gfx-libs,
-	AC_HELP_STRING([--with-gfx-libs],[pass compiler flags to look for gfx libraries]),
-	[
-		AC_MSG_RESULT($withval)
-		GFXLDFLAGS="$GFXLDFLAGS -L$withval"
-	],
-	[
-		AC_MSG_RESULT([])
-	]
-)
-
-AC_MSG_CHECKING(for gfx-incs)
-AC_ARG_WITH(gfx-incs,
-	AC_HELP_STRING([--with-gfx-incs],[pass compiler flags to look for gfx header files]),
-	[
-		AC_MSG_RESULT($withval)
-		GFXCFLAGS="$GFXCFLAGS -I$withval"
-	],
-	[
-		AC_MSG_RESULT([])
-	])
-
-
-AC_ARG_ENABLE(xpm,
-	AC_HELP_STRING([--disable-xpm],[disable use of XPM pixmaps through libXpm]),
-	xpm=$enableval, xpm=yes)
-if test "$xpm" = yes; then
-	AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,
-	[
-		GFXLDFLAGS="$GFXLDFLAGS -lXpm"
-		supported_gfx="$supported_gfx XPM"
-	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
-fi
-
-AC_ARG_ENABLE(png,
-	AC_HELP_STRING([--disable-png],[disable PNG support through libpng]),
-	png=$enableval, png=yes)
-
-if test "$png" = yes; then
-	AC_CHECK_LIB(png, png_get_valid,
-	[
-		GFXLIBS="$GFXLIBS -lpng $LIB_ZLIB"
-		supported_gfx="$supported_gfx PNG"
-	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS $LIB_ZLIB)
-fi
-
-AC_ARG_ENABLE(jpeg,
-	AC_HELP_STRING([--disable-jpeg],[disable JPEG support through libjpeg]),
-	jpeg=$enableval, jpeg=yes)
-
-if test "$jpeg" = yes; then
-	AC_CHECK_LIB(jpeg, jpeg_destroy_compress,
-	[
-		GFXLIBS="$GFXLIBS -ljpeg"
-		supported_gfx="$supported_gfx JPEG"
-	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
-fi
-
-
-dnl There are two implementations which support GIF: libgif and libungif.
-dnl Both/either seem to work with wraster.
-AC_ARG_ENABLE(gif,
-	AC_HELP_STRING([--disable-gif],[disable JPEG support through libjpeg]),
-	gif=$enableval, gif=yes)
-
-if test "$gif" = yes; then
-	AC_CHECK_LIB(ungif, EGifOpenFileName,
-	[
-		GFXLIBS="$GFXLIBS -lungif"
-		supported_gfx="$supported_gfx GIF-ungif"
-	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
-	AC_CHECK_LIB(gif, DGifOpenFileName,
-	[
-		GFXLIBS="$GFXLIBS -lgif"
-		supported_gfx="$supported_gfx GIF-gif"
-	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
-fi
-
-tiflib=""
-AC_ARG_WITH(tiff-libs,
-	AC_HELP_STRING([--with-tiff-libs=LIB],[use libtiff with the specified extra libs]),
-	tiflib=$withval, tiflib="")
-
-AC_ARG_ENABLE(tiff,
-	AC_HELP_STRING([--disable-tiff],[disable use of TIFF images through libtiff]),
-	tif=$enableval, tif=yes)
-
-dnl
-dnl TIFF can optionally have JPEG and/or zlib support. Must find out
-dnl when they are supported so that correct library flags are passed during
-dnl detection and linkage
-dnl
-dnl
-
-dnl for FreeBSD, check for libtiff34 also, should not hurt if both are found
-
-if test "$tif" = yes; then
-	AC_CHECK_LIB(tiff, TIFFGetVersion,
-	[
-		GFXLIBS="$GFXLIBS -ltiff $tiflib"
-		supported_gfx="$supported_gfx TIFF"
-	],,$GFXCFLAGS $GFXLDFLAGS $tiflib $XCFLAGS $XLDFLAGS $XLIBS)
-	AC_CHECK_LIB(tiff34, TIFFGetVersion,
-	[
-		GFXLIBS="$GFXLIBS -ltiff34 $tiflib"
-		supported_gfx="$supported_gfx TIFF34"
-	],,$GFXCFLAGS $GFXLDFLAGS $tiflib $XCFLAGS $XLDFLAGS $XLIBS)
-fi
-
 dnl		WINGs support
-
-dnl NOTE: Neither the naming convension nor the existance
-dnl	  of debug enabled WINGs libs is standard.
-dnl	  However, at this stage of WINGs development, we
-dnl	  need something and this is it for now.
-dnl using debug libs now controlled by --enable-debug
-
-AC_ARG_ENABLE(debug,
-	AC_HELP_STRING([--enable-debug],[enable debugging]),
-	[
-		enable_debug=yes
-		CFLAGS="$CFLAGS -g -DDEBUG"
-	], enable_debug=no)
-
-LIBPROPLIST=
-AC_CHECK_LIB(PropList, PLIsArray,
-[
-	LIBPROPLIST=-lPropList
-],,$XCFLAGS $XLDFLAGS $XLIBS)
-
-XFTLIBS=
-XFTCFLAGS=
-AC_CHECK_LIB(Xft2, XftDrawCreate,
-[
-	XFTLIBS=`xft-config --libs`
-	XFTCFLAGS=`xft-config --cflags`
-],[
-	AC_CHECK_LIB(Xft, XftDrawCreate,
-	[
-		XFTLIBS=-lXft
-	],,$XCFLAGS $XLDFLAGS $XLIBS)
-],$XCFLAGS $XLDFLAGS $XLIBS)
-
-
-LIBWINGS=
-LIBWRASTER=
-AC_CHECK_LIB(wraster, RCreateImage,
-[
-	dummy=
-],
-[
-	AC_MSG_ERROR([wraster lib required and not found])
-],$GFXLDFLAGS $XLDFLAGS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
-
-AC_CHECK_LIB(wrasterg, RCreateImage,
-[
-	if test "$enable_debug" = yes; then
-		LIBWRASTER="-lwrasterg"
-	else
-		LIBWRASTER="-lwraster"
-	fi
-],[
-	LIBWRASTER="-lwraster"
-],$GFXLDFLAGS $XLDFLAGS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
-
-AC_CHECK_LIB(WINGs, WMCreateScreen,
-[
-	dummy=
-],
-[
-	AC_MSG_ERROR([WINGs lib required and not found])
-],$GFXLDFLAGS $XLDFLAGS $LIBWRASTER $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
-
-AC_CHECK_LIB(WINGsg, WMCreateScreen,
-[
-	if test "$enable_debug" = yes; then
-		LIBWINGS="-lWINGsg"
-	else
-		LIBWINGS="-lWINGs"
-	fi
-],[
-	LIBWINGS="$WMLIBS -lWINGs"
-],$GFXLDFLAGS $XLDFLAGS $LIBWRASTER $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
-
-if ! test "x$LIBPROPLIST" = "x"; then
-	AC_MSG_CHECKING([if we really need libPropList])
-	tmpLDFLAGS=$LDFLAGS
-	tmpLIBS=$LIBS
-	LDFLAGS="$GFXLDFLAGS $XLDFLAGS"
-	LIBS="$LIBWINGS $LIBWRASTER $XLIBS $GFXLIBS $XFTLIBS"
-	AC_TRY_LINK_FUNC(WMCreateScreen,
-	[
-		AC_MSG_RESULT(no)
-		LIBPROPLIST=
-	],[
-		AC_MSG_RESULT(yes)
-	])
-	LDFLAGS=$tmpLDFLAGS
-	LIBS=$tmpLIBS
+AC_CHECK_PROG(GETWINGSFLAGS,get-wings-flags,get-wings-flags,,[$PATH])
+if test -z "$GETWINGSFLAGS"; then
+	AC_MSG_ERROR(['get-wings-flags' command was nor found in \$PATH, please upgrade your WindowMaker.])
 fi
 
-if ! test "x$XFTLIBS" = "x"; then
-	AC_MSG_CHECKING([if we really need libXft])
-	tmpLDFLAGS=$LDFLAGS
-	tmpLIBS=$LIBS
-	LDFLAGS="$GFXLDFLAGS $XLDFLAGS"
-	LIBS="$LIBWINGS $LIBWRASTER $XLIBS $GFXLIBS $LIBPROPLIST"
-	AC_TRY_LINK_FUNC(WMCreateScreen,
-	[
-		AC_MSG_RESULT(no)
-		XFTLIBS=
-		XFTCFLAGS=
-	],[
-		AC_MSG_RESULT(yes)
-	])
-	LDFLAGS=$tmpLDFLAGS
-	LIBS=$tmpLIBS
-fi
-GFXLIBS="$LIBWINGS $LIBWRASTER $XFTLIBS $LIBPROPLIST $GFXLIBS"
-GFXCFLAGS="$GFXCFLAGS $XFTCFLAGS"
+WCFLAGS=`get-wings-flags --cflags`
+WLDFLAGS=`get-wings-flags --ldflags`
+WLIBS=`get-wings-flags --libs`
 
-saveLIBS="$LIBS"
-saveLDFLAGS="$LDFLAGS"
-LIBS="$LIBWRASTER $XLIBS"
-LDFLAGS="$LDFLAGS $XLDFLAGS"
-AC_CHECK_FUNC(RSmoothScaleImage,
-	[AC_DEFINE(HAVE_SMOOTH_SCALE, 1,
-		[Define if you have RSmoothScale function in libwraster.])])
-LIBS="$saveLIBS"
-LDFLAGS="$saveLDFLAGS"
-
-AC_SUBST(GFXCFLAGS)
-AC_SUBST(GFXLDFLAGS)
-AC_SUBST(GFXLIBS)
+AC_SUBST(XLIBS)
+AC_SUBST(XCFLAGS)
+AC_SUBST(XLDFLAGS)
+AC_SUBST(WCFLAGS)
+AC_SUBST(WLDFLAGS)
+AC_SUBST(WLIBS)
 
 
 dnl ===============================================
