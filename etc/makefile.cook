@@ -105,6 +105,11 @@ m_files =
 	[fromto %0% %0%.M [gfxfiles]]
 	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]];
 
+clean_files = [fromto %0%.c %0%.o [match_mask src/%0%.c [source_files]]];
+dist_clean_files = [clean_files] [addprefix bin/ [program_list]] [g_manfiles] 
+	[g_configs] config.status config.log include/config.h include/gnuLogo.xpm
+	Makefile;
+
 Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
 	[m_files]
 {
@@ -154,7 +159,20 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	echo >> [target];
 	echo install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]] >> [target];
 
+
 	echo >> [target];
 	cat [resolve [m_files]] >> [target];
+
+
+	echo >> [target];
+	echo clean\: >> [target];
+	echo -e "\"\\t\""rm -f [clean_files] >> [target];
+
+
+	echo >> [target];
+	echo distclean\: >> [target];
+	echo -e "\"\\t\""rm -f [dist_clean_files] >> [target];
+	echo -e "\"\\tif test -e bin; then rmdir bin; fi\"" >> [target];
+
 }
 
