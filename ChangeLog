@@ -1,3 +1,17 @@
+1.22	- Feb 09 2003 - Alexey Voinov <voins@voins.program.ru>
+	- Xdm-base of wdm have been upgraded to xdm from
+	  XFree86-4.2.1.1. I haven't touched greet.c yet because 
+	  it works as it is and there will be a lot of changes
+          in greet.c soon.
+	- Use smooth scaling for logo image in wdmLogin if that 
+	  function is available in libwraster.
+	- List of window managers is now unlimited.
+	- wdmLogin interface translated. I have ja.po from 
+	  Hiroshi Miura <miura@da-cha.org> and ru.po from
+	  Grigory Batalov <bga@altlinux.ru>. Default help text is
+	  not translated. Set wdmLocale resource in wdm-config to
+	  locale you want wdmLogin to run in.
+	- Some unneeded global variables in wdmLogin removed.
 1.21	- Jan 05 2003 - Alexey Voinov <voins@voins.program.ru>
 	- Applied all my patches used in ALT Linux package. 
 	  This fixes problem with long passwords, makes wdm

@@ -1,4 +1,16 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.22 -- Feb 09 2003
+	- xdm-base upgraded to xdm from XFree86-4.2.1.
+	- wdmLogin translated to russian and japanese.
+	Now, what will be in next releases:
+	- compatibility with ancient versions of WINGs
+	  will be dropped.
+	- configuration files will be changed to PropList
+	  format (If you want to arue, mail me or chat with me at
+	  #wdm on irc.ornet.ru, or #windowmaker on irc.freenode.net)
+	- wdm <-> wdmLogin protocol will be changed to implement
+	  better PAM support.
+
 wdm-1.21 -- Jan 07 2003
 	- development started again. This release collects almost
 	  all patches I can find on net. If you have more patches
