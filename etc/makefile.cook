@@ -46,23 +46,34 @@ doc/%.man.M: etc/makefile.cook
 	echo >> [target];
 }
 
-Makefile.in : etc/Howto.conf.in etc/Makefile.sh etc/makefile.cook etc/Howto.cook etc/Makefile.configs
+Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook etc/Makefile.configs
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
 	[fromto % bin/M/%.M [program_list]]
 	[fromto %0% %0%.M [manfiles]]
 {
 	rm -f [target];
-	sh [resolve etc/Makefile.sh] [resolve etc/Howto.conf.in] [target];
-	echo all\: [addprefix bin/ [program_list]] [g_manfiles]>> [target];
+	sed [resolve etc/Howto.conf.in] \
+		-e "'s@\\[prepost.*\\[.*\\]\\]@-I./include@'" \
+		-e "'s@\\[\\([^\\[]*\\)\\]@\\$(\\1)@g'" \
+		-e "'s@;$@@'" \
+		-e "'s@/\\*\\*\\(.*\\)\\*/@\\1@'" \
+		-e "'s@/\\*\\(.*\\)\\*/@# \\1@'" \
+		>> [target];
+	cat [resolve etc/Makefile.head] >> [target];
+
 	echo >> [target];
+	echo all\: [addprefix bin/ [program_list]] all-doc >> [target];
+	echo >> [target];
+
 	cat [resolve [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]] >> [target];
 	cat [resolve [fromto % bin/M/%.M [program_list]]] >> [target];
 	echo install\: [addprefix [destbindir] [program_list]] install-config install-doc>> [target];
 	cat [resolve etc/Makefile.configs] >> [target];
 
-
 	echo >> [target];
-	echo install-doc\: [fromto %0%.man [destman1dir]%.1 [manfiles]] >> [target];
+	echo all-doc\: [g_manfiles] >> [target];
+	echo >> [target];
+	echo install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]] >> [target];
 	echo >> [target];
 	cat [resolve [fromto %0% %0%.M [manfiles]]] >> [target];
 }
