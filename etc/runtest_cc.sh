@@ -16,11 +16,12 @@ CFLAGS="$CFLAGS $includedirs"
 LDFLAGS="$libdirs $LDFLAGS"
 CXX=${CXX:-g++}
 LDFLAGS="$LDFLAGS `grep -e '^LDFLAGS=' $testfilename|sed -e's/^LDFLAGS=//'`"
+LIBS="$LIBS `grep -e '^LIBS=' $testfilename|sed -e's/^LIBS=//'`"
 CFLAGS="$CFLAGS `grep -e '^CFLAGS=' $testfilename|sed -e's/^CFLAGS=//'`"
 export LD_LIBRARY_PATH=$searchpath
 
-echo $CXX $CFLAGS $LDFLAGS $testfilename -o testprog
-$CXX $CFLAGS $LDFLAGS $testfilename -o testprog
+echo $CXX $CFLAGS $LDFLAGS $testfilename $LIBS -o testprog
+$CXX $CFLAGS $LDFLAGS $testfilename $LIBS -o testprog
 if test $? -ne 0; then fail; fi
 
 echo ./testprog

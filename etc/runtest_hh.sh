@@ -23,11 +23,12 @@ CFLAGS="$CFLAGS $includedirs"
 LDFLAGS="$libdirs -lcppunit $LDFLAGS"
 CC=${CC:-g++}
 LDFLAGS="$LDFLAGS `grep -e '^LDFLAGS=' $testfilename|sed -e's/^LDFLAGS=//'`"
+LIBS="$LIBS `grep -e '^LIBS=' $testfilename|sed -e's/^LIBS=//'`"
 CFLAGS="$CFLAGS `grep -e '^CFLAGS=' $testfilename|sed -e's/^CFLAGS=//'`"
 export LD_LIBRARY_PATH=$searchpath
 
-echo $CC $CFLAGS $LDFLAGS -include $testfilename -o testprog $mainsource
-$CC $CFLAGS $LDFLAGS -include $testfilename -o testprog $mainsource
+echo $CC $CFLAGS $LDFLAGS -include $testfilename -o testprog $mainsource $LIBS
+$CC $CFLAGS $LDFLAGS -include $testfilename -o testprog $mainsource $LIBS
 if test $? -ne 0; then fail; fi
 
 echo ./testprog

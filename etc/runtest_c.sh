@@ -15,11 +15,12 @@ CFLAGS="$CFLAGS $includedirs"
 LDFLAGS="$libdirs $LDFLAGS"
 CC=${CC:-gcc}
 LDFLAGS="$LDFLAGS `grep -e '^LDFLAGS=' $testfilename|sed -e's/^LDFLAGS=//'`"
+LIBS="$LIBS `grep -e '^LIBS=' $testfilename|sed -e's/^LIBS=//'`"
 CFLAGS="$CFLAGS `grep -e '^CFLAGS=' $testfilename|sed -e's/^CFLAGS=//'`"
 export LD_LIBRARY_PATH=$searchpath
 
-echo $CC $CFLAGS $LDFLAGS $testfilename -o testprog
-$CC $CFLAGS $LDFLAGS $testfilename -o testprog
+echo $CC $CFLAGS $LDFLAGS $testfilename $LIBS -o testprog
+$CC $CFLAGS $LDFLAGS $testfilename $LIBS -o testprog
 if test $? -ne 0; then fail; fi
 
 echo ./testprog
