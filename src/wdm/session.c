@@ -472,14 +472,15 @@ SessionExit (struct display *d, int status, int removeAuth)
 {
 #ifdef USE_PAM
 	pam_handle_t *pamh = thepamh();
-#endif
-#ifdef USE_PAM
-    if (pamh) {
-        /* shutdown PAM session */
-	pam_close_session(pamh, 0);
-	pam_end(pamh, PAM_SUCCESS);
-	pamh = NULL;
-    }
+	if(pamh)
+	{
+		/* shutdown PAM session */
+		if(pam_setcred(pamh, PAM_DELETE_CRED) != PAM_SUCCESS)
+			WDMError("pam_setcred(DELETE_CRED) failed, errno=%d", errno);
+		pam_close_session(pamh, 0);
+		pam_end(pamh, PAM_SUCCESS);
+		pamh = NULL;
+	}
 #endif
 
     /* make sure the server gets reset after the session is over */
@@ -552,7 +553,6 @@ StartClient (
 	WDMDebug("\n");
     }
 #ifdef USE_PAM
-    if (pamh) pam_open_session(pamh, 0);
 #endif    
     switch (pid = fork ()) {
     case 0:
@@ -563,18 +563,6 @@ StartClient (
 #endif
 
 	/* Do system-dependent login setup here */
-
-#ifdef USE_PAM
-	/* pass in environment variables set by libpam and modules it called */
-	if (pamh) {
-	    long i;
-	    char **pam_env = pam_getenvlist(pamh);
-	    for(i = 0; pam_env && pam_env[i]; i++) {
-		verify->userEnviron = WDMPutEnv(verify->userEnviron, pam_env[i]);
-	    }
-	}
-#endif
-
 
 #ifndef AIXV3
 #ifndef HAS_SETUSERCONTEXT
@@ -599,8 +587,24 @@ StartClient (
 	}
 #endif   /* QNX4 doesn't support multi-groups, no initgroups() */
 #ifdef USE_PAM
-	if (thepamh()) {
-	    pam_setcred(thepamh(), PAM_ESTABLISH_CRED);
+	if(pamh)
+	{
+		if(pam_setcred(thepamh(), PAM_ESTABLISH_CRED) != PAM_SUCCESS)
+		{
+			WDMError("pam_setcred failed, errno=%d\n", errno);
+			pam_end(pamh, PAM_SUCCESS);
+			pamh = NULL;
+			return 0;
+		}
+
+		/* pass in environment variables set by libpam and modules it called */
+		{long i;
+		char **pam_env = pam_getenvlist(pamh);
+		for(i = 0; pam_env && pam_env[i]; i++) {
+			verify->userEnviron = WDMPutEnv(verify->userEnviron, pam_env[i]);
+		}}
+
+		pam_open_session(pamh, 0);
 	}
 #endif
 	if (setuid(verify->uid) < 0)
