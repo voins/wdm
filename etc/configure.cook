@@ -57,12 +57,6 @@ src/config/% : src/config/%.in config.status
 	rm -f config.log;
 }
 
-etc/Howto.conf : etc/Howto.conf.in config.status
-{
-	CONFIG_FILES\=[target]\:[resolve etc/Howto.conf.in] CONFIG_HEADERS\=
-		[pathname [resolve config.status]];
-	rm -f config.log;
-}
 
 Makefile : Makefile.in config.status
 {

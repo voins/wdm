@@ -19,18 +19,25 @@ loop
 	search_name = [search_name]bl;
 }
 
-#include-cooked-nowarn etc/Howto.conf
 
+#include-cooked-nowarn etc/Howto.conf
 #include-cooked [resolve etc/sourcelist.cook]
 
 wdm_config_files = src/config/wdm-config src/config/Xclients \
 	src/config/Xsetup_0 src/config/Xsession src/config/Xservers \
 	src/config/Xservers.ws src/config/wdmReconfig;
 
-program_list = bin/wdmLogin bin/TestLogin bin/wdm;
+program_list = wdmLogin TestLogin wdm;
 
-all: [wdm_config_files] wdm-[PACKAGE_VERSION].tar.gz [program_list]
+all: [wdm_config_files] wdm-[PACKAGE_VERSION].tar.gz [addprefix bin/ [program_list]];
 {
+}
+
+etc/Howto.conf : etc/Howto.conf.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve etc/Howto.conf.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+	rm -f config.log;
 }
 
 #include-cooked [resolve etc/configure.cook]

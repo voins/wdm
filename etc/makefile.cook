@@ -16,23 +16,31 @@
 	echo >> [target];
 }
 
+destbindir = \\$\\(DESTDIR\\)\\$\\(bindir\\)/;
+
 bin/M/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
 	echo "bin/%: " [c_to_o [select_c %]] > [target];
 	echo -e "\"\\t\"" mkdir -p bin >> [target];
 	echo -e "\"\\t\"" \\$\\(CC\\) \\$\\(%_ldflags\\) [c_to_o [select_c %]] \\$\\(%_libs\\) -o bin/% >> [target]; 
 	echo >> [target];
+	echo [destbindir]%\: bin/% >> [target];
+	echo -e "\"\\t\"" \\$\\(INSTALL_PROGRAM\\) -D bin/% \\$\\@ >> [target];
+	echo >> [target];
+	
 }
 
-Makefile.in : etc/Howto.conf.in etc/Makefile.sh etc/makefile.cook etc/Howto.cook
+Makefile.in : etc/Howto.conf.in etc/Makefile.sh etc/makefile.cook etc/Howto.cook etc/Makefile.configs
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
-	[fromto bin/% bin/M/%.M [program_list]]
+	[fromto % bin/M/%.M [program_list]]
 {
 	rm -f [target];
 	sh [resolve etc/Makefile.sh] [resolve etc/Howto.conf.in] [target];
-	echo all\: [program_list] >> [target];
+	echo all\: [addprefix bin/ [program_list]] >> [target];
 	echo >> [target];
 	cat [resolve [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]] >> [target];
-	cat [resolve [fromto bin/% bin/M/%.M [program_list]]] >> [target];
+	cat [resolve [fromto % bin/M/%.M [program_list]]] >> [target];
+	echo install\: [addprefix [destbindir] [program_list]] install-config>> [target];
+	cat [resolve etc/Makefile.configs] >> [target];
 }
 

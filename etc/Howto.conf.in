@@ -1,4 +1,17 @@
 /* @configure_input@ */
+
+INSTALL = @INSTALL@;
+INSTALL_PROGRAM = [INSTALL];
+INSTALL_SCRIPT = [INSTALL];
+INSTALL_DATA = [INSTALL] -m 644;
+
+prefix = @prefix@;
+/**exec_prefix = @exec_prefix@*/;
+/**bindir = @bindir@*/
+DMDIR = @DMDIR@;
+/**MAN1DIR = @mandir@/man1*/
+PAMDIR = @PAMDIR@;
+
 CFLAGS = @CFLAGS@;
 CPPFLAGS = @CPPFLAGS@;
 LDFLAGS = @LDFLAGS@;
@@ -19,6 +32,7 @@ LIBUTIL = @LIBUTIL@;
 CC = @CC@;
 PACKAGE_NAME = @PACKAGE_NAME@;
 PACKAGE_VERSION = @PACKAGE_VERSION@;
+DESTDIR =;
 
 cc = [CC];
 cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];
