@@ -17,79 +17,149 @@
 #                                                                      #
 ########################################################################
 
+# try to find executable in PATH
+FindInPath()
+{
+	prog=$1
+	shift
+	result=
+	for p in `echo $PATH|tr ':' ' '`; do
+		if test -e $p/$prog; then
+			result=$p/$prog
+			break;
+		fi
+	done
+}
+
+
+
 # these files are left sitting around by TheNextLevel.
 rm -f $HOME/Xrootenv.0
 rm -f /tmp/fvwmrc* 2>/dev/null
 
 # check for and set x-resources
 if [ -f $HOME/.Xresources ] ; then
-	#XRDB# -merge $HOME/.Xresources
+	@XRDB_PATH@ -merge $HOME/.Xresources
 fi
 
 if [ -f $HOME/.Xdefaults ] ; then
-	#XRDB# -merge $HOME/.Xdefaults
+	@XRDB_PATH@ -merge $HOME/.Xdefaults
+fi
+
+WINMGR_NAME=@WINMGR_NAME@
+if test -z "$WINMGR_NAME"; then
+	WINMGR_NAME="UserDefined"
 fi
 
 # First thing - check the user preferences
 if [ -f $HOME/.wm_style ] ; then
-    WMSTYLE=`cat $HOME/.wm_style`
-    case "$WMSTYLE" in 
+	WMSTYLE=`cat $HOME/.wm_style`
+	case "$WMSTYLE" in 
 #
 # first, a general purpose entry:
-#winmgrcm#	#winmgrname#*)
-#winmgrcm#	    # startup a window manager
-#winmgrcm#	    if [ -x #WINMGR_PATH# ] ; then
-#winmgrcm#	        echo Starting #WINMGR_PATH# >$HOME/.xwm.msgs
-#winmgrcm#		exec #WINMGR_PATH# >>$HOME/.xwm.msgs 2>&1
-#winmgrcm#	    fi
-#winmgrcm#	    ;;
-#
-#wmakercm#	wmaker*|WindowMaker*)
-#wmakercm#	    # startup WindowMaker
-#wmakercm#	    if [ -x #WMAKER_PATH# ] ; then
-#wmakercm#	        echo Starting WindowMaker >$HOME/.xwm.msgs
-#wmakercm#		env > "$HOME"/Xrootenv.0
-#wmakercm#		exec #WMAKER_PATH# >>$HOME/.xwm.msgs 2>&1
-#wmakercm#	    fi
-#wmakercm#	    ;;
-#afterstepcm#	afterstep*|Afterstep*|AfterStep*)
-#afterstepcm#	    # we have to start up afterstep
-#afterstepcm#	    if [ -x #AFTERSTEP_PATH# -a -f /usr/share/afterstep/wmconfig.conf ] ; then
-#afterstepcm#		mkdir -p $HOME/GNUstep/Library/AfterStep
-#afterstepcm#		wmconfig --output=afterstep --directories /usr/share/afterstep/wmconfig.conf 2>/dev/null
-#afterstepcm#		env > "$HOME"/Xrootenv.0
-#afterstepcm#		# if this works, we stop here
-#afterstepcm#		eval "exec #AFTERSTEP_PATH#" > "$HOME"/.AfterStep-errors 2>&1
-#afterstepcm#	    fi
-#afterstepcm#	    ;;
-#blackboxcm#	blackbox*|BlackBox)
-#blackboxcm#	    # startup blackbox
-#blackboxcm#	    if [ -x #BLACKBOX_PATH# ] ; then
-#blackboxcm#	        echo Starting BlackBox >$HOME/.xwm.msgs
-#blackboxcm#		exec #BLACKBOX_PATH# >>$HOME/.xwm.msgs 2>&1
-#blackboxcm#	    fi
-#blackboxcm#	    ;;
-#icewmcm#	icewm*|IceWm)
-#icewmcm#	    # startup icewm
-#icewmcm#	    if [ -x #ICEWM_PATH# ] ; then
-#icewmcm#	        echo Starting icewm >$HOME/.xwm.msgs
-#icewmcm#		exec #ICEWM_PATH# >>$HOME/.xwm.msgs 2>&1
-#icewmcm#	    fi
-#icewmcm#	    ;;
-#xsessioncm#	xsession*|Xsession*)
-#xsessioncm#	    # startup xsession
-#xsessioncm#	    if [ -x #XSESSION_PATH# ] ; then
-#xsessioncm#	        echo Starting xsession >$HOME/.xwm.msgs
-#xsessioncm#		exec #XSESSION_PATH# -console >>$HOME/.xwm.msgs 2>&1
-#xsessioncm#	    fi
-#xsessioncm#	    ;;
-#startkdecm#	startkde*|kde*|KDE*)
-#startkdecm#	    # startup kde
-#startkdecm#	    if [ -x #STARTKDE_PATH# ] ; then
-#startkdecm#	        echo Starting kde >$HOME/.xwm.msgs
-#startkdecm#		exec #STARTKDE_PATH# -console >>$HOME/.xwm.msgs 2>&1
-#startkdecm#	    fi
-#startkdecm#	    ;;
+	$WINMGR_NAME*)
+		# startup a window manager
+		WINMGR_PATH=@WINMGR_PATH@
+		if test -x "$WINMGR_PATH" ; then
+	        	echo Starting $WINMGR_NAME >$HOME/.xwm.msgs
+			exec $WINMGR_PATH >>$HOME/.xwm.msgs 2>&1
+		fi
+		;;
+
+	wmaker*|WindowMaker*)
+		# startup WindowMaker
+		WMAKER_PATH=@WMAKER_PATH@
+		if ! test -x $WMAKER_PATH ; then
+			FindInPath $WMAKER_PATH
+			if test -n "$result" -a -x "$result"; then
+				WMAKER_PATH="$result";
+			fi
+		fi
+	
+		if test -x $WMAKER_PATH ; then
+			echo Starting WindowMaker >$HOME/.xwm.msgs
+			env > "$HOME"/Xrootenv.0
+			exec $WMAKER_PATH >>$HOME/.xwm.msgs 2>&1
+		fi
+		;;
+
+	afterstep*|Afterstep*|AfterStep*)
+		# we have to start up afterstep
+		AFTERSTEP_PATH=@AFTERSTEP_PATH@
+		if ! test -x $AFTERSTEP_PATH ; then
+			FindInPath $AFTERSTEP_PATH
+			if test -n "$result" -a -x "$result"; then
+				AFTERSTEP_PATH="$result";
+			fi
+		fi
+		if [ -x $AFTERSTEP_PATH -a -f /usr/share/afterstep/wmconfig.conf ] ; then
+			mkdir -p $HOME/GNUstep/Library/AfterStep
+			wmconfig --output=afterstep --directories /usr/share/afterstep/wmconfig.conf 2>/dev/null
+			env > "$HOME"/Xrootenv.0
+			# if this works, we stop here
+			eval "exec $AFTERSTEP_PATH" > "$HOME"/.AfterStep-errors 2>&1
+		fi
+		;;
+
+	blackbox*|BlackBox)
+		# startup blackbox
+		BLACKBOX_PATH=@BLACKBOX_PATH@
+		if ! test -x $BLACKBOX_PATH ; then
+			FindInPath $BLACKBOX_PATH
+			if test -n "$result" -a -x "$result"; then
+				BLACKBOX_PATH="$result";
+			fi
+		fi
+		if [ -x $BLACKBOX_PATH ] ; then
+			echo Starting BlackBox >$HOME/.xwm.msgs
+			exec $BLACKBOX_PATH >>$HOME/.xwm.msgs 2>&1
+		fi
+		;;
+
+	icewm*|IceWm)
+		# startup icewm
+		ICEWM_PATH=@ICEWM_PATH@
+		if ! test -x $ICEWM_PATH ; then
+			FindInPath $ICEWM_PATH
+			if test -n "$result" -a -x "$result"; then
+				ICEWM_PATH="$result";
+			fi
+		fi
+		if [ -x $ICEWM_PATH ] ; then
+			echo Starting icewm >$HOME/.xwm.msgs
+			exec $ICEWM_PATH >>$HOME/.xwm.msgs 2>&1
+		fi
+		;;
+
+	xsession*|Xsession*)
+		# startup xsession
+		XSESSION_PATH=@XSESSION_PATH@
+		if ! test -x $XSESSION_PATH ; then
+			FindInPath $XSESSION_PATH
+			if test -n "$result" -a -x "$result"; then
+				XSESSION_PATH="$result";
+			fi
+		fi
+		if [ -x $XSESSION_PATH ] ; then
+			echo Starting xsession >$HOME/.xwm.msgs
+			exec $XSESSION_PATH -console >>$HOME/.xwm.msgs 2>&1
+		fi
+		;;
+
+	startkde*|kde*|KDE*)
+		# startup kde
+		STARTKDE_PATH=@STARTKDE_PATH@
+		if ! test -x $STARTKDE_PATH ; then
+			FindInPath $STARTKDE_PATH
+			if test -n "$result" -a -x "$result"; then
+				STARTKDE_PATH="$result";
+			fi
+		fi
+		if [ -x $STARTKDE_PATH ] ; then
+			echo Starting kde >$HOME/.xwm.msgs
+			exec $STARTKDE_PATH -console >>$HOME/.xwm.msgs 2>&1
+		fi
+		;;
     esac
 fi
 

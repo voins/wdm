@@ -2,25 +2,25 @@
 !
 ! wdm configuration file input (sed in Makefile)
 !
-DisplayManager.errorLogFile:    #logdir#/xdm-errors.log
-DisplayManager.pidFile:         #rundir#/xdm-pid
-DisplayManager.keyFile:         #configdir#/xdm-keys
-DisplayManager.servers:         #configdir#/Xservers
-DisplayManager.accessFile:      #configdir#/Xaccess
+DisplayManager.errorLogFile:    @LOGDIR@/xdm-errors.log
+DisplayManager.pidFile:         @RUNDIR@/xdm-pid
+DisplayManager.keyFile:         @DMDIR@/xdm-keys
+DisplayManager.servers:         @DMDIR@/Xservers
+DisplayManager.accessFile:      @DMDIR@/Xaccess
 ! All displays should use authorization, but we cannot be sure
 ! X terminals will be configured that way, so by default
 ! use authorization only for local displays :0, :1, etc.
 DisplayManager._0.authorize:    true
 DisplayManager._1.authorize:    true
 ! The following three resources set up display :0 as the console.
-DisplayManager._0.setup:        #configdir#/Xsetup_0
-DisplayManager._0.startup:      #configdir#/GiveConsole
-DisplayManager._0.reset:        #configdir#/TakeConsole
+DisplayManager._0.setup:        @DMDIR@/Xsetup_0
+DisplayManager._0.startup:      @DMDIR@/GiveConsole
+DisplayManager._0.reset:        @DMDIR@/TakeConsole
 !
-DisplayManager*resources:       #configdir#/Xresources
-DisplayManager*session:         #configdir#/Xsession
+DisplayManager*resources:       @DMDIR@/Xresources
+DisplayManager*session:         @DMDIR@/Xsession
 DisplayManager*authComplain:    false
-DisplayManager*wdmLogin:        #bindir#/wdmLogin
+DisplayManager*wdmLogin:        @exec_prefix@/bin/wdmLogin
 !
 ! display screen background--if not set or set to none, then the
 !                            background is not set by wdm.
@@ -29,10 +29,10 @@ DisplayManager*wdmBg:           solid:RoyalBlue
 ! DisplayManager*wdmBg:         dgradient:RoyalBlue,FireBrick,Black
 ! DisplayManager*wdmBg:         hgradient:RoyalBlue,FireBrick,Black
 ! DisplayManager*wdmBg:         vgradient:RoyalBlue,FireBrick,Black
-! DisplayManager*wdmBg:         pixmap:#configdir#/pixmaps/Stars.jpg
+! DisplayManager*wdmBg:         pixmap:@DMDIR@/pixmaps/Stars.jpg
 !
 ! optional pixmap for logo
-#pixmapcomment#DisplayManager*wdmLogo:  #configdir#/pixmaps/#pixmapfile#
+@PIXMAPCOMMENT@DisplayManager*wdmLogo:  @DMDIR@/pixmaps/@PIXMAPFILE@
 !
 ! optional help file to display in the help panel
 ! long lines may cause an ugly display 
@@ -53,16 +53,16 @@ DisplayManager*wdmBg:           solid:RoyalBlue
 ! list of window managers which can be started
 ! or 'None' if you want only NoChange to appear
 ! e.g.: DisplayManager*wdmWm:   None
-DisplayManager*wdmWm:           #wmlist#
+DisplayManager*wdmWm:           @WMLIST@
 !
 ! commands for reboot and halt 
 !       -- be sure to edit these if the
 !          system is not linux.
-DisplayManager*wdmReboot:       #SHUTDOWN# -r now
-DisplayManager*wdmHalt:         #SHUTDOWN# -h now
+DisplayManager*wdmReboot:       @SHUTDOWN@ -r now
+DisplayManager*wdmHalt:         @SHUTDOWN@ -h now
 ! alternates (for Linux)
-! DisplayManager*wdmReboot:     #SHUTDOWN# -t3 -r now
-! DisplayManager*wdmHalt:               #SHUTDOWN# -t3 -h now
+! DisplayManager*wdmReboot:     @SHUTDOWN@ -t3 -r now
+! DisplayManager*wdmHalt:       @SHUTDOWN@ -t3 -h now
 !
 ! true/false to require valid username/passwd to reboot,halt, or exit
 DisplayManager*wdmVerify:       true

@@ -12,7 +12,6 @@ bin_SCRIPTS = \
 		Xsession \
 		Xsession.XFree86 \
 		Xsetup_0 \
-		Xclients \
 		wdmReconfig
 
 configfiles_DATA = \
@@ -20,23 +19,9 @@ configfiles_DATA = \
 		Xresources \
 		Xservers \
 		Xservers.ws \
-		Xservers.fs \
-		wdm-config
+		Xservers.fs
 
-CLEANFILES = wdm-config Xsetup_0 Xservers Xservers.ws Xsession Xclients
-
-wdm-config: wdm-config.in Makefile
-	-rm -f wdm-config
-	sed -e "s:#configdir#:$(configfilesdir):" \
-		-e "s:#bindir#:$(BINDIR):" \
-		-e "s:#SHUTDOWN#:$(SHUTDOWN):" \
-		-e "s:#logdir#:$(LOGDIR):" \
-		-e "s:#rundir#:$(RUNDIR):" \
-		-e "s:#pixmapfile#:$(PIXMAPFILE):" \
-		-e "s:#pixmapcomment#:$(PIXMAPCOMMENT):" \
-		-e "s/#wmlist#/$(WMLIST)/" \
-		$(srcdir)/wdm-config.in > wdm-config
-	chmod 644 wdm-config 
+CLEANFILES = Xsetup_0 Xservers Xservers.ws Xsession
 
 Xsetup_0: Xsetup_0.in Makefile
 	-rm -f Xsetup_0
@@ -53,28 +38,6 @@ Xsession: Xsession.in Makefile
 	    -e "s:#FAILSAFE#:$(FAILSAFE_PATH):" \
 		$(srcdir)/Xsession.in > Xsession
 	chmod 755 Xsession
-
-Xclients: Xclients.in Makefile
-	-rm -f Xclients
-	sed -e "s:#XRDB#:$(XRDB_PATH):" \
-	    -e "s:#SHELL#:$(SHELL_LOGIN):" \
-	    -e "s'#WMAKER_PATH#'$(WMAKER_PATH)'" \
-	    -e "s'#wmakercm#'$(wmakercm)'" \
-	    -e "s'#AFTERSTEP_PATH#'$(AFTERSTEP_PATH)'" \
-	    -e "s'#afterstepcm#'$(afterstepcm)'" \
-	    -e "s'#BLACKBOX_PATH#'$(BLACKBOX_PATH)'" \
-	    -e "s'#blackboxcm#'$(blackboxcm)'" \
-	    -e "s'#ICEWM_PATH#'$(ICEWM_PATH)'" \
-	    -e "s'#icewmcm#'$(icewmcm)'" \
-	    -e "s'#XSESSION_PATH#'$(XSESSION_PATH)'" \
-	    -e "s'#xsessioncm#'$(xsessioncm)'" \
-	    -e "s'#STARTKDE_PATH#'$(STARTKDE_PATH)'" \
-	    -e "s'#startkdecm#'$(STARTKDECM)'" \
-	    -e "s'#winmgrname#'$(WINMGR_NAME)'" \
-	    -e "s'#WINMGR_PATH#'$(WINMGR_PATH)'" \
-	    -e "s'#winmgrcm#'$(WINMGRCM)'" \
-		$(srcdir)/Xclients.in > Xclients
-	chmod 755 Xclients
 
 wdmReconfig: wdmReconfig.in Makefile
 	-rm -f wdmReconfig

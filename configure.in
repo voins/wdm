@@ -503,91 +503,87 @@ AC_SUBST(PIXMAPCOMMENT)
 
 
 
-
+AC_ARG_VAR(WMAKER_PATH, [Path to wmaker program])
 AC_PATH_PROG(WMAKER_PATH,wmaker,,$PATH:/usr/local/bin)
-AC_SUBST(WMAKER_PATH)
 if test "x$WMAKER_PATH" != "x"; then
 	WMLIST=WindowMaker
-	wmakercm=""
 else
-	wmakercm="\\# "
+	WMAKER_PATH=wmaker
 fi
-AC_SUBST(wmakercm)
+AC_SUBST(WMAKER_PATH)
 
+
+AC_ARG_VAR(AFTERSTEP_PATH, [Path to afterstep program])
 AC_PATH_PROG(AFTERSTEP_PATH,afterstep,,$PATH:/usr/local/bin)
-AC_SUBST(AFTERSTEP_PATH)
 if test "x$AFTERSTEP_PATH" != "x"; then
 	WMLIST=$WMLIST:AfterStep
-	afterstepcm=""
 else
-	afterstepcm="\\# "
+	AFTERSTEP_PATH=afterstep
 fi
-AC_SUBST(afterstepcm)
+AC_SUBST(AFTERSTEP_PATH)
 
+
+AC_ARG_VAR(BLACLBOX_PATH, [Path to blackbox program])
 AC_PATH_PROG(BLACKBOX_PATH,blackbox,,$PATH:/usr/local/bin)
-AC_SUBST(BLACKBOX_PATH)
 if test "x$BLACKBOX_PATH" != "x"; then
 	WMLIST=$WMLIST:BlackBox
-	blackboxcm=""
 else
-	blackboxcm="\\# "
+	BLACKBOX_PATH=blackbox
 fi
-AC_SUBST(blackboxcm)
+AC_SUBST(BLACKBOX_PATH)
 
+
+AC_ARG_VAR(ICEWM_PATH, [Path to icewm program])
 AC_PATH_PROG(ICEWM_PATH,icewm,,$PATH:/usr/local/bin)
-AC_SUBST(ICEWM_PATH)
 if test "x$ICEWM_PATH" != "x"; then
 	WMLIST=$WMLIST:IceWm
-	icewmcm=""
 else
-	icewmcm="\\# "
+	ICEWM_PATH=icewm
 fi
-AC_SUBST(icewmcm)
+AC_SUBST(ICEWM_PATH)
 
+
+AC_ARG_VAR(XSESSION_PATH, [Path to xsession program])
 AC_PATH_PROG(XSESSION_PATH,xsession,,$PATH:/usr/local/bin)
-AC_SUBST(XSESSION_PATH)
 if test "x$XSESSION_PATH" != "x"; then
 	WMLIST=$WMLIST:Xsession
-	xsessioncm=""
 else
-	xsessioncm="\\# "
+	XSESSION_PATH=xsession
 fi
-AC_SUBST(xsessioncm)
+AC_SUBST(XSESSION_PATH)
+
 
 AC_PATH_PROG(STARTKDE_PATH,startkde,,$PATH:/usr/local/bin)
-AC_SUBST(STARTKDE_PATH)
 if test "x$STARTKDE_PATH" != "x"; then
 	WMLIST=$WMLIST:KDE
-	STARTKDECM=""
 else
-	STARTKDECM="\\# "
+	STARTKDE_PATH=startkde
 fi
-AC_SUBST(STARTKDECM)
+AC_SUBST(STARTKDE_PATH)
 
-WINMGRCM="\\# "
+
 AC_ARG_WITH(winmgr,
-[  --with-winmgr=NAME_OF_WM	   specify an arbitrary window manager])
+	AC_HELP_STRING([--with-winmgr=NAME_OF_WM], [specify an arbitrary window manager]))
 if test "x$with_winmgr" != "x"; then
-    WINMGR_NAME=$with_winmgr
-    AC_PATH_PROG(WINMGR_PATH,$WINMGR_NAME,,$PATH:/usr/local/bin)
-    if test "x$WINMGR_PATH" = "x"; then
+	WINMGR_NAME=$with_winmgr
+	AC_PATH_PROG(WINMGR_PATH,$WINMGR_NAME,,$PATH:/usr/local/bin)
+	if test "x$WINMGR_PATH" = "x"; then
 	AC_ARG_WITH(winmgr_path,
-[  --with-winmgr_path=WINMGR_PATH  specify path to your window manager])
-	if test "x$with_winmgr_path" != "x"; then
-	    WINMGR_PATH=$with_winmgr_path
+		AC_HELP_STRING([--with-winmgr_path=WINMGR_PATH], [specify path to your window manager]))
+		if test "x$with_winmgr_path" != "x"; then
+			WINMGR_PATH=$with_winmgr_path
+		fi
 	fi
-    fi
-    AC_MSG_CHECKING(for winmgr_path)
-    if test "x$WINMGR_PATH" = "x"; then
-	AC_MSG_ERROR([unable to locate $WINMGR_NAME, use --with-winmgr_path])
-    fi
-    AC_MSG_RESULT($WINMGR_PATH)
-    WMLIST=$WMLIST:$WINMGR_NAME
-    WINMGRCM=
+	AC_MSG_CHECKING(for winmgr_path)
+	if test "x$WINMGR_PATH" = "x"; then
+		AC_MSG_ERROR([unable to locate $WINMGR_NAME, use --with-winmgr_path])
+	fi
+	AC_MSG_RESULT($WINMGR_PATH)
+	WMLIST=$WMLIST:$WINMGR_NAME
 fi
-AC_SUBST(WINMGRCM)
 AC_SUBST(WINMGR_PATH)
 AC_SUBST(WINMGR_NAME)
+
 
 AC_MSG_CHECKING(if  window manager list specified)
 AC_ARG_WITH(wmlist,
@@ -618,6 +614,8 @@ AC_CONFIG_FILES([Makefile
 	  doc/Makefile
 	  src/Makefile
 	  src/config/Makefile
-	  src/pixmaps/Makefile ])
+	  src/pixmaps/Makefile
+	  src/config/wdm-config
+	  src/config/Xclients])
 AC_OUTPUT
 
