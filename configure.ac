@@ -311,7 +311,7 @@ fi
 AC_SUBST(AFTERSTEP_PATH)
 
 
-AC_ARG_VAR(BLACLBOX_PATH, [Path to blackbox program])
+AC_ARG_VAR(BLACKBOX_PATH, [Path to blackbox program])
 AC_PATH_PROG(BLACKBOX_PATH,blackbox,,$PATH:/usr/local/bin)
 if test "x$BLACKBOX_PATH" != "x"; then
 	WMLIST=$WMLIST:BlackBox
