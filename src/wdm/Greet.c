@@ -95,6 +95,7 @@ from the X Consortium.
 #include <X11/Shell.h>
 
 #include <dm.h>
+#include <dm_error.h>
 #include <greet.h>
 
 /* wdm additions */
@@ -171,7 +172,7 @@ static void guaranteed_read(int fd, char *buf, size_t count)
 #ifdef HAVE_SYSLOG_H
         openlog(PACKAGE_NAME,LOG_CONS|LOG_PERROR,LOG_DAEMON);
         syslog(LOG_DAEMON|LOG_INFO,
-                "%s pipe read error with program %s, %s terminating\n", 
+                "%s pipe read error with program %s, %s terminating\n",
                 PACKAGE_NAME, wdmLogin, PACKAGE_NAME);
 #endif
         SessionExit (Save_d, RESERVER_DISPLAY, FALSE);  /* this exits */
@@ -181,15 +182,15 @@ static void guaranteed_read(int fd, char *buf, size_t count)
 static unsigned char readuc(int fd)
 {
         unsigned char uc;
-        
-        guaranteed_read(fd, &uc, sizeof(unsigned char));
+
+        guaranteed_read(fd, (char *)&uc, sizeof(unsigned char));
         return uc;
 }
 
 static char *readstring(int fd, char *buf)
 {
         int len;
-        
+
         len = (int) readuc(fd);
         guaranteed_read(fd, buf, len);
         buf[len] = 0;

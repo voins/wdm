@@ -23,6 +23,7 @@
 #include <WINGs/WUtil.h>
 
 #include <stdio.h>
+#include <sys/socket.h>
 
 #ifndef __GNUC__
 #define __attribute__(x)

@@ -371,7 +371,7 @@ struct dmResources wdmResources[] = {
 				""} ,
 { "wdmDefaultPasswd",	"WdmDefaultPasswd",	DM_STRING,	&wdmDefaultPasswd,
 				""} ,
-{ "wdmAnimations",	"WdmAnimations",	DM_BOOL,	&wdmAnimations,
+{ "wdmAnimations",	"WdmAnimations",	DM_BOOL,	(char **)&wdmAnimations,
 				"true"} ,
 { "wdmLocale",		"WdmLocale",		DM_STRING,	&wdmLocale,
 				""} ,
@@ -379,7 +379,7 @@ struct dmResources wdmResources[] = {
 				DEF_WDMLOGIN_CONFIG} ,
 { "wdmCursorTheme",	"WdmCursorTheme",	DM_STRING,	&wdmCursorTheme,
 				""} ,
-{ "wdmXineramaHead",	"WdmXineramaHead",	DM_INT,		&wdmXineramaHead,
+{ "wdmXineramaHead",	"WdmXineramaHead",	DM_INT,		(char **)&wdmXineramaHead,
 				"0"} ,
 };
 

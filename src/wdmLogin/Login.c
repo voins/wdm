@@ -505,8 +505,6 @@ InitializeLoginInput(LoginPanel * panel)
 static void
 PerformLogin(LoginPanel * panel, int canexit)
 {
-	char *tmp;
-
 	if(LoginSwitch == False)
 	{
 		if(LoginName)
@@ -553,8 +551,6 @@ PerformLogin(LoginPanel * panel, int canexit)
 static void
 goPressed(WMWidget * self, LoginPanel * panel)
 {
-	char *tmp;
-
 	if(OptionCode == 0)
 	{
 		if(LoginSwitch == False)
@@ -1302,7 +1298,6 @@ main(int argc, char **argv)
 	WMScreen *scr;
 	WMPropList *configdb;
 	int xine_count;
-	int c;
 
 #ifdef HAVE_XINERAMA
 	XineramaScreenInfo *xine;

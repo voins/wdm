@@ -21,7 +21,7 @@
  */
 #include <wdmlib.h>
 #include <stddef.h>
-#include <strings.h>
+#include <string.h>
 
 /*
  * Bool bool;
@@ -33,7 +33,7 @@ WDMCheckPLBool(WMPropList *pl, void *def, void *target)
 	Bool *bool_target = (Bool*)target;
 	char *text = NULL;
 
-	WDMDebug("WDMCheckPLBool(%p, %p, %p)\n", pl, def, target);
+	WDMDebug("WDMCheckPLBool(%p, %p, %p)\n", (void *)pl, def, target);
 	*bool_target = (Bool)def;
 	if(pl && WMIsPLString(pl))
 	{
@@ -61,7 +61,7 @@ WDMCheckPLString(WMPropList *pl, void *def, void *target)
 	char **charptr_target = (char**)target;
 	char *value = (char*)def;
 
-	WDMDebug("WDMCheckPLString(%p, %p, %p)\n", pl, def, target);
+	WDMDebug("WDMCheckPLString(%p, %p, %p)\n", (void*)pl, def, target);
 	if(pl && WMIsPLString(pl))
 	{
 		value = WMGetFromPLString(pl);
@@ -84,11 +84,11 @@ WDMCheckPLArray(WMPropList *pl, void *def, void *target)
 	void *entry = NULL;
 	int i, count;
 
-	WDMDebug("WDMCheckPLArray(%p, %p, %p)\n", pl, def, target);
+	WDMDebug("WDMCheckPLArray(%p, %p, %p)\n", (void*)pl, def, target);
 	if(!pl || !WMIsPLArray(pl)) return False;
-	
+
 	count = WMGetPropListItemCount(pl);
-	*array_target = 
+	*array_target =
 		WMCreateArrayWithDestructor(count, spec->destructor);
 
 	for(i = 0; i < count; ++i)
@@ -122,9 +122,9 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 	WMPropList *key = NULL, *value = NULL;
 	void *fresult = NULL;
 
-	WDMDebug("WDMCheckPLDictionary(%p, %p, %p)\n", pl, def, target);
+	WDMDebug("WDMCheckPLDictionary(%p, %p, %p)\n", (void*)pl, def, target);
 	if(!pl || !WMIsPLDictionary(pl)) return False;
-	
+
 	*data = (void*)wmalloc(spec->size);
 	memset(*data, 0, spec->size);
 	while(fields->key)
@@ -133,9 +133,9 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 		value = WMGetFromPLDictionary(pl, key);
 
 		if((*fields->checker)(value, fields->data, &fresult))
-			*((unsigned*)(*data + fields->offset))
+			*((unsigned*)(*(unsigned char **)data + fields->offset))
 				= (unsigned)fresult;
-		
+
 		WMReleasePropList(key);
 		key = NULL;
 		fields++;
@@ -145,9 +145,9 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 
 /*
  * This function will check if pl is string or array of strings.
- * It always returns WMArray. In case of string, new array will be 
+ * It always returns WMArray. In case of string, new array will be
  * created and that string will be added to it.
- * def is ignored here. 
+ * def is ignored here.
  */
 Bool
 WDMCheckPLStringOrArray(WMPropList *pl, void *def, void *target)

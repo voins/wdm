@@ -127,7 +127,7 @@ void guaranteed_read(int fd, char *buf, size_t count) {
 unsigned char readuc(int fd) {
         unsigned char uc;
 
-        guaranteed_read(fd, &uc, sizeof(unsigned char));
+        guaranteed_read(fd, (char *)&uc, sizeof(unsigned char));
         return uc;
 }
 

@@ -84,9 +84,7 @@ WDMGetHostName(struct sockaddr *from)
 char *
 WDMGetHostAddr(struct sockaddr *from)
 {
-	char *addr;
-	int addrlen;
-	char ipbuf[128];
+	char ipbuf[128]; /* FIXME: I don't like fixed size buffers */
 
 	inet_ntop(from->sa_family,
 		WDMSockaddrGetAddr(from, NULL), ipbuf, sizeof(ipbuf));
