@@ -601,9 +601,6 @@ dnl ==========================================================
 
 
 
-AC_CONFIG_FILES([Makefile
-	  doc/Makefile
-	  src/Makefile
-	  src/pixmaps/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

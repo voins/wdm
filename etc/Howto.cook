@@ -1,3 +1,5 @@
+if [not [defined search_path]] then search_path=;
+
 search_list = .;
 search_path = [tail [split ':' [search_path]]];
 search_name = bl;
@@ -18,6 +20,12 @@ if [not [defined aclocal]] then aclocal=aclocal;
 if [not [defined automake]] then automake=automake;
 if [not [defined autoheader]] then autoheader=autoheader_2.5;
 if [not [defined autoconf]] then autoconf=autoconf_2.5;
+
+change_files = [collect aegis -list cf -terse -p [project] -c [change]];
+project_files = [collect aegis -list pf -terse -p [project]];
+source_files = [sort [stringset [change_files] [project_files]]];
+
+#include-cooked-nowarn [resolve etc/Howto.conf]
 
 wdm_config_files = src/config/wdm-config src/config/Xclients \
 	src/config/Xsetup_0 src/config/Xsession src/config/Xservers \
@@ -77,4 +85,45 @@ src/config/% : src/config/%.in config.status
 	CONFIG_FILES\=[target]\:[resolve src/config/%.in] CONFIG_HEADERS\=
 		[pathname [resolve config.status]];
 }
+
+etc/Howto.conf : etc/Howto.conf.in config.status
+{
+	rm config.log;
+	CONFIG_FILES\=[target]\:[resolve etc/Howto.conf.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+}
+
+Makefile.in : etc/Howto.conf
+{
+	echo > [target];
+}
+
+Makefile : Makefile.in config.status
+{
+	rm config.log;
+	CONFIG_FILES\=[target]\:[resolve Makefile.in] CONFIG_HEADERS\=
+		[pathname [resolve config.status]];
+}
+
+archive_files =
+	configure
+	Makefile.in
+	[source_files];
+
+release = 1.20.1;
+
+wdm-[release].tar.bz2 : wdm-[release].tar.gz
+{
+	gunzip < wdm-[release].tar.gz | bzip2 > [target];
+}
+
+wdm-[release].tar.gz : [archive_files]
+{
+	tar --create --file - --dereference [resolve [archive_files]]
+		| tardy -unu 0 -gnu 0 -una Alexey -gna Voinov 
+			-p wdm-[release] -ms 644 -mc 07022 -now
+			[prepost "-rp=" "" [search_list]]
+		| gzip -9 > [target];
+}
+
 
