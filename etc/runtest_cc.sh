@@ -8,7 +8,7 @@ change=$3
 searchpath=$4
 
 includedirs=`echo $searchpath | sed -e's/^/-I/;s/:/\/include -I/g;s/$/\/include/'`
-libdirs=`echo $searchpath | sed -e's/^/-L/;s/:/ -L/g;'`
+libdirs=`echo $searchpath | sed -e's/^/-L/;s/:/\/bin -L/g;s/$/\/bin/'`
 
 CFLAGS=${CFLAGS:-"-g"}
 CXXFLAGS=${CXXFLAGS:-""}
