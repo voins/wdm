@@ -1,0 +1,64 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: wdm 1.22\n"
+"POT-Creation-Date: 2003-02-06 23:56+0300\n"
+"PO-Revision-Date: 2003-02-06 23:59+0300\n"
+"Last-Translator: Alexey Voinov <voins@voins.program.ru>\n"
+"Language-Team: None\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=KOI8-R\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: bl/src/wdmLogin/Login.c:418
+msgid "ERROR"
+msgstr ""
+
+#: bl/src/wdmLogin/Login.c:492
+msgid "invalid name"
+msgstr "плохое имя"
+
+#: bl/src/wdmLogin/Login.c:511
+msgid "validating"
+msgstr "проверка"
+
+#: bl/src/wdmLogin/Login.c:513 bl/src/wdmLogin/Login.c:541
+msgid "exiting"
+msgstr "выход"
+
+#: bl/src/wdmLogin/Login.c:555
+msgid "Close Help"
+msgstr "Убрать"
+
+#: bl/src/wdmLogin/Login.c:560 bl/src/wdmLogin/Login.c:835
+msgid "Help"
+msgstr "Помощь"
+
+#: bl/src/wdmLogin/Login.c:700
+msgid "Login Authentication"
+msgstr "Проверка пароля"
+
+#: bl/src/wdmLogin/Login.c:709
+msgid "Welcome to"
+msgstr "Добро пожаловать на"
+
+#: bl/src/wdmLogin/Login.c:790
+msgid "Start WM"
+msgstr "Оконный менеджер"
+
+#: bl/src/wdmLogin/Login.c:807
+msgid "Options"
+msgstr "Действия"
+
+#: bl/src/wdmLogin/Login.c:842
+msgid "Start Over"
+msgstr "Стереть"
+
+#: bl/src/wdmLogin/Login.c:849
+msgid "Go!"
+msgstr "Вперёд!"

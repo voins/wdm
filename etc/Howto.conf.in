@@ -22,6 +22,7 @@ CC = @CC@;
 PACKAGE_NAME = @PACKAGE_NAME@;
 PACKAGE_VERSION = @PACKAGE_VERSION@;
 DESTDIR =;
+NLSDIR = @NLSDIR@;
 
 cc = [CC];
 cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];

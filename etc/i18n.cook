@@ -1,0 +1,23 @@
+%0%.mo: %0%.po
+{
+	msgfmt -o [target] [need];
+}
+
+po/wdm.pot:
+{
+	xgettext --keyword\=_ 
+		--default-domain\=wdm
+		--output\=[target]
+		[resolve [match_mask %0%.c [source_files]]];
+}
+
+nls/%/LC_MESSAGES/wdm.mo: po/%.mo
+{
+	mkdir -p nls/%/LC_MESSAGES;
+	cp po/%.mo [target];
+}
+
+nlsdir: [fromto po/%.mo nls/%/LC_MESSAGES/wdm.mo [mo_files]]
+{
+}
+
