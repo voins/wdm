@@ -1,6 +1,10 @@
 #!/bin/sh
-aclocal
+ACLOCAL=${ACLOCAL:-aclocal}
+AUTOCONF=${AUTOCONF:-autoconf}
+AUTOMAKE=${AUTOMAKE:-automake}
+$ACLOCAL
 rm -vf config.cache
-autoconf
-automake --add-missing
+$AUTOCONF
+$AUTOMAKE --add-missing
 ./configure --enable-pam --with-pamdir=/etc/pam.d $@
+

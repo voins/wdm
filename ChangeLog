@@ -1,3 +1,15 @@
+1.21	- still not released - Alexey Voinov
+	- Applied all my patches used in ALT Linux package. 
+	  This fixes problem with long passwords, makes wdm
+	  compile and run with newer WindowMaker (post 0.80.2 cvs),
+	  fixes some problems with pam.
+	- Adapted and applied patch from Debian package. (wdm-1.20-17)
+	- configure.in rewriten. Can be broken for some systems.
+	  mail me if it is true for you. autoconf >= 2.53 is now required.
+	- Directories rearranged. Now src/ keeps complete wdm sources,
+	  xdm/ keeps complete xdm sources? used as a base for wdm.
+	  Xdm/ directory is needed for referencal purposes only.
+	- all warnings removed (I hate warnings)
 1.20	- Feb 29 2000 - Jerome Alet
 	- Jerome Alet: Modified xdm-3.3.2-resource2.patch to allow
 	  most of wdm's configuration resources to be set on a per

@@ -1,11 +1,11 @@
 
 all:
 {
-	setenv LDFLAGS = -L/usr/X11R6/lib -lXft;
+	setenv AUTOCONF=autoconf_2.5;
 	rm -f config.log stamp-h stamp-h.in aclocal.m4
 		configure Makefile.in doc/Makefile.in
 		src/Makefile.in src/config/Makefile.in
-		src/pixmaps/Makefile.in;
+		src/pixmaps/Makefile.in config.status;
 	./autogen.sh;
 	make;
 }

@@ -24,11 +24,11 @@ config.h:
 ###wdmLogin###
 wdmLogin_SOURCES = Login.c
 
-wdmLogin_LDADD =  $(XLFLAGS) \
-	$(GFXLIBS) \
+wdmLogin_LDADD =  $(XLDFLAGS) \
+	$(GFXLDFLAGS) $(GFXLIBS) \
 	$(XLIBS)
 
-wdmLogin_CFLAGS = -Wall $(X_CFLAGS) $(GFXFLAGS) $(DFLAGS)
+wdmLogin_CFLAGS = -Wall $(XCFLAGS) $(GFXCFLAGS)
 
 Login.o: Login.c wdmconfig.h $(srcdir)/Makefile
 	$(COMPILE) $(wdmLogin_CFLAGS) -c $<
@@ -37,7 +37,9 @@ Login.o: Login.c wdmconfig.h $(srcdir)/Makefile
 ###TestLogin###
 TestLogin_SOURCES = TestLogin.c
 
-TestLogin_CFLAGS = -Wall $(X_CFLAGS) $(DFLAGS)
+TestLogin_CFLAGS = -Wall $(XCFLAGS)
+
+TestLogin_LDADD = $(XLDFLAGS)
 
 TestLogin.o: TestLogin.c $(srcdir)/Makefile
 	$(COMPILE) $(TestLogin_CFLAGS) -c $<
@@ -99,17 +101,17 @@ BUILT_SOURCES = $(xdm_sources)
 
 wdm_LDADD =  \
 	$(xdm_objects) \
-	$(XLFLAGS) \
+	$(XLDFLAGS) \
+	$(GFXLDFLAGS) \
 	$(GFXLIBS) \
-	$(X_PRE_LIBS) \
 	$(LIBCRYPT) $(PASSWDLIB) \
 	$(LIBSOCKET) $(LIBUCB) $(LIBUTIL) \
-	$(XDM_EXTRA_LIBS) \
+	-lXmu -lXau -lXdmcp \
 	$(XLIBS)
 
 wdm_SOURCES = Greet.c 
 
-wdm_CFLAGS = $(X_CFLAGS) $(GFXFLAGS) $(DFLAGS)
+wdm_CFLAGS = $(XCFLAGS) $(GFXCFLAGS)
 
 Greet.o: Greet.c $(xdm_objects) $(srcdir)/Makefile
 	$(COMPILE) $(wdm_CFLAGS) -c Greet.c

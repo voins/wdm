@@ -1,386 +1,346 @@
 dnl Process this file with autoconf to produce a configure script.
-
-dnl This stuff was developed on RedHat Linux 5.1 but should
-dnl work on other systems.
-
-dnl Be sure to use DESTDIR for testing install or when
-dnl using rpm - DESTDIR can be used to specify the BuildRoot
-
-dnl I've modified this because configure doesn't find libWINGs nor
-dnl libwraster on my PC. delete line 388 and rerun autoconf
-dnl if you want to restore the original behavior
-dnl ====================================================================
-
-AC_INIT(src/Login.c)
-
-AM_INIT_AUTOMAKE(wdm, 1.20)
-
+AC_PREREQ(2.52)
+AC_INIT(wdm,1.20.1,[voins@voins.program.ru])
+AC_CONFIG_SRCDIR(install-sh)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
-AM_SANITY_CHECK
-
 AC_PROG_INSTALL
-
 AC_PROG_CC
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h \
-		syslog.h)
+AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h syslog.h)
 
 AC_DECL_SYS_SIGLIST
 AC_C_CONST
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 
-
+dnl if there is mkstemp use it instead of mktemp
 AC_CHECK_FUNC(mkstemp, [AC_DEFINE(HAVE_MKSTEMP)])
 AC_SUBST(HAVE_MKSTEMP)
 
-dnl ===============================================
 dnl Password processing options
-dnl ===============================================
+AC_ARG_WITH(pamdir,
+	AC_HELP_STRING([--with-pamdir],[specify where pam directory is]),
+	[PAMDIR="$withval"],
+	[PAMDIR="/etc/pam.d"])
+AC_SUBST(PAMDIR)
 
 AC_MSG_CHECKING(for pam being enabled)
 AC_ARG_ENABLE(pam,
-[  --enable-pam			  enable PAM ],, enable_pam=no)
+	AC_HELP_STRING([--enable-pam], [enable PAM]), 
+	[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(USE_PAM)
+		AC_CHECK_LIB(pam, main, [PASSWDLIB="-lpam -ldl"
+			AC_DEFINE_UNQUOTED(HAVE_PAM_LIB)],
+			[],-ldl)
 
-if test "$enable_pam" = yes; then
-	AC_DEFINE(USE_PAM)
-fi
-AC_MSG_RESULT($enable_pam)
+		AC_MSG_CHECKING(for pam directory $PAMDIR)
+		if test -d "$PAMDIR"; then
+			AC_MSG_RESULT(exists)
+		else
+			AC_MSG_RESULT(does not exist)
+			AC_MSG_WARN([this may not be a pam system <<--------------])
+		fi
+	],
+	[
+		AC_MSG_RESULT([no])
+		AC_MSG_CHECKING(for shadow being enabled)
+		AC_ARG_ENABLE(shadow,
+			AC_HELP_STRING([--enable-shadow],[enable shadow passwords]),
+			[
+				AC_MSG_RESULT(yes)
+				AC_DEFINE(USESHADOW)
+				if test -z "$PASSWDLIB"; then
+					AC_CHECK_LIB(shadow, main, [PASSWDLIB="-lshadow"
+						AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB)])
+				fi
+			],
+			[
+				AC_MSG_RESULT(no)
+			])
 
+	])
 AM_CONDITIONAL(INSTALLPAM, test x$enable_pam = xyes)
-
-if test "$enable_pam" = yes; then
-	AC_CHECK_LIB(pam, main, [PASSWDLIB="-lpam -ldl"
-		AC_DEFINE_UNQUOTED(HAVE_PAM_LIB)],
-		[],-ldl)
-fi
-
-AC_ARG_WITH(pamdir,
-[  --with-pamdir		  specify where pam directory is],
-	[PAMDIR="$withval" PAM_DIR_PATH=$withval],
-	[PAMDIR="/etc/pam.d" PAM_DIR_PATH=/etc/pam.d])
-
-AC_SUBST(PAMDIR)
-
-if test "$enable_pam" = yes; then
-    AC_MSG_CHECKING(for pam directory $PAM_DIR_PATH)
-    if test -d "$PAM_DIR_PATH"; then
-	AC_MSG_RESULT(exists)
-    else
-	AC_MSG_RESULT(does not exist)
-	AC_MSG_WARN([this may not be a pam system <<--------------])
-    fi
-fi
-
-dnl ===============================================
-dnl if not pam, then is shadow wanted?
-
-if test "$enable_pam" = no; then
-AC_MSG_CHECKING(for shadow being enabled)
-AC_ARG_ENABLE(shadow,
-[  --enable-shadow	  enable shadow passwords ],, enable_shadow=no)
-
-if test "$enable_shadow" = yes; then
-	AC_DEFINE(USESHADOW)
-fi
-AC_MSG_RESULT($enable_shadow)
-
-if test -z "$PASSWDLIB" && test "$enable_shadow" = "yes"; then
-  AC_CHECK_LIB(shadow, main,
-    [ PASSWDLIB="-lshadow"
-      AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB)
-    ])
-fi
-fi dnl for enable_pam=no
-
 AC_SUBST(PASSWDLIB)
 
-
-
+LIBUTIL=
 AC_CHECK_LIB(util, main, [LIBUTIL="-lutil"]) dnl for FreeBSD
 AC_SUBST(LIBUTIL)
 
+LIB_LIBS=
 AC_CHECK_LIB(s, main, [LIB_LIBS="-ls"]) dnl for AIX
 AC_SUBST(LIB_LIBS)
 
 dnl crypt is a password and data encryption function
 dnl the related header file is unistd.h
 
+LIBCRYPT=
 AC_CHECK_LIB(crypt, main, [LIBCRYPT="-lcrypt"]) dnl for BSD and RHL
 AC_SUBST(LIBCRYPT)
 
-AC_CHECK_FUNC(shmat)
-if test $ac_cv_func_shmat = no; then
-   AC_CHECK_LIB(ipc, shmat, [LIBSOCKET="-lipc"]) dnl BSD??
-fi
+LIBSOCKET=
+AC_CHECK_FUNC(shmat, [],
+	[
+   		AC_CHECK_LIB(ipc, shmat, [LIBSOCKET="-lipc"]) dnl BSD??
+	])
 AC_SUBST(LIBSOCKET)
 
 AC_CHECK_LIB(ucb, killpg, [LIBUCB="-lucb"]) dnl for Solaris2.4
 AC_SUBST(LIBUCB)
 
-dnl ===============================================
-dnl Debugging stuff
-dnl    NOTE: This will also enable WINGs
-dnl    debugging (if that is available).
-dnl ===============================================
-
-AC_ARG_ENABLE(debug,
-[  --enable-debug	  enable debugging ],, enable_debug=no)
-
-if test "$enable_debug" = yes; then
-    DFLAGS="-g -DDEBUG"
-fi
-AC_SUBST(DFLAGS)
-
-dnl ===========================================
-dnl		Stuff that uses X
-dnl ===========================================
+LIB_ZLIB=
+AC_CHECK_LIB(z, gzread, [LIBZLIB="-lz"])
+AC_SUBST(LIB_ZLIB)
 
 AC_PATH_XTRA
+XCFLAGS="$CFLAGS $X_CFLAGS"
+XLDFLAGS="$LDFLAGS $X_LIBS"
+XLIBS="$LIBS $X_PRE_LIBS -lXext -lXt -lX11 -lm $X_EXTRA_LIBS"
+AC_SUBST(XLIBS)
+AC_SUBST(XCFLAGS)
+AC_SUBST(XLDFLAGS)
 
-XCFLAGS="$X_CFLAGS"
-
-XLFLAGS="$X_LIBS"
-
-XLIBS="$X_EXTRA_LIBS -lXext -lXt -lX11 -lm"
-
-XDM_EXTRA_LIBS="-lXmu -lXau -lXdmcp"
-
-AC_SUBST(XDM_EXTRA_LIBS)
-
-dnl ==============================================
-dnl	    Graphic Format Libraries
-dnl	NOTE: This should be the same as when
-dnl	      compiling WindowMaker.
-dnl ==============================================
-
-GFXLIBS=""
-GFX_LIB_PATH=""
-GFXFLAGS=""
-GFX_INC_PATH=""
-supported_gfx=""
+GFXCFLAGS=
+GFXLDFLAGS=
+GFXLIBS=
+supported_gfx=
 
 dnl an option to handle /usr/local/{bin,include,lib}
 AC_MSG_CHECKING([for using /usr/local/{bin,include,lib} paths])
-LOCAL_PATH=""
 AC_ARG_WITH(local,
-[  --with-local		  set appropriate /usr/local/{bin,include,lib}],
-	[GFX_LIB_PATH="-L/usr/local/lib"
-	 GFX_INC_PATH="-I/usr/local/include"
-	 LOCAL_PATH="/usr/local/bin"
-	 GFX_PATH=yes],
-	[GFX_PATH="no"])
-AC_MSG_RESULT($GFX_PATH)
+	AC_HELP_STRING([--with-local],[set appropriate /usr/local/{bin,include,lib}]),
+	[
+		AC_MSG_RESULT(yes)
+		GFXLDFLAGS="$GFXLDFLAGS -L/usr/local/lib"
+		GFXCFLAGS="$GFXCFLAGS -I/usr/local/include"
+		LOCAL_PATH="/usr/local/bin"
+	],
+	[
+		AC_MSG_RESULT(no)
+	])
 
-dnl ==================================================
 dnl Specify paths to look for graphic format libraries
-dnl ==================================================
 AC_MSG_CHECKING(for gfx-libs)
 AC_ARG_WITH(gfx-libs,
-[  --with-gfx-libs	  pass compiler flags to look for gfx libraries],
-	[GFX_LIB_PATH="$GFX_LIB_PATH -L$withval" GFX_PATH=$withval],
-	[GFX_PATH=""])
-AC_MSG_RESULT($GFX_PATH)
+	AC_HELP_STRING([--with-gfx-libs],[pass compiler flags to look for gfx libraries]),
+	[
+		AC_MSG_RESULT($withval)
+		GFXLDFLAGS="$GFXLDFLAGS -L$withval"
+	],
+	[
+		AC_MSG_RESULT([])
+	]
+)
 
 AC_MSG_CHECKING(for gfx-incs)
 AC_ARG_WITH(gfx-incs,
-[  --with-gfx-incs	  pass compiler flags to look for gfx header files],
-	[GFX_INC_PATH="$GFX_INC_PATH -I$withval" GFX_PATH=$withval],
-	[GFX_PATH=""])
-AC_MSG_RESULT($GFX_PATH)
+	AC_HELP_STRING([--with-gfx-incs],[pass compiler flags to look for gfx header files]),
+	[
+		AC_MSG_RESULT($withval)
+		GFXCFLAGS="$GFXCFLAGS -I$withval"
+	],
+	[
+		AC_MSG_RESULT([])
+	])
 
 
-
-dnl XPM Support
-dnl ===========
-xpm=yes
 AC_ARG_ENABLE(xpm,
-[  --disable-xpm		  disable use of XPM pixmaps through libXpm],
+	AC_HELP_STRING([--disable-xpm],[disable use of XPM pixmaps through libXpm]),
 	xpm=$enableval, xpm=yes)
-
 if test "$xpm" = yes; then
-    AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,
-	[GFXLIBS="$GFXLIBS -lXpm"
-	 supported_gfx="$supported_gfx XPM"],,
-	$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS)
+	AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,
+	[
+		GFXLDFLAGS="$GFXLDFLAGS -lXpm"
+		supported_gfx="$supported_gfx XPM"
+	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
 fi
 
-
-AC_SUBST(XLIBS)
-AC_SUBST(XCFLAGS)
-AC_SUBST(XLFLAGS)
-
-AC_SUBST(X_EXTRA_LIBS)
-
-dnl ===============================================
-dnl		End of stuff that uses X
-dnl ===============================================
-
-dnl test for zlib
-dnl =============
-
-AC_CHECK_LIB(z, gzread, zlib=yes, zlib=no,
-		 $GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS)
-
-
-dnl PNG Support
-dnl ===========
-png=yes
 AC_ARG_ENABLE(png,
-[  --disable-png		  disable PNG support through libpng],
+	AC_HELP_STRING([--disable-png],[disable PNG support through libpng]),
 	png=$enableval, png=yes)
 
-
 if test "$png" = yes; then
-    if test "$zlib" = yes; then
-       lz=" -lz"
-	else
-	   lz=""
-	fi
-    AC_CHECK_LIB(png, png_get_valid,
-	     [GFXLIBS="$GFXLIBS -lpng${lz}"
-	      supported_gfx="$supported_gfx PNG"],,
-	     $GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS${lz} -lm)
+	AC_CHECK_LIB(png, png_get_valid,
+	[
+		GFXLIBS="$GFXLIBS -lpng $LIB_ZLIB"
+		supported_gfx="$supported_gfx PNG"
+	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS $LIB_ZLIB)
 fi
 
-
-dnl JPEG Support
-dnl ============
-jpeg=yes
 AC_ARG_ENABLE(jpeg,
-[  --disable-jpeg	  disable JPEG support through libjpeg],
+	AC_HELP_STRING([--disable-jpeg],[disable JPEG support through libjpeg]),
 	jpeg=$enableval, jpeg=yes)
 
 if test "$jpeg" = yes; then
 	AC_CHECK_LIB(jpeg, jpeg_destroy_compress,
-		[GFXLIBS="$GFXLIBS -ljpeg"
-		 supported_gfx="$supported_gfx JPEG"],,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS)
+	[
+		GFXLIBS="$GFXLIBS -ljpeg"
+		supported_gfx="$supported_gfx JPEG"
+	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
 fi
 
 
-dnl GIF Support
-dnl ===========
-
 dnl There are two implementations which support GIF: libgif and libungif.
 dnl Both/either seem to work with wraster.
-
-gif=yes
 AC_ARG_ENABLE(gif,
-[  --disable-gif	  disable JPEG support through libjpeg],
+	AC_HELP_STRING([--disable-gif],[disable JPEG support through libjpeg]),
 	gif=$enableval, gif=yes)
 
 if test "$gif" = yes; then
 	AC_CHECK_LIB(ungif, EGifOpenFileName,
-		[GFXLIBS="$GFXLIBS -lungif"
-		 supported_gfx="$supported_gfx GIF-ungif"],,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS)
+	[
+		GFXLIBS="$GFXLIBS -lungif"
+		supported_gfx="$supported_gfx GIF-ungif"
+	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
 	AC_CHECK_LIB(gif, DGifOpenFileName,
-		[GFXLIBS="$GFXLIBS -lgif"
-		 supported_gfx="$supported_gfx GIF-gif"],,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS)
+	[
+		GFXLIBS="$GFXLIBS -lgif"
+		supported_gfx="$supported_gfx GIF-gif"
+	],, $GFXCFLAGS $GFXLDFLAGS $XCFLAGS $XLDFLAGS $XLIBS)
 fi
 
-
-dnl TIFF Support
-dnl ============
-tif=yes
 tiflib=""
 AC_ARG_WITH(tiff-libs,
-[  --with-tiff-libs=LIB	  use libtiff with the specified extra libs],
+	AC_HELP_STRING([--with-tiff-libs=LIB],[use libtiff with the specified extra libs]),
 	tiflib=$withval, tiflib="")
-AC_ARG_ENABLE(tiff,
-[  --disable-tiff	  disable use of TIFF images through libtiff],
-	tif=$enableval, tif=yes, $GFX_INC_PATH $GFX_LIB_PATH)
 
-#
-# TIFF can optionally have JPEG and/or zlib support. Must find out
-# when they are supported so that correct library flags are passed during
-# detection and linkage
-#
-#
+AC_ARG_ENABLE(tiff,
+	AC_HELP_STRING([--disable-tiff],[disable use of TIFF images through libtiff]),
+	tif=$enableval, tif=yes)
+
+dnl
+dnl TIFF can optionally have JPEG and/or zlib support. Must find out
+dnl when they are supported so that correct library flags are passed during
+dnl detection and linkage
+dnl
+dnl
 
 dnl for FreeBSD, check for libtiff34 also, should not hurt if both are found
 
 if test "$tif" = yes; then
-    AC_CHECK_LIB(tiff, TIFFGetVersion,
-	[GFXLIBS="$GFXLIBS -ltiff $tiflib"
-	 supported_gfx="$supported_gfx TIFF"],,
-	[$GFX_INC_PATH $GFX_LIB_PATH $tiflib -lm $XLFLAGS $XLIBS])
-    AC_CHECK_LIB(tiff34, TIFFGetVersion,
-	[GFXLIBS="$GFXLIBS -ltiff34 $tiflib"
-	 supported_gfx="$supported_gfx TIFF34"],,
-	[$GFX_INC_PATH $GFX_LIB_PATH $tiflib -lm $XLFLAGS $XLIBS])
+	AC_CHECK_LIB(tiff, TIFFGetVersion,
+	[
+		GFXLIBS="$GFXLIBS -ltiff $tiflib"
+		supported_gfx="$supported_gfx TIFF"
+	],,$GFXCFLAGS $GFXLDFLAGS $tiflib $XCFLAGS $XLDFLAGS $XLIBS)
+	AC_CHECK_LIB(tiff34, TIFFGetVersion,
+	[
+		GFXLIBS="$GFXLIBS -ltiff34 $tiflib"
+		supported_gfx="$supported_gfx TIFF34"
+	],,$GFXCFLAGS $GFXLDFLAGS $tiflib $XCFLAGS $XLDFLAGS $XLIBS)
 fi
 
-dnl ===========================================
 dnl		WINGs support
-dnl ===========================================
 
 dnl NOTE: Neither the naming convension nor the existance
 dnl	  of debug enabled WINGs libs is standard.
 dnl	  However, at this stage of WINGs development, we
 dnl	  need something and this is it for now.
-
-dnl ---> Because the routines in WINGs are so entwined, it is not
-dnl	 worth the effort trying to figure out a reasonable
-dnl	 AC_CHECK_LIB.	Since WINGs requires wraster, put them
-dnl	 together.
-
-dnl ---> This should now find wraster in /usr/lib or
-dnl	 /usr/X11R6/lib.  If these libraries are located elsewhere, use
-dnl	 --with-gfx-libs to specify where.
-
 dnl using debug libs now controlled by --enable-debug
 
-WINGsOK=no
-WINGsDEBUG=no
-AC_MSG_CHECKING(for WINGs)
-if test "$enable_debug" = yes; then
-	AC_MSG_RESULT(using debug versions)
-	AC_CHECK_LIB(wrasterg, RCreateImage,
-		[WINGsOK=yes WINGsDEBUG=yes],,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS $GFXLIBS)
-else
-	AC_MSG_RESULT(using standard versions)
-	AC_CHECK_LIB(wraster, RCreateImage,
-		[WINGsOK=yes],,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS $GFXLIBS)
-fi
+AC_ARG_ENABLE(debug,
+	AC_HELP_STRING([--enable-debug],[enable debugging]),
+	[
+		enable_debug=yes
+		CFLAGS="$CFLAGS -g -DDEBUG"
+	], enable_debug=no)
 
-if test "$WINGsOK" = no; then
-	AC_CHECK_LIB(wraster, RCreateImage,
-		[WINGsOK=yes],,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS $GFXLIBS)
-fi
+LIBPROPLIST=
+AC_CHECK_LIB(PropList, PLIsArray,
+[
+	LIBPROPLIST=-lPropList
+],,$XCFLAGS $XLDFLAGS $XLIBS)
 
-if test "$WINGsOK" = yes; then
-	if test "$WINGsDEBUG" = yes; then
-		GFXLIBS="-lWINGsg -lwrasterg $GFXLIBS"
+XFTLIBS=
+XFTCFLAGS=
+AC_CHECK_LIB(Xft2, XftDrawCreate,
+[
+	XFTLIBS=`xft-config --libs`
+	XFTCFLAGS=`xft-config --cflags`
+],[
+	AC_CHECK_LIB(Xft, XftDrawCreate,
+	[
+		XFTLIBS=-lXft
+	],,$XCFLAGS $XLDFLAGS $XLIBS)
+],$XCFLAGS $XLDFLAGS $XLIBS)
+
+
+WMLIBS=
+AC_CHECK_LIB(wraster, RCreateImage,,
+[
+	AC_MSG_ERROR([wraster lib required and not found])
+],$GFXLDFLAGS $XLDFLAGS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
+
+AC_CHECK_LIB(wrasterg, RCreateImage,
+[
+	if test "$enable_debug" = yes; then
+		WMLIBS="$WMLIBS -lwrasterg"
 	else
-		GFXLIBS="-lWINGs -lwraster $GFXLIBS"
+		WMLIBS="$WMLIBS -lwraster"
 	fi
+],[
+	WMLIBS="$WMLIBS -lwraster"
+],$GFXLDFLAGS $XLDFLAGS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
 
-else
-	AC_MSG_ERROR([WINGs and wraster libs required and not found])
+AC_CHECK_LIB(WINGs, WMCreateScreen,,
+[
+	AC_MSG_ERROR([WINGs lib required and not found])
+],$GFXLDFLAGS $XLDFLAGS $WMLIBS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
+
+AC_CHECK_LIB(WINGsg, WMCreateScreen,
+[
+	if test "$enable_debug" = yes; then
+		WMLIBS="$WMLIBS -lWINGsg"
+	else
+		WMLIBS="$WMLIBS -lWINGs"
+	fi
+],[
+	WMLIBS="$WMLIBS -lWINGs"
+],$GFXLDFLAGS $XLDFLAGS $WMLIBS $XLIBS $GFXLIBS $LIBPROPLIST $XFTLIBS)
+
+if ! test "x$LIBPROPLIST" = "x"; then
+	AC_MSG_CHECKING([if we really need libPropList])
+	tmpLDFLAGS=$LDFLAGS
+	tmpLIBS=$LIBS
+	LDFLAGS="$GFXLDFLAGS $XLDFLAGS"
+	LIBS="$WMLIBS $XLIBS $GFXLIBS $XFTLIBS"
+	AC_TRY_LINK_FUNC(WMCreateScreen,
+	[
+		AC_MSG_RESULT(no)
+		LIBPROPLIST=
+	],[
+		AC_MSG_RESULT(yes)
+	])
+	LDFLAGS=$tmpLDFLAGS
+	LIBS=$tmpLIBS
 fi
 
+if ! test "x$XFTLIBS" = "x"; then
+	AC_MSG_CHECKING([if we really need libXft])
+	tmpLDFLAGS=$LDFLAGS
+	tmpLIBS=$LIBS
+	LDFLAGS="$GFXLDFLAGS $XLDFLAGS"
+	LIBS="$WMLIBS $XLIBS $GFXLIBS $LIBPROPLIST"
+	AC_TRY_LINK_FUNC(WMCreateScreen,
+	[
+		AC_MSG_RESULT(no)
+		XFTLIBS=
+		XFTCFLAGS=
+	],[
+		AC_MSG_RESULT(yes)
+	])
+	LDFLAGS=$tmpLDFLAGS
+	LIBS=$tmpLIBS
+fi
+GFXLIBS="$WMLIBS $XFTLIBS $LIBPROPLIST $GFXLIBS"
+GFXCFLAGS="$GFXCFLAGS $XFTCFLAGS"
 
-dnl WINGs in WindowMaker => 0.18.x requires libPropList
-AC_CHECK_LIB(PropList, PLIsArray, GFXLIBS="$GFXLIBS -lPropList",,
-		$GFX_INC_PATH $GFX_LIB_PATH $XLFLAGS $XLIBS)
-
-GFXLIBS="$GFX_LIB_PATH $GFXLIBS"
-GFXFLAGS="$GFX_INC_PATH $GFXFLAGS"
-
-AC_SUBST(GFXFLAGS)
+AC_SUBST(GFXCFLAGS)
+AC_SUBST(GFXLDFLAGS)
 AC_SUBST(GFXLIBS)
 
-
-dnl ==============================================
-dnl	    End of Graphic Format Libraries
-dnl ==============================================
 
 dnl ===============================================
 dnl prefix
@@ -389,13 +349,13 @@ dnl ===============================================
 
 dnl First, check for prefix:
 AC_MSG_CHECKING(for prefix)
-if test "${prefix}" = "NONE"; then
+if test "$prefix" = "NONE"; then
 	prefix="/usr/local"
 fi
 AC_MSG_RESULT($prefix)
 
 AC_MSG_CHECKING(for exec_prefix)
-if test "${exec_prefix}" = "NONE"; then
+if test "$exec_prefix" = "NONE"; then
 	exec_prefix=$prefix
 fi
 AC_MSG_RESULT($exec_prefix)
@@ -406,7 +366,7 @@ dnl ===============================================
 
 AC_MSG_CHECKING(for logdir)
 AC_ARG_WITH(logdir,
-[  --with-logdir=PATH		   specify directory where logfile goes])
+	AC_HELP_STRING([--with-logdir=PATH],[specify directory where logfile goes]))
 if test "x$with_logdir" != "x"; then
 	LOGDIR=$with_logdir
 else
@@ -417,7 +377,7 @@ AC_MSG_RESULT($LOGDIR)
 
 AC_MSG_CHECKING(for runlockdir)
 AC_ARG_WITH(runlockdir,
-[  --with-runlockdir=PATH	   specify directory where run lock goes])
+	AC_HELP_STRING([--with-runlockdir=PATH],[specify directory where run lock goes]))
 if test "x$with_runlockdir" != "x"; then
 	RUNDIR=$with_runlockdir
 else
@@ -428,24 +388,24 @@ AC_MSG_RESULT($RUNDIR)
 
 AC_MSG_CHECKING(for defuserpath)
 AC_ARG_WITH(defuserpath,
-[  --with-defuserpath=PATHlist	   specify list of paths for user sessions])
+	AC_HELP_STRING([--with-defuserpath=PATHlist],[specify list of paths for user sessions]))
 if test "x$with_defuserpath" != "x"; then
-   AC_DEFINE_UNQUOTED(DEF_USER_PATH,"$with_defuserpath")
-   AC_MSG_RESULT($with_defuserpath)
+	AC_DEFINE_UNQUOTED(DEF_USER_PATH,"$with_defuserpath")
+	AC_MSG_RESULT($with_defuserpath)
 else
-   AC_DEFINE(DEF_USER_PATH,"/usr/local/bin:/bin:/usr/bin")
-   AC_MSG_RESULT([using default: /usr/local/bin:/bin:/usr/bin])
+	AC_DEFINE(DEF_USER_PATH,"/usr/local/bin:/bin:/usr/bin")
+	AC_MSG_RESULT([using default: /usr/local/bin:/bin:/usr/bin])
 fi
 
 AC_MSG_CHECKING(for defsystempath)
 AC_ARG_WITH(defsystempath,
-[  --with-defsystempath=PATHlist   specify list of paths for superuser sessions])
+	AC_HELP_STRING([--with-defsystempath=PATHlist],[specify list of paths for superuser sessions]))
 if test "x$with_defsystempath" != "x"; then
-   AC_DEFINE_UNQUOTED(DEF_SYSTEM_PATH,"$with_defsystempath")
-   AC_MSG_RESULT($with_defsystempath)
+	AC_DEFINE_UNQUOTED(DEF_SYSTEM_PATH,"$with_defsystempath")
+	AC_MSG_RESULT($with_defsystempath)
 else
-   AC_DEFINE(DEF_SYSTEM_PATH,"/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin")
-   AC_MSG_RESULT([using default: /sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin])
+	AC_DEFINE(DEF_SYSTEM_PATH,"/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin")
+	AC_MSG_RESULT([using default: /sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin])
 fi
 
 dnl user must use --with-wdmdir= rather than --sysconfigdir= to put it
@@ -453,7 +413,7 @@ dnl somewhere other than $prefix/etc
 dnl
 AC_MSG_CHECKING(if  wdmdir has been specified)
 AC_ARG_WITH(wdmdir,
-[  --with-wdmdir=PATH		   specify path for wdm directory])
+	AC_HELP_STRING([--with-wdmdir=PATH],[specify path for wdm directory]))
 if test "x$with_wdmdir" != "x"; then
 	DMDIR="$with_wdmdir"
 	AC_MSG_RESULT([yes, using $DMDIR])
@@ -470,7 +430,7 @@ AC_SUBST(DMDIR)
 
 AC_MSG_CHECKING(if  Logo pixmap specified)
 AC_ARG_WITH(Logo,
-[  --with-Logo=PIXMAP_FILENAME	   specify file in wdm/pixmaps for Logo])
+	AC_HELP_STRING([--with-Logo=PIXMAP_FILENAME],[specify file in wdm/pixmaps for Logo]))
 if test "x$with_Logo" != "x"; then
 	PIXMAPFILE="$with_Logo"
 	PIXMAPCOMMENT=""
@@ -483,9 +443,8 @@ fi
 AC_SUBST(PIXMAPFILE)
 AC_SUBST(PIXMAPCOMMENT)
 
-dnl ===============================================
-dnl lets see what window managers we find
-dnl ===============================================
+
+
 
 AC_PATH_PROG(WMAKER_PATH,wmaker,,$PATH:/usr/local/bin)
 AC_SUBST(WMAKER_PATH)
@@ -574,7 +533,7 @@ AC_SUBST(WINMGR_NAME)
 
 AC_MSG_CHECKING(if  window manager list specified)
 AC_ARG_WITH(wmlist,
-[  --with-wmlist=LIST_OF_WM	   specify list of window managers])
+	AC_HELP_STRING([--with-wmlist=LIST_OF_WM],[specify list of window managers]))
 if test "x$with_wmlist" != "x"; then
 	WMLIST="$with_wmlist"
 	AC_MSG_RESULT($with_wmlist)
@@ -584,9 +543,7 @@ else
 fi
 AC_SUBST(WMLIST)
 
-dnl ===============================================
-dnl locate some program paths
-dnl ===============================================
+
 
 AC_PATH_PROG(SHELL_BASH,bash,,$PATH:/usr/local/bin)
 AC_PATH_PROG(SHELL_SH,sh)
@@ -627,8 +584,8 @@ AC_PATH_PROG(SHUTDOWN,shutdown,,$PATH:/sbin:/usr/sbin)
 AC_SUBST(SHUTDOWN)
 
 dnl ==========================================================
-AC_MSG_RESULT(full gfx include paths and flags are $X_CFLAGS $GFXFLAGS)
-AC_MSG_RESULT(full gfx paths and libraries are $XLFLAGS $GFXLIBS)
+AC_MSG_RESULT(full gfx include paths and flags are $XCFLAGS $GFXFLAGS)
+AC_MSG_RESULT(full gfx paths and libraries are $XLDFLAGS $GFXLIBS)
 AC_MSG_RESULT(gfx library formats: $supported_gfx)
 dnl ==========================================================
 
@@ -639,3 +596,4 @@ AC_OUTPUT(Makefile
 	  src/Makefile
 	  src/config/Makefile
 	  src/pixmaps/Makefile )
+
