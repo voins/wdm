@@ -37,7 +37,7 @@ wdm-current.tar.bz2 : [archive_files]
 		| tardy -unu 0 -gnu 0 -una Alexey -gna Voinov 
 			-p wdm-current -ms 644 -mc 07022 -now
 			[prepost "-rp=" "" [search_list]]
-		| gzip -9 > [target];
+		| bzip2 -9 > [target];
 }
 
 project_timestamp = [collect aereport -f [resolve etc/project_timestamp.rpt] -pl 30000 -p wdm | sed -e"'"1,6 d"'"];
