@@ -36,6 +36,7 @@ config.status : configure etc/configure.cook
 	CFLAGS\="\"-O2 -g -Wall -Werror -pedantic\""
 	[pathname [resolve configure]]
 		--enable-pam
+		--enable-aafont
 		--no-create
 		--cache-file\=/dev/null
 		--verbose
