@@ -261,8 +261,8 @@ void writestring(int fd, char *string)
 
 static void OutputAuth(char *user, char *pswd)
 {
-	writestring(3, user);
-	writestring(3, pswd);
+	writestring(3, user ? user : "");
+	writestring(3, pswd ? pswd : "");
 
     if (OptionCode==0) {
 	if (WmOptionCode==0)
