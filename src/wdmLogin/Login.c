@@ -669,7 +669,11 @@ static void CreateLogo(LoginPanel *panel)
 #if 0
     fprintf(stderr,"new: ratio=%.5f,width=%i,heigth=%i\n",ratio,w,h);/*DEBUG*/
 #endif
+#ifdef HAVE_SMOOTH_SCALE
+    image2 = RSmoothScaleImage(image1, w, h);
+#else
     image2 = RScaleImage(image1, w, h);
+#endif
     RReleaseImage(image1);
     if (image2==NULL)
 	return;
