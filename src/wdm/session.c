@@ -47,6 +47,7 @@ from The Open Group.
 #include <stdio.h>
 #include <ctype.h>
 #include <grp.h>	/* for initgroups */
+#include <sys/types.h>
 #ifdef AIXV3
 # include <usersec.h>
 #endif
@@ -68,16 +69,6 @@ from The Open Group.
 #include <wdmlib.h>
 
 static	int	runAndWait (char **args, char **environ);
-
-#if defined(CSRG_BASED) || defined(__osf__) || defined(__DARWIN__) || defined(__QNXNTO__)
-#include <sys/types.h>
-#include <grp.h>
-#else
-/* should be in <grp.h> */
-extern	void	setgrent(void);
-extern	struct group	*getgrent(void);
-extern	void	endgrent(void);
-#endif
 
 #ifdef HAVE_SHADOW_H
 #include <shadow.h>
