@@ -6,7 +6,7 @@ AC_CONFIG_HEADERS(include/config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
-
+AC_PROG_RANLIB
 
 AC_ARG_VAR(XRDB_PATH, [Path to xrdb program from X])
 AC_PATH_PROG(XRDB_PATH, xrdb)

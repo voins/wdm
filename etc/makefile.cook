@@ -27,8 +27,8 @@ src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
 	echo "bin/%.a: " [c_to_o [select_c %]] > [target];
 	echo -e "\"\\t\""mkdir -p bin >> [target];
-	echo -e "\"\\t\""ar cru bin/%.a [c_to_o [select_c %]] >> [target]; 
-	echo -e "\"\\t\""ranlib bin/%.a >> [target]; 
+	echo -e "\"\\t\""\\$\\(AR\\) cru bin/%.a [c_to_o [select_c %]] >> [target]; 
+	echo -e "\"\\t\""\\$\\(RANLIB\\) bin/%.a >> [target]; 
 	echo >> [target];
 }
 

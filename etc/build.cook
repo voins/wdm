@@ -42,8 +42,8 @@ cascade include/wdmconfig.h = include/config.h;
 
 bin/%.a : [c_to_o [select_c %]] etc/Howto.conf
 {
-	ar cru bin/%.a [resolve [c_to_o [select_c %]]];
-	ranlib bin/%.a;
+	[ar] cru bin/%.a [resolve [c_to_o [select_c %]]];
+	[ranlib] bin/%.a;
 }
 
 bin/% : [c_to_o [select_c %]] etc/Howto.conf [lib_deps [get_libs %_]]

@@ -25,6 +25,8 @@ DESTDIR =;
 NLSDIR = @NLSDIR@;
 xgettext = @XGETTEXT@;
 msgfmt = @MSGFMT@;
+ranlib = @RANLIB@;
+ar = ar;
 
 cc = [CC];
 cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];
