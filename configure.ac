@@ -418,6 +418,12 @@ fi
 AC_DEFINE_UNQUOTED(FAKEHOME, "$FAKEHOME", [what to use as HOME value])
 AC_SUBST(FAKEHOME)
 
+AC_ARG_ENABLE(aafont,
+	AC_HELP_STRING([--enable-aafont],[enable support for antialiased fonts.]))
+if test "$enable_aafont" = "yes"; then
+	AC_DEFINE(USE_AA, 1, [Define if you want support for antialiased fonts])
+fi
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

@@ -1322,7 +1322,6 @@ main(int argc, char **argv)
 				cfg->geometry.size.height,
 				cfg->geometry.pos.x,
 				cfg->geometry.pos.y);
-		printf("aa: %i\n", cfg->aaenabled);
 	}
 
 	SetupWm();		/* and init the startup list */
@@ -1335,6 +1334,7 @@ main(int argc, char **argv)
 		exit(2);
 	}
 
+#ifdef USE_AA
 	if(cfg->multibyte)
 		scr->useMultiByte = True;
 
@@ -1356,6 +1356,7 @@ main(int argc, char **argv)
 			exit(2);
 		}
 	}
+#endif
 
 	screen.pos.x = 0;
 	screen.pos.y = 0;

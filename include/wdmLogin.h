@@ -22,13 +22,16 @@
 #ifndef _WDMLOGIN_H
 #define _WDMLOGIN_H
 
+#include <wdmconfig.h>
 #include <wdmlib.h>
 
 typedef struct _WDMLoginConfig
 {
 	WMRect geometry;
+#ifdef USE_AA
 	Bool aaenabled;
 	Bool multibyte;
+#endif
 } WDMLoginConfig;
 
 extern WDMLoginConfig *LoadConfiguration(char *configFile);
