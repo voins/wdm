@@ -169,6 +169,7 @@ static char *bgArg	   = NULL;
 static char *bgOption	   = NULL;
 static int   animate = False;
 static int   smoothScale = True;
+static char *configFile	   = NULL;
 
 char *ProgName= "Login";
 
@@ -322,7 +323,7 @@ static void LoginArgs(int argc, char *argv[])
 
 
     while(1) {
-	c = getopt(argc, argv, "asb:d:h:l:uw:");
+	c = getopt(argc, argv, "asb:d:h:l:uw:c:");
 	if (c == -1)
 	    break;
 	switch (c) {
@@ -338,7 +339,7 @@ static void LoginArgs(int argc, char *argv[])
 		    tmp=optarg;
 		else
 		    tmp++;
-		displayArg = wstrdup(tmp); 
+		displayArg = wstrdup(tmp);
 	    break;
 	    case 'h':				/* helpfile */
 		tmp = strchr(optarg,'=');
@@ -374,6 +375,14 @@ static void LoginArgs(int argc, char *argv[])
 		else
 		    tmp++;
 		bgArg = wstrdup(tmp);
+	    break;
+	    case 'c':				/* configfile */
+		tmp = strchr(optarg,'=');
+		if (tmp==NULL)
+		    tmp=optarg;
+		else
+		    tmp++;
+		configFile = wstrdup(tmp);
 	    break;
 	    default:
 		fprintf(stderr,"bad option: %c\n",c);
@@ -1164,6 +1173,20 @@ static void SignalTerm(int ignored)	/* all done */
 	exit(0);	 /* corrects some hanging problems, thanks to A. Kabaev */
 }
 
+/**
+ * this function tries to load configuration file.
+ * Loaded data is not used anywhere still.
+ */
+WMPropList *LoadConfiguration(char *configFile)
+{
+	char *filename = configFile ? configFile : DEF_WDMLOGIN_CONFIG;
+	WMPropList *db;
+
+	db = WMReadPropListFromFile(filename);
+
+	return db;
+}
+
 /*###################################################################*/
 
 /*  M A I N  */
@@ -1171,6 +1194,7 @@ static void SignalTerm(int ignored)	/* all done */
 int main(int argc, char **argv)
 {
     WMScreen   *scr;
+    WMPropList *configdb;
     int xine_count; int c;
 #ifdef HAVE_XINERAMA
     XineramaScreenInfo *xine;
@@ -1190,6 +1214,11 @@ int main(int argc, char **argv)
 	    
     animate = False;
     LoginArgs(argc, argv);		/* process our args */
+
+    configdb = LoadConfiguration(configFile); /* load configs */
+    if(configdb)
+	WMReleasePropList(configdb); /* configs not used still, so free it */
+
     SetupWm();				/* and init the startup list */
 
     WMInitializeApplication(ProgName, &argc, argv);

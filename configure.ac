@@ -496,6 +496,7 @@ else
 fi
 AC_DEFINE_UNQUOTED(WDMDIR, "$DMDIR", [Value is a path to wdm directory])
 AC_DEFINE_UNQUOTED(DEF_XDM_CONFIG, "$DMDIR/wdm-config", [Value is a path to default wdm config file])
+AC_DEFINE_UNQUOTED(DEF_WDMLOGIN_CONFIG, "$DMDIR/wdmLogin-config", [Value is a path to default wdmLogin config file])
 AC_DEFINE_UNQUOTED(DEF_CHOOSER, "$DMDIR/chooser", [Value is a path to default chooser program])
 AC_DEFINE_UNQUOTED(DEF_AUTH_DIR, "$DMDIR/authdir", [Value is a path to default authdir])
 
