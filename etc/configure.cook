@@ -22,6 +22,7 @@ configure: configure.ac etc/configure.cook install-sh
 		ln -s [resolve install-sh] install-sh
 			set clearstat;
 
+	rm -f [target];
 	[autoconf] [resolve configure.ac] > [target];
 	chmod 755 [target];
 	rm -rf autom4te*.cache;

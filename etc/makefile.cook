@@ -28,6 +28,7 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.sh etc/makefile.cook etc/Howto.cook
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
 	[fromto bin/% bin/M/%.M [program_list]]
 {
+	rm -f [target];
 	sh [resolve etc/Makefile.sh] [resolve etc/Howto.conf.in] [target];
 	echo all\: [program_list] >> [target];
 	echo >> [target];

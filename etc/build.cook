@@ -34,5 +34,7 @@ cascade include/wdmconfig.h = include/config.h;
 
 bin/% : [c_to_o [select_c %]]
 {
-	[cc] [get_cflags %_] [get_ldflags %_] [c_to_o [select_c %]] [get_libs %_] -o [target];
+	[cc] [get_cflags %_] [get_ldflags %_]
+		[resolve [c_to_o [select_c %]]]
+		[get_libs %_] -o [target];
 }
