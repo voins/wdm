@@ -31,6 +31,21 @@ loop
 	search_name = [search_name]bl;
 }
 
+if [match_mask %1C%2 [version]] then
+{
+	development = 1;
+	integration = 0;
+}
+else
+{
+	development = 0;
+	integration = 1;
+}
+
+version_short = [fromto %1.C%2 %1 [subst D C [version]]];
+project_short = [fromto %.[version_short] % [project]];
+all =;
+
 #include-cooked-nowarn etc/Howto.conf
 #include-cooked [resolve etc/sourcelist.cook]
 

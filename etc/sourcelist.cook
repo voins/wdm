@@ -44,5 +44,8 @@ i_program_list = TestLogin;
 /* list of *.mo files */
 mo_files = [fromto %0%.po %0%.mo [match_mask %0%.po [source_files]]];
 
-all = tarball [addprefix bin/ [program_list]] nlsdir;
+if [integration] then
+	all = [all] tarball;
+
+all = [all] [addprefix bin/ [program_list]] nlsdir;
 
