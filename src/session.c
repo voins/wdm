@@ -551,7 +551,8 @@ StartClient (verify, d, pidp, name, passwd)
           char **pam_env = pam_getenvlist(pamh);
           for(i = 0; pam_env && pam_env[i]; i++)
             {
-              verify->userEnviron = putEnv(pam_env[i], verify->userEnviron);
+              verify->userEnviron =
+		      putEnv(pam_env[i], verify->userEnviron);
             }
         }
 #endif

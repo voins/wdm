@@ -30,3 +30,6 @@
 #undef DEF_SERVER_LINE
 
 #undef DEF_SESSION
+
+#undef HAVE_MKSTEMP
+

@@ -164,7 +164,7 @@ sendForward (connectionType, address, closure)
     default:
 	return;
     }
-    XdmcpFlush (xdmcpFd, &buffer, addr, addrlen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) addr, addrlen);
 }
 
 extern char *NetaddrAddress();
@@ -323,7 +323,7 @@ ProcessRequestSocket ()
     }
     read_size= 0;
 #else
-    if (!XdmcpFill (xdmcpFd, &buffer, &addr, &addrlen)) {
+    if (!XdmcpFill (xdmcpFd, &buffer, (XdmcpNetaddr) &addr, &addrlen)) {
 	Debug ("XdmcpFill failed\n");
 	return;
     }
@@ -697,7 +697,7 @@ send_willing (from, fromlen, authenticationName, status)
     XdmcpWriteARRAY8 (&buffer, authenticationName);
     XdmcpWriteARRAY8 (&buffer, &Hostname);
     XdmcpWriteARRAY8 (&buffer, status);
-    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) from, fromlen);
 }
 
 send_unwilling (from, fromlen, authenticationName, status)
@@ -720,7 +720,7 @@ send_unwilling (from, fromlen, authenticationName, status)
     XdmcpWriteHeader (&buffer, &header);
     XdmcpWriteARRAY8 (&buffer, &Hostname);
     XdmcpWriteARRAY8 (&buffer, status);
-    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) from, fromlen);
 }
 
 static unsigned long	globalSessionID;
@@ -915,7 +915,7 @@ send_accept (to, tolen, sessionID,
     XdmcpWriteARRAY8 (&buffer, authenticationData);
     XdmcpWriteARRAY8 (&buffer, authorizationName);
     XdmcpWriteARRAY8 (&buffer, authorizationData);
-    XdmcpFlush (xdmcpFd, &buffer, to, tolen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) to, tolen);
 }
    
 send_decline (to, tolen, authenticationName, authenticationData, status)
@@ -937,7 +937,7 @@ send_decline (to, tolen, authenticationName, authenticationData, status)
     XdmcpWriteARRAY8 (&buffer, status);
     XdmcpWriteARRAY8 (&buffer, authenticationName);
     XdmcpWriteARRAY8 (&buffer, authenticationData);
-    XdmcpFlush (xdmcpFd, &buffer, to, tolen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) to, tolen);
 }
 
 manage (from, fromlen, length)
@@ -1122,7 +1122,7 @@ send_failed (from, fromlen, name, sessionID, reason)
     XdmcpWriteHeader (&buffer, &header);
     XdmcpWriteCARD32 (&buffer, sessionID);
     XdmcpWriteARRAY8 (&buffer, &status);
-    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) from, fromlen);
 }
 
 send_refuse (from, fromlen, sessionID)
@@ -1138,7 +1138,7 @@ send_refuse (from, fromlen, sessionID)
     header.length = 4;
     XdmcpWriteHeader (&buffer, &header);
     XdmcpWriteCARD32 (&buffer, sessionID);
-    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) from, fromlen);
 }
 
 send_alive (from, fromlen, length)
@@ -1178,7 +1178,7 @@ send_alive (from, fromlen, length)
 	    XdmcpWriteHeader (&buffer, &header);
 	    XdmcpWriteCARD8 (&buffer, sendRunning);
 	    XdmcpWriteCARD32 (&buffer, sendSessionID);
-	    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
+	    XdmcpFlush (xdmcpFd, &buffer, (XdmcpNetaddr) from, fromlen);
 	}
     }
 }

@@ -324,6 +324,8 @@ extern struct protoDisplay	*FindProtoDisplay (),
 
 extern char		*localHostname ();
 
+extern char **putEnv(const char *, char **);
+
 /* in xdmcp.c */
 extern void init_session_id();
 extern void registerHostname();

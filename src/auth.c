@@ -363,9 +363,13 @@ MakeServerAuthFile (d)
 	    d->authFile = NULL;
 	    return FALSE;
 	}
-    	sprintf (d->authFile, "%s/%s/%s/A%s-XXXXXX",
+	sprintf (d->authFile, "%s/%s/%s/A%s-XXXXXX",
 		 authDir, authdir1, authdir2, cleanname);
-    	(void) mktemp (d->authFile);
+#if HAVE_MKSTEMP
+	(void) mkstemp (d->authFile);
+#else
+	(void) mktemp (d->authFile);
+#endif
     }
     return TRUE;
 }
@@ -1187,7 +1191,11 @@ SetUserAuthorization (d, verify)
 	}
 	if (lockStatus != LOCK_SUCCESS) {
 	    sprintf (backup_name, "%s/.XauthXXXXXX", d->userAuthDir);
+#ifdef HAVE_MKSTEMP
+	    (void) mkstemp (backup_name);
+#else
 	    (void) mktemp (backup_name);
+#endif
 	    lockStatus = XauLockAuth (backup_name, 1, 2, 10);
 	    Debug ("backup lock is %d\n", lockStatus);
 	    if (lockStatus == LOCK_SUCCESS) {
