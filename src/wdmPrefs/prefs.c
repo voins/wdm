@@ -95,7 +95,7 @@ AddSectionButton(Panel *panel, const char *iconfile)
 }
 
 void
-closeAction(WMWidget *self, void *data)
+CloseAction(WMWidget *self, void *data)
 {
 	WMDestroyWidget(self);
 	exit(0);
@@ -156,7 +156,7 @@ CreateButtons(WMBox *box)
 	bclose = WMCreateCommandButton(buttonbox);
 	WMMapWidget(bclose);
 	WMSetButtonText(bclose, "Close");
-	WMSetButtonAction(bclose, closeAction, NULL);
+	WMSetButtonAction(bclose, CloseAction, NULL);
 	WMAddBoxSubviewAtEnd(buttonbox, WMWidgetView(bclose), False, False, 100, 100, 10);
 
 	return fcontrols;
@@ -186,7 +186,7 @@ CreatePrefsWindow(WMScreen *scr)
 	WMBox *box;
 
 	wdmPrefs.win = WMCreateWindow(scr, "wdmPrefs");
-	WMSetWindowCloseAction(wdmPrefs.win, closeAction, NULL);
+	WMSetWindowCloseAction(wdmPrefs.win, CloseAction, NULL);
 	WMSetWindowTitle(wdmPrefs.win, "wdmPrefs");
 
 	box = WMCreateBox(wdmPrefs.win);
