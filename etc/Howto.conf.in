@@ -32,9 +32,9 @@ wdmLogin_cflags = [cflags] [XCFLAGS] [WCFLAGS];
 wdmLogin_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
 wdmLogin_libs = [libs] [XLIBS] [WLIBS];
 
-TestLogin_cflags = [cflags];
-TestLogin_ldflags = [ldflags];
-TestLogin_libs = [libs];
+TestLogin_cflags = [cflags] [XCFLAGS] [WCFLAGS];
+TestLogin_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
+TestLogin_libs = [libs] [XLIBS] [WLIBS];
 
 wdm_cflags = [cflags] [XCFLAGS] [WCFLAGS];
 wdm_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];

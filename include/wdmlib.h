@@ -24,6 +24,10 @@
 
 #include <stdio.h>
 
+#ifndef __GNUC__
+#define __attribute__(x)
+#endif
+
 typedef Bool (WDMChecker)(WMPropList *, void *, void *);
 
 typedef struct _WDMArraySpec
@@ -54,10 +58,21 @@ extern Bool WDMCheckPLArray(WMPropList *pl, void *def, void *target);
 extern Bool WDMCheckPLDictionary(WMPropList *pl, void *def, void *target);
 extern Bool WDMCheckPLStringOrArray(WMPropList *pl, void *def, void *target);
 
-extern int WDMDebugLevel(int level);
-extern FILE *WDMDebugStream(FILE *debugfile);
-extern void WDMDebug(char *fmt, ...);
+#define WDM_LEVEL_PANIC	   0
+#define WDM_LEVEL_ERROR	   1
+#define WDM_LEVEL_WARNING  2
+#define WDM_LEVEL_INFO     3
+#define WDM_LEVEL_DEBUG    4
 
+extern int WDMLogLevel(int level);
+extern FILE *WDMLogStream(FILE *debugfile);
+extern void WDMUseSysLog(const char *ident, int facility);
+extern void WDMLogMessage(int level, char *fmt, ...) __attribute__((format(printf, 2, 3)));
+extern void WDMDebug(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+extern void WDMInfo(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+extern void WDMWarning(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+extern void WDMError(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+extern void WDMPanic(char *fmt, ...) __attribute__((noreturn, format(printf, 1, 2)));
 
 extern void *WDMSockaddrGetPort(struct sockaddr *from, int *len);
 extern void *WDMSockaddrGetAddr(struct sockaddr *from, int *len);
