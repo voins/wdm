@@ -71,6 +71,30 @@ int check_array_of_strings(void)
 	return 1;
 }
 
+int check_string_or_array(void)
+{
+	WMPropList *pl = NULL;
+	WMArray *array = NULL;
+
+	pl = WMCreatePropListFromDescription("(yes, Yes, (), no)");
+	test_assert(WDMCheckPLStringOrArray(pl, NULL, &array) == True);
+	test_assert(strcmp(WMGetFromArray(array, 0), "yes") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 1), "Yes") == 0);
+	test_assert(strcmp(WMGetFromArray(array, 2), "no") == 0);
+
+	WMFreeArray(array);
+	WMReleasePropList(pl);
+
+	pl = WMCreatePropListFromDescription("string");
+	test_assert(WDMCheckPLStringOrArray(pl, NULL, &array) == True);
+	test_assert(strcmp(WMGetFromArray(array, 0), "string") == 0);
+
+	WMFreeArray(array);
+	WMReleasePropList(pl);
+
+	return 1;
+}
+
 int check_array_of_strings2(void)
 {
 	WMPropList *pl = NULL;
@@ -132,6 +156,7 @@ int main(void)
 	if(check_array_of_bool() &&
 		check_array_of_strings() &&
 		check_array_of_strings2() &&
+		check_string_or_array() &&
 		check_array_of_structs())
 			return 0;
 	return 1;

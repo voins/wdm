@@ -52,6 +52,7 @@ extern Bool WDMCheckPLBool(WMPropList *pl, void *def, void *target);
 extern Bool WDMCheckPLString(WMPropList *pl, void *def, void *target);
 extern Bool WDMCheckPLArray(WMPropList *pl, void *def, void *target);
 extern Bool WDMCheckPLDictionary(WMPropList *pl, void *def, void *target);
+extern Bool WDMCheckPLStringOrArray(WMPropList *pl, void *def, void *target);
 
 extern int WDMDebugLevel(int level);
 extern FILE *WDMDebugStream(FILE *debugfile);

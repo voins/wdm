@@ -143,3 +143,32 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 	return True;
 }
 
+/*
+ * This function will check if pl is string or array of strings.
+ * It always returns WMArray. In case of string, new array will be 
+ * created and that string will be added to it.
+ * def is ignored here. 
+ */
+Bool
+WDMCheckPLStringOrArray(WMPropList *pl, void *def, void *target)
+{
+	char *text;
+	WMArray **array_target = (WMArray**)target;
+	static WDMArraySpec array_of_strings =
+		{WDMCheckPLString, NULL, wfree, False};
+
+	if(pl && WMIsPLString(pl))
+	{
+		if(WDMCheckPLString(pl, NULL, &text) && text)
+		{
+			*array_target = 
+				WMCreateArrayWithDestructor(1, wfree);
+
+			WMAddToArray(*array_target, text);
+
+			return True;
+		}
+	}
+	return WDMCheckPLArray(pl, &array_of_strings, target);
+}
+
