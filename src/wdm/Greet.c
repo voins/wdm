@@ -131,6 +131,7 @@ extern int   wdmAnimations;
 extern char *wdmLocale;
 extern char *wdmLoginConfig;
 extern char *wdmCursorTheme;
+extern int   wdmXineramaHead;
 
 static int      pipe_filedes[2];
 static char	name[128], password[128];
@@ -214,7 +215,7 @@ static int InitGreet (struct display *d)
     }
     if (pid == 0) {             /* child */
         char **env = NULL;
-	char *argv[10];
+	char *argv[20];
 	int argc = 1; /* argc = 0 is for command itself */
 
         close(pipe_filedes[0]);
@@ -249,7 +250,14 @@ static int InitGreet (struct display *d)
 		argv[argc++] = wstrconcat("-c", wdmLoginConfig);
 	if(wdmAnimations)
 		argv[argc++] = "-a";
+	if(wdmXineramaHead)
+	{
+		argv[argc] = wmalloc(25); /* much more than length of 64bit integer 
+					     converted to string, but it still a hack */
+		sprintf(argv[argc++], "-x%i", wdmXineramaHead);
+	}
 
+	argv[argc++] = NULL;
         execve(wdmLogin, argv, env);
 
         LogError("Greet cannot exec %s\n", wdmLogin);

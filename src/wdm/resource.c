@@ -84,6 +84,9 @@ char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
 char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
 char	*wdmCursorTheme;	/* this will be XCURSOR_THEME value before starting
 				   wdmLogin */
+int	wdmXineramaHead;	/* select xinerama head where to show login panel 
+				   this _should_ be display dependant, but I make it
+				   later */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -376,6 +379,8 @@ struct dmResources wdmResources[] = {
 				DEF_WDMLOGIN_CONFIG} ,
 { "wdmCursorTheme",	"WdmCursorTheme",	DM_STRING,	&wdmCursorTheme,
 				""} ,
+{ "wdmXineramaHead",	"WdmXineramaHead",	DM_INT,		&wdmXineramaHead,
+				"0"} ,
 };
 
 # define NUM_WDM_RESOURCES	(sizeof wdmResources/\

@@ -179,6 +179,9 @@ static char *bgOption = NULL;
 static int animate = False;
 static int smoothScale = True;
 static char *configFile = NULL;
+#ifdef HAVE_XINERAMA
+static int xinerama_head = 0;
+#endif
 
 static int exit_request = 0;
 
@@ -353,7 +356,7 @@ LoginArgs(int argc, char *argv[])
 	int c;
 
 
-	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:")) != -1)
+	while((c = getopt(argc, argv, "asb:d:h:l:uw:c:x:")) != -1)
 	{
 		switch (c)
 		{
@@ -384,6 +387,11 @@ LoginArgs(int argc, char *argv[])
 		case 'c':	/* configfile */
 			configFile = optarg;
 			break;
+#ifdef HAVE_XINERAMA
+		case 'x':	/* xinerama head */
+			xinerama_head = strtol(optarg, NULL, 0);
+			break;
+#endif
 		default:
 			fprintf(stderr, "bad option: %c\n", c);
 			break;
@@ -1329,7 +1337,11 @@ main(int argc, char **argv)
 		exit(2);
 	}
 
+	screen_width = WMScreenWidth(scr);
+	screen_heigth = WMScreenHeight(scr);
+	printf("xinerama_head: %i\n", xinerama_head);
 #ifdef HAVE_XINERAMA
+	printf("have xinerama\n");
 	if(XineramaIsActive(WMScreenDisplay(scr)))
 	{
 		xine = XineramaQueryScreens(WMScreenDisplay(scr), &xine_count);
@@ -1342,21 +1354,19 @@ main(int argc, char **argv)
 				{
 					screen_width = xine[c].width;
 					screen_heigth = xine[c].height;
+					break;
+				}
+			}
+			for(c = 0; c < xine_count; c++)
+			{
+				if(xine[c].screen_number == xinerama_head)
+				{
+					screen_width = xine[c].width;
+					screen_heigth = xine[c].height;
+					break;
 				}
 			}
 		}
-		else
-		{
-			screen_width = WMScreenWidth(scr);
-			screen_heigth = WMScreenHeight(scr);
-		}
-	}
-	else
-	{
-#endif
-		screen_width = WMScreenWidth(scr);
-		screen_heigth = WMScreenHeight(scr);
-#ifdef HAVE_XINERAMA
 	}
 #endif
 	panel_X = (screen_width - panel_width) / 2;
