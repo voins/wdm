@@ -3,6 +3,7 @@ wdm-1.28 --
 	- problem with xdmcp not working properly if there's
 	  ipv6 network packet was fixed
 	  (thanks to Jennifer Elaan <jen@elaan.com>)
+	- welsh translation added (by Kevin Donnelly <kevin@dotmon.com>)
 
 wdm-1.27 -- Feb 28 2004
 	- french translation added (by Mathieu Roy <yeupou@gnu.org>)
