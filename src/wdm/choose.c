@@ -209,10 +209,6 @@ FormatChooserArgument (char *buf, int len)
 	    result_len = 8;
 	}
 	break;
-#ifdef AF_DECnet
-    case AF_DECnet:
-	break;
-#endif
     default:
 	WDMDebug("Chooser family %d isn't known\n", netfamily);
 	return 0;

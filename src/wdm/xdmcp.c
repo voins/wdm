@@ -134,8 +134,6 @@ sendForward (
 #ifdef AF_INET
     struct sockaddr_in	    in_addr;
 #endif
-#ifdef AF_DECnet
-#endif
     struct sockaddr	    *addr;
     int			    addrlen;
 
@@ -155,9 +153,6 @@ sendForward (
 	memmove( (char *) &in_addr.sin_addr, address->data, address->length);
 	addrlen = sizeof (struct sockaddr_in);
 	break;
-#endif
-#ifdef AF_DECnet
-    case FamilyDECnet:
 #endif
     default:
 	return;
@@ -503,10 +498,6 @@ NetworkAddressToName(
 	    }
 	    return name;
 	}
-#ifdef DNET
-    case FamilyDECnet:
-	return NULL;
-#endif /* DNET */
     default:
 	return NULL;
     }
@@ -603,14 +594,6 @@ forward_respond (
 			       FORWARD_QUERY);
 		}
 		break;
-#endif
-#ifdef AF_CHAOS
-	    case AF_CHAOS:
-		goto badAddress;
-#endif
-#ifdef AF_DECnet
-	    case AF_DECnet:
-		goto badAddress;
 #endif
     	    }
 	}
@@ -1178,10 +1161,6 @@ NetworkAddressToHostname (
 	    strcpy (name, local_name);
 	    break;
 	}
-#ifdef DNET
-    case FamilyDECnet:
-	break;
-#endif /* DNET */
     default:
 	break;
     }
@@ -1209,10 +1188,6 @@ ARRAY8Ptr   connectionAddress)
 	    memmove( connectionAddress->data, hostent->h_addr, hostent->h_length);
 	    return TRUE;
 	}
-#ifdef DNET
-    case FamilyDECnet:
-	return FALSE;
-#endif
     }
     return FALSE;
 }
@@ -1253,10 +1228,6 @@ CARD16Ptr   displayNumber)
 	dnet = TRUE;
 	colon++;
     }
-#ifndef DNETCONN
-    if (dnet)
-	return FALSE;
-#endif
     display_number = colon + 1;
     while (*display_number && *display_number != '.')
     {
@@ -1266,11 +1237,6 @@ CARD16Ptr   displayNumber)
     if (display_number == colon + 1)
 	return FALSE;
     number = atoi (colon + 1);
-#ifdef DNETCONN
-    if (dnet)
-	connectionType = FamilyDECnet;
-    else
-#endif
 	connectionType = FamilyInternet;
     if (!HostnameToNetworkAddress (hostname, connectionType, connectionAddress))
 	return FALSE;

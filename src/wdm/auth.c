@@ -53,10 +53,6 @@ from The Open Group.
 #if defined(TCPCONN)
 # include <dm_socket.h>
 #endif
-#ifdef DNETCONN
-# include <netdnet/dn.h>
-# include <netdnet/dnetdb.h>
-#endif
 
 #if (defined(_POSIX_SOURCE) && !defined(AIXV3) && !defined(__QNX__)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
 #define NEED_UTSNAME
@@ -869,41 +865,28 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
     for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
     {
 	ifr = (struct ifreq *) cp;
-#ifdef DNETCONN
-	/*
-	 * this is ugly but SIOCGIFCONF returns decnet addresses in
-	 * a different form from other decnet calls
-	 */
-	if (ifr->ifr_addr.sa_family == AF_DECnet) {
-		len = sizeof (struct dn_naddr);
-		addr = (char *)ifr->ifr_addr.sa_data;
-		family = FamilyDECnet;
-	} else
-#endif
-	{
-	    if (ConvertAddr ((XdmcpNetaddr) &ifr->ifr_addr, &len, &addr) < 0)
+	if (ConvertAddr ((XdmcpNetaddr) &ifr->ifr_addr, &len, &addr) < 0)
 		continue;
-	    if (len == 0)
- 	    {
+	if (len == 0)
+	{
 		WDMDebug("Skipping zero length address\n");
 		continue;
-	    }
-	    /*
-	     * don't write out 'localhost' entries, as
-	     * they may conflict with other local entries.
-	     * DefineLocal will always be called to add
-	     * the local entry anyway, so this one can
-	     * be tossed.
-	     */
-	    if (len == 4 &&
+	}
+	/*
+	* don't write out 'localhost' entries, as
+	* they may conflict with other local entries.
+	* DefineLocal will always be called to add
+	* the local entry anyway, so this one can
+	* be tossed.
+	*/
+	if (len == 4 &&
 		addr[0] == 127 && addr[1] == 0 &&
 		addr[2] == 0 && addr[3] == 1)
-	    {
-		    WDMDebug("Skipping localhost address\n");
-		    continue;
-	    }
-	    family = FamilyInternet;
+	{
+		WDMDebug("Skipping localhost address\n");
+		continue;
 	}
+	family = FamilyInternet;
 	WDMDebug("DefineSelf: write network address, length %d\n", len);
 	writeAddr (family, len, addr, file, auth);
     }
@@ -993,11 +976,6 @@ writeLocalAuth (FILE *file, Xauth *auth, char *name)
     setAuthNumber (auth, name);
 #ifdef TCPCONN
     fd = socket (AF_INET, SOCK_STREAM, 0);
-    DefineSelf (fd, file, auth);
-    close (fd);
-#endif
-#ifdef DNETCONN
-    fd = socket (AF_DECnet, SOCK_STREAM, 0);
     DefineSelf (fd, file, auth);
     close (fd);
 #endif

@@ -51,9 +51,6 @@ from The Open Group.
 #endif
 #endif
 #endif
-#ifdef DNETCONN
-#include <netdnet/dn.h>		/* struct sockaddr_dn */
-#endif
 
 #include <wdmlib.h>
 
@@ -100,14 +97,6 @@ char * NetaddrAddress(XdmcpNetaddr netaddrp, int *lenp)
         *lenp = sizeof (struct in_addr);
         return (char *) &(((struct sockaddr_in *)netaddrp)->sin_addr);
 #endif
-#ifdef DNETCONN
-    case AF_DECnet:
-        *lenp = sizeof (struct dn_naddr);
-        return (char *) &(((struct sockaddr_dn *)netaddrp)->sdn_add);
-#endif
-#ifdef AF_CHAOS
-    case AF_CHAOS:
-#endif
     default:
 	*lenp = 0;
 	return NULL;
@@ -143,16 +132,6 @@ int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
 #ifdef TCPCONN
       case AF_INET:
         retval = FamilyInternet;
-	break;
-#endif
-#ifdef DNETCONN
-      case AF_DECnet:
-        retval = FamilyDECnet;
-	break;
-#endif
-#ifdef AF_CHAOS
-    case AF_CHAOS:
-	retval = FamilyChaos;
 	break;
 #endif
       default:
