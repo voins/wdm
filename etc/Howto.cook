@@ -1,14 +1,52 @@
-all:
+search_list = .;
+search_path = [tail [split ':' [search_path]]];
+search_name = bl;
+loop
 {
-	setenv AUTOCONF=autoconf_2.5;
-	setenv AUTOHEADER=autoheader_2.5;
+	search_dir = [head [search_path]];
+	if [not [search_dir]] then
+		loopstop;
+	search_path = [tail [search_path]];
+	if [not [exists [search_name]]] then
+		ln -s [search_dir] [search_name]
+			set clearstat;
+	search_list = [search_list] [search_name];
+	search_name = [search_name]bl;
+}
+
+if [not [defined aclocal]] then aclocal=aclocal;
+if [not [defined automake]] then automake=automake;
+if [not [defined autoheader]] then autoheader=autoheader_2.5;
+if [not [defined autoconf]] then autoconf=autoconf_2.5;
+
+wdm_config_files = src/config/wdm-config src/config/Xclients \
+	src/config/Xsetup_0 src/config/Xsession src/config/Xservers \
+	src/config/Xservers.ws src/config/wdmReconfig;
+
+
+all: [wdm_config_files]
+{
+	make;
+}
+
+config.status : configure.in
+{
 	rm -rf autom4te*.cache;
 	rm -f config.log stamp-h stamp-h.in aclocal.m4
 		configure Makefile.in doc/Makefile.in
 		src/Makefile.in src/config/Makefile.in
 		src/pixmaps/Makefile.in config.status
 		config.h.in acconfig.h;
-	sh ./autogen.sh;
-	make;
+	[aclocal];
+	[autoheader];
+	[autoconf] [resolve configure.in] > configure;
+	[automake] --add-missing;
+	sh configure;
+}
+
+src/config/% : src/config/%.in config.status
+{
+	CONFIG_FILES\=[target]\:[resolve src/config/%.in] CONFIG_HEADERS\=
+		sh [resolve config.status];
 }
 

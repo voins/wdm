@@ -3,7 +3,7 @@ AC_PREREQ(2.53)
 AC_INIT([wdm],[1.20.1],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
 AM_INIT_AUTOMAKE
-AC_CONFIG_HEADERS(config.h)
+AM_CONFIG_HEADER(config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
@@ -606,13 +606,6 @@ dnl ==========================================================
 AC_CONFIG_FILES([Makefile
 	  doc/Makefile
 	  src/Makefile
-	  src/pixmaps/Makefile
-	  src/config/wdm-config
-	  src/config/Xclients
-	  src/config/Xsetup_0
-	  src/config/Xsession
-	  src/config/Xservers
-	  src/config/Xservers.ws
-	  src/config/wdmReconfig])
+	  src/pixmaps/Makefile])
 AC_OUTPUT
 

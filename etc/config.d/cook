@@ -13,7 +13,7 @@
  * about command substitutions.
  */
 build_command =
-	"cook -b ${s etc/Howto.cook} -nl project=$p change=$c version=$v searchpath=$sp";
+	"cook -b ${s etc/Howto.cook} -nl project=$p change=$c version=$v search_path=$sp";
 
 /*
  * The recipes in the User Guide will all remove their targets before
