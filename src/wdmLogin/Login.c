@@ -338,8 +338,7 @@ static void LoginArgs(int argc, char *argv[])
 		    tmp=optarg;
 		else
 		    tmp++;
-		displayArg = malloc(sizeof(char)*strlen(optarg)+2);
-		strcpy(displayArg,tmp);
+		displayArg = wstrdup(tmp); 
 	    break;
 	    case 'h':				/* helpfile */
 		tmp = strchr(optarg,'=');
@@ -347,8 +346,7 @@ static void LoginArgs(int argc, char *argv[])
 		    tmp=optarg;
 		else
 		    tmp++;
-		helpArg = malloc(sizeof(char)*strlen(optarg)+2);
-		strcpy(helpArg,tmp);
+		helpArg = wstrdup(tmp);
 	    break;
 	    case 'l':				/* logo */
 		tmp = strchr(optarg,'=');
@@ -356,8 +354,7 @@ static void LoginArgs(int argc, char *argv[])
 		    tmp=optarg;
 		else
 		    tmp++;
-		logoArg = malloc(sizeof(char)*strlen(optarg)+2);
-		strcpy(logoArg,tmp);
+		logoArg = wstrdup(tmp);
 	    break;
 	    case 'u':				/* default user */
 		WmDefUser = True;
@@ -368,8 +365,7 @@ static void LoginArgs(int argc, char *argv[])
 		    tmp=optarg;
 		else
 		    tmp++;
-		WmArg = malloc(sizeof(char)*strlen(optarg)+2);
-		strcpy(WmArg,tmp);
+		WmArg = wstrdup(tmp);
 	    break;
 	    case 'b':				/* background */
 		tmp = strchr(optarg,'=');
@@ -377,8 +373,7 @@ static void LoginArgs(int argc, char *argv[])
 		    tmp=optarg;
 		else
 		    tmp++;
-		bgArg = malloc(sizeof(char)*strlen(optarg)+2);
-		strcpy(bgArg,tmp);
+		bgArg = wstrdup(tmp);
 	    break;
 	    default:
 		fprintf(stderr,"bad option: %c\n",c);
