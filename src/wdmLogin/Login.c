@@ -799,11 +799,11 @@ static void CreatePopups(LoginPanel *panel)
     WMSetFrameTitlePosition(panel->exitF,WTPAtTop);
     WMSetFrameTitle(panel->exitF, _("Options"));
     WMMoveWidget(panel->exitF, 134, 178);
-    WMResizeWidget(panel->exitF, 88, 45);
+    WMResizeWidget(panel->exitF, 98, 45);
 
     panel->exitBtn = WMCreatePopUpButton(panel->exitF);
     WMMoveWidget(panel->exitBtn, 4, 15);
-    WMResizeWidget(panel->exitBtn, 80, 25);
+    WMResizeWidget(panel->exitBtn, 90, 25);
     WMSetPopUpButtonAction(panel->exitBtn, (WMAction*)changeOption, panel);
     i=0;
     while (ExitStr[i]!=NULL) {
