@@ -152,8 +152,8 @@ static LoginPanel *panel = NULL;
 /*###################################################################*/
 
 static int   LoginSwitch   = False;
-static char  LoginName[LOGNAME_LEN] = "";
-static char  LoginPswd[PASS_LEN] = "";
+static char  *LoginName	   = NULL;
+static char  *LoginPswd    = NULL;
 
 static int   OptionCode	   = 0;
 static char *ExitStr[]	   = {N_("Login"), N_("Reboot"), N_("Halt"),
@@ -446,7 +446,7 @@ static void init_pwdfield(char *pwd)
 static void init_namefield(char *name)
 {
     WMResizeWidget(panel->entryText, text_width, text_heigth);
-    WMSetTextFieldText(panel->entryText,name);
+    WMSetTextFieldText(panel->entryText, name);
     WMSetLabelText(panel->entryLabel, _("Login name:"));
     WMSetFocusToWidget(panel->entryText);
     WMSetTextFieldSecure(panel->entryText, False);
@@ -455,8 +455,10 @@ static void init_namefield(char *name)
 static void InitializeLoginInput(LoginPanel *panel)
 {
     LoginSwitch = False;
-    LoginName[0] = '\0';
-    LoginPswd[0] = '\0';
+    if(LoginName) wfree(LoginName);
+    LoginName = NULL;
+    if(LoginPswd) wfree(LoginPswd);
+    LoginPswd = NULL;
 
     init_namefield("");
 }
@@ -465,23 +467,28 @@ static void PerformLogin(LoginPanel *panel, int canexit)
 {
     char *tmp;
 
-    tmp = WMGetTextFieldText(panel->entryText);
-    if (LoginSwitch == False) {
-	strncpy(LoginName,tmp,LOGNAME_LEN);
-	if ((LoginName[0]=='\0') && (WmDefUser == False)) {
+    if (LoginSwitch == False)
+    {
+	if(LoginName) wfree(LoginName);
+	LoginName = WMGetTextFieldText(panel->entryText);
+
+	if ((LoginName[0]=='\0') && (WmDefUser == False))
+	{
 	    InitializeLoginInput(panel);
 	    PrintErrMsg(panel, _("invalid name"));
 	    return;
 	}
+
 	LoginSwitch = True;
 
 	init_pwdfield(LoginPswd);
 	return;
     }
     LoginSwitch = False;
-    strncpy(LoginPswd,tmp,PASS_LEN);
+    if(LoginPswd) wfree(LoginPswd);
+    LoginPswd = WMGetTextFieldText(panel->entryText);
 
-    if (canexit == False)
+    if(canexit == False)
     {
 	init_namefield(LoginName);
 	return;
@@ -515,12 +522,12 @@ static void goPressed(WMWidget *self, LoginPanel *panel)
 	return;
     }
     if (LoginSwitch == True) {
-	tmp = WMGetTextFieldText(panel->entryText);
-	WMSetTextFieldText(panel->entryText,"");
-	strncpy(LoginPswd,tmp,PASS_LEN);
+        if(LoginPswd) wfree(LoginPswd);
+        LoginPswd = WMGetTextFieldText(panel->entryText);
+	WMSetTextFieldText(panel->entryText, "");
     }
     PrintInfoMsg(panel, _("exiting"));
-    OutputAuth(LoginName,LoginPswd);
+    OutputAuth(LoginName, LoginPswd);
 }
 
 static void startoverPressed(WMWidget *self, LoginPanel *panel)
