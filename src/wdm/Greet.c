@@ -260,6 +260,7 @@ static int InitGreet (struct display *d)
     }
 
     close(pipe_filedes[1]);
+    RegisterCloseOnFork(pipe_filedes[0]);
     return pid;
 }
 

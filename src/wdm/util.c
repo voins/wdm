@@ -124,6 +124,7 @@ CleanUpChild (void)
 	(void) Signal (SIGALRM, SIG_DFL);
 	(void) Signal (SIGHUP, SIG_DFL);
 	CloseOnFork ();
+	WDMCloseLog();
 }
 
 static char localHostbuf[256];
