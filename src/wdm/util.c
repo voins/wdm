@@ -1,16 +1,13 @@
-/* $XConsortium: util.c,v 1.18 94/11/21 18:33:11 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.7 1996/10/03 08:49:48 dawes Exp $ */
+/* $Xorg: util.c,v 1.4 2001/02/09 02:05:41 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/util.c,v 3.19 2001/12/14 20:01:24 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -40,6 +38,10 @@ from the X Consortium.
  */
 
 # include   <dm.h>
+# include   <dm_error.h>
+
+#include <X11/Xmu/SysUtil.h>	/* for XmuGetHostname */
+
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -53,22 +55,20 @@ from the X Consortium.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if defined(__osf__) || defined(linux) || defined(MINIX) || \
-	(defined(IRIX) && !defined(_IRIX4))
+#if defined(__osf__) || defined(linux) || defined(__QNXNTO__) || defined(__GNU__) \
+	|| (defined(IRIX) && !defined(IRIX4))
 #define setpgrp setpgid
 #endif
 
-printEnv (e)
-char	**e;
+void
+printEnv (char **e)
 {
 	while (*e)
 		Debug ("%s\n", *e++);
 }
 
 static char *
-makeEnv (name, value)
-char	*name;
-char	*value;
+makeEnv (char *name, char *value)
 {
 	char	*result;
 
@@ -82,9 +82,7 @@ char	*value;
 }
 
 char *
-getEnv (e, name)
-	char	**e;
-	char	*name;
+getEnv (char **e, char *name)
 {
 	int	l = strlen (name);
 
@@ -100,10 +98,7 @@ getEnv (e, name)
 }
 
 char **
-setEnv (e, name, value)
-	char	**e;
-	char	*name;
-	char	*value;
+setEnv (char **e, char *name, char *value)
 {
 	char	**new, **old;
 	char	*newe;
@@ -143,33 +138,32 @@ setEnv (e, name, value)
 }
 
 char **
-putEnv(string, env)
-     const char *string;
-     char ** env;
+putEnv(const char *string, char **env)
 {
-  char *v, *b, *n;
-  int nl;
+    char *v, *b, *n;
+    int nl;
   
-  if ((b = strchr(string, '=')) == NULL) return NULL;
-  v = b + 1;
+    if ((b = strchr(string, '=')) == NULL)
+	return NULL;
+    v = b + 1;
   
-  nl = b - string;
-  if ((n = malloc(nl + 1)) == NULL)
+    nl = b - string;
+    if ((n = malloc(nl + 1)) == NULL)
     {
-      LogOutOfMem ("putAllEnv");
-      return NULL;
+	LogOutOfMem ("putAllEnv");
+	return NULL;
     }
   
-  strncpy(n, string,nl + 1);
-  n[nl] = 0;
+    strncpy(n, string,nl + 1);
+    n[nl] = 0;
   
-  env = setEnv(env,n,v);
-  free(n);
-  return env;
+    env = setEnv(env,n,v);
+    free(n);
+    return env;
 }
 
-freeEnv (env)
-    char    **env;
+void
+freeEnv (char **env)
 {
     char    **e;
 
@@ -184,12 +178,11 @@ freeEnv (env)
 # define isblank(c)	((c) == ' ' || c == '\t')
 
 char **
-parseArgs (argv, string)
-char	**argv;
-char	*string;
+parseArgs (char **argv, char *string)
 {
 	char	*word;
 	char	*save;
+	char    **newargv;
 	int	i;
 
 	i = 0;
@@ -206,16 +199,17 @@ char	*string;
 	for (;;) {
 		if (!*string || isblank (*string)) {
 			if (word != string) {
-				argv = (char **) realloc ((char *) argv,
+				newargv = (char **) realloc ((char *) argv,
 					(unsigned) ((i + 2) * sizeof (char *)));
 				save = malloc ((unsigned) (string - word + 1));
-				if (!argv || !save) {
+				if (!newargv || !save) {
 					LogOutOfMem ("parseArgs");
-					if (argv)
-						free ((char *) argv);
+					free ((char *) argv);
 					if (save)
 						free (save);
 					return 0;
+				} else {
+				    argv = newargv;
 				}
 				argv[i] = strncpy (save, word, string-word);
 				argv[i][string-word] = '\0';
@@ -231,8 +225,8 @@ char	*string;
 	return argv;
 }
 
-freeArgs (argv)
-    char    **argv;
+void
+freeArgs (char **argv)
 {
     char    **a;
 
@@ -244,26 +238,19 @@ freeArgs (argv)
     free ((char *) argv);
 }
 
-CleanUpChild ()
+void
+CleanUpChild (void)
 {
 #ifdef CSRG_BASED
 	setsid();
 #else
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) || defined(__CYGWIN__)
 #if !(defined(SVR4) && defined(i386)) || defined(SCO325)
 	setpgrp ();
 #endif
 #else
 	setpgrp (0, getpid ());
-#ifdef MINIX /* actually POSIX */
-	{
-		sigset_t ss; 
-		sigemptyset(&ss);
-		sigprocmask(SIG_SETMASK, &ss, NULL);
-	}
-#else
 	sigsetmask (0);
-#endif
 #endif
 #endif
 #ifdef SIGCHLD
@@ -280,7 +267,7 @@ static char localHostbuf[256];
 static int  gotLocalHostname;
 
 char *
-localHostname ()
+localHostname (void)
 {
     if (!gotLocalHostname)
     {
@@ -290,9 +277,7 @@ localHostname ()
     return localHostbuf;
 }
 
-SIGVAL (*Signal (sig, handler))()
-    int sig;
-    SIGVAL (*handler)();
+SIGVAL (*Signal (int sig, SIGFUNC handler))(int)
 {
 #if !defined(X_NOT_POSIX) && !defined(__EMX__)
     struct sigaction sigact, osigact;

@@ -1,15 +1,13 @@
-/* $XConsortium: file.c,v 1.16 94/04/17 20:03:38 rws Exp $ */
+/* $Xorg: file.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/file.c,v 1.6 2001/12/14 20:01:21 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -37,10 +36,12 @@ from the X Consortium.
  */
 
 # include	<dm.h>
+# include	<dm_error.h>
+
 # include	<ctype.h>
 
-DisplayTypeMatch (d1, d2)
-DisplayType	d1, d2;
+static int
+DisplayTypeMatch (DisplayType d1, DisplayType d2)
 {
 	return d1.location == d2.location &&
 	       d1.lifetime == d2.lifetime &&
@@ -48,8 +49,7 @@ DisplayType	d1, d2;
 }
 
 static void
-freeArgs (args)
-    char    **args;
+freeFileArgs (char **args)
 {
     char    **a;
 
@@ -59,8 +59,7 @@ freeArgs (args)
 }
 
 static char **
-splitIntoWords (s)
-    char    *s;
+splitIntoWords (char *s)
 {
     char    **args, **newargs;
     char    *wordStart;
@@ -89,7 +88,7 @@ splitIntoWords (s)
 					 (nargs+2)*sizeof (char *));
 	    if (!newargs)
 	    {
-	    	freeArgs (args);
+	    	freeFileArgs (args);
 	    	return NULL;
 	    }
 	    args = newargs;
@@ -97,7 +96,7 @@ splitIntoWords (s)
 	args[nargs] = malloc (s - wordStart + 1);
 	if (!args[nargs])
 	{
-	    freeArgs (args);
+	    freeFileArgs (args);
 	    return NULL;
 	}
 	strncpy (args[nargs], wordStart, s - wordStart);
@@ -109,8 +108,7 @@ splitIntoWords (s)
 }
 
 static char **
-copyArgs (args)
-    char    **args;
+copyArgs (char **args)
 {
     char    **a, **new, **n;
 
@@ -123,15 +121,14 @@ copyArgs (args)
     n = new;
     a = args;
     /* SUPPRESS 560 */
-    while (*n++ = *a++)
+    while ((*n++ = *a++))
 	/* SUPPRESS 530 */
 	;
     return new;
 }
 
-freeSomeArgs (args, n)
-    char    **args;
-    int	    n;
+static void
+freeSomeArgs (char **args, int n)
 {
     char    **a;
 
@@ -141,10 +138,8 @@ freeSomeArgs (args, n)
     free ((char *) args);
 }
 
-ParseDisplay (source, acceptableTypes, numAcceptable)
-char		*source;
-DisplayType	*acceptableTypes;
-int		numAcceptable;
+void
+ParseDisplay (char *source, DisplayType *acceptableTypes, int numAcceptable)
 {
     char		**args, **argv, **a;
     char		*name, *class, *type;
@@ -158,14 +153,14 @@ int		numAcceptable;
     if (!args[0])
     {
 	LogError ("Missing display name in servers file\n");
-	freeArgs (args);
+	freeFileArgs (args);
 	return;
     }
     name = args[0];
     if (!args[1])
     {
 	LogError ("Missing display type for %s\n", args[0]);
-	freeArgs (args);
+	freeFileArgs (args);
 	return;
     }
     displayType = parseDisplayType (args[1], &usedDefault);
@@ -216,13 +211,14 @@ int		numAcceptable;
 		d->class = newclass;
 	    }
 	}
-	Debug ("Found existing display:  %s %s %s", d->name, d->class, type);
-	freeArgs (d->argv);
+	Debug ("Found existing display:  %s %s %s", d->name, d->class , type);
+	freeFileArgs (d->argv);
     }
     else
     {
 	d = NewDisplay (name, class);
-	Debug ("Found new display:  %s %s %s", d->name, d->class, type);
+	Debug ("Found new display:  %s %s %s", 
+		d->name, d->class ? d->class : "", type);
     }
     d->displayType = displayType;
     d->argv = copyArgs (argv);
@@ -236,15 +232,13 @@ static struct displayMatch {
 	char		*name;
 	DisplayType	type;
 } displayTypes[] = {
-	"local",		{ Local, Permanent, FromFile },
-	"foreign",		{ Foreign, Permanent, FromFile },
-	0,			{ Local, Permanent, FromFile },
+	{ "local",		{ Local, Permanent, FromFile } },
+	{ "foreign",		{ Foreign, Permanent, FromFile } },
+	{ 0,			{ Local, Permanent, FromFile } },
 };
 
 DisplayType
-parseDisplayType (string, usedDefault)
-	char	*string;
-	int	*usedDefault;
+parseDisplayType (char *string, int *usedDefault)
 {
 	struct displayMatch	*d;
 

@@ -1,5 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/81 1996/10/22 18:32:26 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.19.2.4 1998/01/23 12:35:19 dawes Exp $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
+
+
+
+
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.45 2001/08/29 17:11:56 alanh Exp $
+
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -7,23 +12,8 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.19.2.4 1998/01/23 12:35:19 dawes E
 #define BuildChooser !SystemV
 #endif
 
-/*
- * We define ShareLibXdmGreet true if:
- *	SystemV4 is true
- *	AlphaArchitecture is set and NetBSDArchitecture is not
- *	AlphaArchitecture and NetBSDArchitecture are set, and
- *	    HasSharedLibraries is true.
- *
- * We'd like ShareLibXdmGreet true of SystemV4 or AlphaArchitecture,
- * but not all NetBSD/Alpha systems have shared libraries, and
- * it can't be shared on those which do not.
- */
 #ifndef SharedLibXdmGreet
-#define SharedLibXdmGreet						\
-    ((defined(AlphaArchitecture) &&					\
-      (!defined(NetBSDArchitecture) ||					\
-       (defined(NetBSDArchitecture) && HasSharedLibraries))) ||		\
-     SystemV4)
+#define SharedLibXdmGreet (defined(AlphaArchitecture) || SystemV4)
 #endif
 
 #ifndef BuildBoth
@@ -47,6 +37,12 @@ RPCSRCS = rpcauth.c
 RPCLIB = -lrpcsvc
 #endif
 
+#if HasKrbIV
+KRBIV_DEFINES = KrbIVDefines
+KRBIV_INCLUDES = KrbIVIncludes
+KRBIVLIB = KrbIVLibraries
+#endif
+
 #if HasKrb5
 KRB5_DEFINES = Krb5Defines
 KRB5_INCLUDE = Krb5Includes
@@ -56,11 +52,11 @@ KRB5SRCS = krb5auth.c
 
 #if SharedLibXdmGreet
 GREET_DIR = greeter
-#if SystemV4 || (SharedLibXdmGreet && (defined(LinuxArchitecture) || defined(NetBSDArchitecture)))
+#if SystemV4 || (SharedLibXdmGreet && (defined(LinuxArchitecture) || defined(NetBSDArchitecture) || defined(GNUMachArchitecture)))
     DLLIBRARY = DlLibrary
 #endif
 #else
-GREET_DEFINES = -DGREET_USER_STATIC
+GREET_DEFINES = -DGREET_USER_STATIC $(KRBIV_DEFINES) $(KRBIV_INCLUDES)
 GREETSRCS = greet.c verify.c Login.c
 GREETOBJS = greet.o verify.o Login.o
 #if BuildBoth
@@ -72,13 +68,32 @@ SHADOWLIB = -lshadow
 #endif
 #endif
 
+#if BuildXineramaLibrary
+XINERAMA_DEFINES = -DUSE_XINERAMA
+XINDEPLIBS = $(DEPXINERAMALIB)
+XINLIBS = $(XINERAMALIB)
+#endif
+
+XPM_DEFINES = -DXPM 
+
+/* This is correct for Linux and FreeBSD */
+#if HasPam
+PAM_LIBRARIES = PamLibraries
+PAM_DEFINES = -DUSE_PAM
+#endif
+
+#if HasBSDAuth
+BSDAUTH_DEFINES = -DUSE_BSDAUTH
+#endif
+
 #if SystemV4 || HasShadowPasswd
 #if !LinuxShadowSuite
 PWD_DEFINES = -DUSESHADOW
 #else
 PWD_DEFINES = -DUSESHADOW -DSHADOWSUITE
 #endif
-#if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture)
+
+#if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture) && !defined(NTOArchitecture) && !defined(SGIArchitecture)
 SYS_LIBRARIES3 = -lresolv
 #endif
 #if SystemV || defined(SequentArchitecture)
@@ -102,17 +117,22 @@ SYS_LIBRARIES1 = -ls
 CRYPT_LIBRARIES = SpecialLibCrypt
 #else
 CRYPT_LIBRARIES = -lcrypt
+#if defined(LynxOSArchitecture)
+CRYPT_DEFINES = -DHAS_CRYPT
 #endif
 #endif
-
-SYS_LIBRARIES = $(SYS_LIBRARIES1) $(SYS_LIBRARIES2) $(SYS_LIBRARIES3)
+#endif
 
 #if HasBSD44Sockets
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(AmigaArchitecture)
 FRAGILE_DEFINES = -DFRAGILE_DEV_MEM
+#endif
+
+#ifdef OpenBSDArchitecture
+RANDOM_DEFINES = -DARC4_RANDOM
 #endif
 
 #if HasVFork
@@ -125,15 +145,25 @@ XKB_CLIENT_DEFINES = XkbClientDefines
 
 #if HasSetUserContext
 USER_CONTEXT_DEFINES = -DHAS_SETUSERCONTEXT
+# XXX - only FreeBSD has this in libutil
 SYS_LIBRARIES1 = -lutil
 #endif
+
+#if HasSetProcTitle
+PROCTITLE_DEFINES = -DHAS_SETPROCTITLE
+#endif
+
+  SYS_LIBRARIES = $(SYS_LIBRARIES1) $(SYS_LIBRARIES2) $(SYS_LIBRARIES3)
 
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(GREET_DIR) $(XDMCONFIGDIR)
 
 INCLUDES = $(KRB5_INCLUDE)
-DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY) $(CRYPT_LIBRARIES)
+DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) \
+	$(DEPXDMCPLIB) $(XINDEPLIBS)
+LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
+	$(XDMCPLIB) $(RPCLIB) $(PAM_LIBRARIES) $(DLLIBRARY) \
+	$(CRYPT_LIBRARIES) $(KRBIVLIB) $(XINLIBS)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
@@ -152,10 +182,11 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 #if BuildChooser
           SRCS3 = chooser.c
           OBJS3 = chooser.o
-       DEPLIBS3 = XawClientDepLibs XkbClientDepLibs $(DEPXDMCPLIB)
-          LIBS3 = XawClientLibs XkbClientLibs $(XDMCPLIB)
+       DEPLIBS3 = XawClientDepLibs XkbClientDepLibs $(DEPXDMCPLIB) \
+		  $(XINDEPLIBS)
+          LIBS3 = XawClientLibs XkbClientLibs $(XDMCPLIB) $(XINLIBS)
 #endif
-       
+
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
 
@@ -181,15 +212,16 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
-   CONN_DEFINES = ConnectionFlags
+   CONN_DEFINES = $(CONNECTION_FLAGS)
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
-		$(SIGNAL_DEFINES) \
+		$(SIGNAL_DEFINES) $(CRYPT_DEFINES) $(BSDAUTH_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
-		$(PWD_DEFINES) $(CONN_DEFINES) \
-		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
+		$(PWD_DEFINES) $(PAM_DEFINES) $(CONN_DEFINES) \
+		$(GREET_DEFINES) $(FRAGILE_DEFINES) $(RANDOM_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \
-		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES)
+		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES) \
+		$(XPM_DEFINES) $(XINERAMA_DEFINES) $(PROCTITLE_DEFINES)
 
 XCOMM
 XCOMM Special definitions for compiling default resources; these parameters
@@ -218,9 +250,12 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 #endif
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
+LinkConfDirectory(xdm,.,xdm,.)
+#ifdef VarDbDirectory
+LinkConfDirectoryLong(xdm,xdm,authdir,authdir,$(CONFDIR),$(VARDBDIR))
+#endif
 NormalProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter,NullParameter)
-LinkVarDirectory(xdm,.,xdm,.)
 InstallProgram(sessreg,$(BINDIR))
 InstallManPage(sessreg,$(MANDIR))
 

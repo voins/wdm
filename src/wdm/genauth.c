@@ -1,16 +1,13 @@
-/* $XConsortium: genauth.c,v 1.23 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.4 1996/01/24 22:04:37 dawes Exp $ */
+/* $Xorg: genauth.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.13 2001/12/14 20:01:22 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -37,18 +35,15 @@ from the X Consortium.
 
 # include   <X11/Xauth.h>
 # include   <X11/Xos.h>
+
 # include   <dm.h>
+# include   <dm_auth.h>
+# include   <dm_error.h>
 
 #include <errno.h>
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-extern int errno;
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 static unsigned char	key[8];
 
@@ -60,10 +55,8 @@ typedef struct auth_ks_struct { auth_cblock _; } auth_wrapper_schedule[16];
 
 extern void _XdmcpWrapperToOddParity();
 
-static
-longtochars (l, c)
-    long	    l;
-    unsigned char    *c;
+static void
+longtochars (long l, unsigned char *c)
 {
     c[0] = (l >> 24) & 0xff;
     c[1] = (l >> 16) & 0xff;
@@ -71,13 +64,13 @@ longtochars (l, c)
     c[3] = l & 0xff;
 }
 
+#endif
 
 # define FILE_LIMIT	1024	/* no more than this many buffers */
 
-static
-sumFile (name, sum)
-char	*name;
-long	sum[2];
+#if !defined(ARC4_RANDOM) && !defined(DEV_RANDOM)
+static int
+sumFile (char *name, long sum[2])
 {
     long    buf[1024*2];
     int	    cnt;
@@ -87,7 +80,7 @@ long	sum[2];
     int	    i;
     int     ret_status = 0;
 
-    fd = open (name, 0);
+    fd = open (name, O_RDONLY);
     if (fd < 0) {
 	LogError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
 	return 0;
@@ -111,10 +104,37 @@ long	sum[2];
     close (fd);
     return ret_status;
 }
+#endif
 
-static
-InitXdmcpWrapper ()
+#ifdef HASXDMAUTH
+static void
+InitXdmcpWrapper (void)
 {
+
+#ifdef	ARC4_RANDOM
+    u_int32_t sum[2];
+
+    sum[0] = arc4random();
+    sum[1] = arc4random();
+    *(u_char *)sum = 0;
+
+    _XdmcpWrapperToOddParity(sum, key);
+
+#elif DEV_RANDOM
+    int fd;
+    unsigned char   tmpkey[8];
+    
+    if ((fd = open(DEV_RANDOM, O_RDONLY)) >= 0) {
+	if (read(fd, tmpkey, 8) == 8) {
+	    tmpkey[0] = 0;
+	    _XdmcpWrapperToOddParity(tmpkey, key);
+	    close(fd);
+	    return;	
+	} else {
+	    close(fd);
+	}
+    }
+#else    
     long	    sum[2];
     unsigned char   tmpkey[8];
 
@@ -126,6 +146,7 @@ InitXdmcpWrapper ()
     longtochars (sum[1], tmpkey+4);
     tmpkey[0] = 0;
     _XdmcpWrapperToOddParity (tmpkey, key);
+#endif
 }
 
 #endif
@@ -138,23 +159,21 @@ InitXdmcpWrapper ()
 static unsigned long int next = 1;
 
 static int
-xdm_rand()
+xdm_rand(void)
 {
     next = next * 1103515245 + 12345;
     return (unsigned int)(next/65536) % 32768;
 }
 
 static void
-xdm_srand(seed)
-    unsigned int seed;
+xdm_srand(unsigned int seed)
 {
     next = seed;
 }
 #endif /* no HASXDMAUTH */
 
-GenerateAuthData (auth, len)
-char	*auth;
-int	len;
+void
+GenerateAuthData (char *auth, int len)
 {
     long	    ldata[2];
 
@@ -195,8 +214,8 @@ int	len;
     	for (i = 0; i < len; i++) {
 	    auth[i] = 0;
 	    for (bit = 1; bit < 256; bit <<= 1) {
-	    	_XdmcpAuthDoIt (data, data, schedule, 1);
-	    	if (data[0] + data[1] & 0x4)
+		_XdmcpAuthDoIt (data, data, schedule, 1);
+		if ((data[0] + data[1]) & 0x4)
 		    auth[i] |= bit;
 	    }
     	}
@@ -206,8 +225,31 @@ int	len;
     	int	    seed;
     	int	    value;
     	int	    i;
+	static long localkey[2] = {0,0};
     
-    	seed = (ldata[0]) + (ldata[1] << 16);
+	if ( (localkey[0] == 0) && (localkey[1] == 0) ) {
+#ifdef ARC4_RANDOM
+	    localkey[0] = arc4random();
+	    localkey[1] = arc4random();
+#elif defined(DEV_RANDOM)
+	    int fd;
+    
+	    if ((fd = open(DEV_RANDOM, O_RDONLY)) >= 0) {
+		if (read(fd, (char *)localkey, 8) != 8) {
+		    localkey[0] = 1;
+		}
+		close(fd);
+	    } else {
+		localkey[0] = 1;
+	    }
+#else 
+    	    if (!sumFile (randomFile, localkey)) {
+		localkey[0] = 1; /* To keep from continually calling sumFile() */
+    	    }
+#endif
+	}
+
+    	seed = (ldata[0]+localkey[0]) + ((ldata[1]+localkey[1]) << 16);
     	xdm_srand (seed);
     	for (i = 0; i < len; i++)
     	{

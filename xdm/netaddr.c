@@ -1,16 +1,13 @@
-/* $XConsortium: netaddr.c,v 1.8 94/04/17 20:03:41 rws Exp $ */
-/* $XFree86: xc/programs/xdm/netaddr.c,v 3.2 1997/01/18 07:02:21 dawes Exp $ */
+/* $Xorg: netaddr.c,v 1.4 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/netaddr.c,v 3.6 2001/12/14 20:01:22 dawes Exp $ */
 
 /*
  * xdm - X display manager
@@ -37,19 +35,13 @@ from the X Consortium.
  */
 
 #include "dm.h"
+#include "dm_error.h"
 
 #include <X11/X.h>		/* FamilyInternet, etc. */
 
 #ifdef XDMCP
 
-#ifndef MINIX
-#ifndef Lynx
-#include <sys/socket.h>		/* struct sockaddr */
-#else
-#include <socket.h>		/* struct sockaddr */
-#endif
-#include <netinet/in.h>		/* struct sockaddr_in */
-#endif
+#include "dm_socket.h"
 
 #ifdef UNIXCONN
 #ifndef X_NO_SYS_UN
@@ -67,8 +59,7 @@ from the X Consortium.
 /* given an XdmcpNetaddr, returns the socket protocol family used,
    e.g., AF_INET */
 
-int NetaddrFamily(netaddrp)
-    XdmcpNetaddr netaddrp;
+int NetaddrFamily(XdmcpNetaddr netaddrp)
 {
 #ifdef STREAMSCONN
     short family = *(short *)netaddrp;
@@ -83,9 +74,7 @@ int NetaddrFamily(netaddrp)
    and sets *lenp to the length of the address
    or 0 if not using TCP or UDP. */
 
-char * NetaddrPort(netaddrp, lenp)
-    XdmcpNetaddr netaddrp;
-    int *lenp;			/* return */
+char * NetaddrPort(XdmcpNetaddr netaddrp, int *lenp)
 {
 #ifdef STREAMSCONN
     *lenp = 2;
@@ -107,9 +96,7 @@ char * NetaddrPort(netaddrp, lenp)
 /* given an XdmcpNetaddr, returns a pointer to the network address
    and sets *lenp to the length of the address */
 
-char * NetaddrAddress(netaddrp, lenp)
-    XdmcpNetaddr netaddrp;
-    int *lenp;			/* return */
+char * NetaddrAddress(XdmcpNetaddr netaddrp, int *lenp)
 {
 #ifdef STREAMSCONN
     *lenp = 4;
@@ -146,10 +133,7 @@ char * NetaddrAddress(netaddrp, lenp)
    sets *len to the number of bytes in addr.
    Returns the X protocol family used, e.g., FamilyInternet */
 
-int ConvertAddr (saddr, len, addr)
-    XdmcpNetaddr saddr;
-    int *len;			/* return */
-    char **addr;		/* return */
+int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
 {
     int retval;
 
@@ -200,9 +184,8 @@ int ConvertAddr (saddr, len, addr)
     return retval;
 }
 
-addressEqual (a1, len1, a2, len2)
-    XdmcpNetaddr a1, a2;
-    int		 len1, len2;
+int
+addressEqual (XdmcpNetaddr a1, int len1, XdmcpNetaddr a2, int len2)
 {
     int partlen1, partlen2;
     char *part1, *part2;
@@ -232,9 +215,8 @@ addressEqual (a1, len1, a2, len2)
 
 #ifdef DEBUG
 /*ARGSUSED*/
-PrintSockAddr (a, len)		/* Debugging routine */
-    struct sockaddr *a;
-    int		    len;
+void
+PrintSockAddr (struct sockaddr *a, int len)
 {
     unsigned char    *t, *p;
 

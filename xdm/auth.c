@@ -1,16 +1,13 @@
-/* $XFree86: xc/programs/xdm/auth.c,v 3.16 1997/01/18 07:02:18 dawes Exp $ */
-/* $XConsortium: auth.c /main/62 1995/12/19 16:44:07 mor $ */
+/* $Xorg: auth.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.24 2001/12/14 20:01:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -39,38 +37,27 @@ from the X Consortium.
  * maintain the authorization generation daemon
  */
 
-#include "dm.h"
 #include <X11/X.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
+#include "dm.h"
+#include "dm_auth.h"
+#include "dm_error.h"
 
-#ifndef MINIX
-#ifndef Lynx
-#include <sys/socket.h>
-#else
-#include <socket.h>
-#endif
-#endif
-#ifndef ESIX
-# include <sys/ioctl.h>
-#endif /* !ESIX */
+#include <errno.h>
+
+#include <sys/ioctl.h>
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
-#ifndef MINIX
-# include <netinet/in.h>
-#endif
+# include "dm_socket.h"
 #endif
 #ifdef DNETCONN
 # include <netdnet/dn.h>
 # include <netdnet/dnetdb.h>
 #endif
 
-#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3) && !defined(__QNX__)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
 #define NEED_UTSNAME
 #include <sys/utsname.h>
 #endif
@@ -81,9 +68,6 @@ extern int errno;
 #  include <stropts.h>
 #  include <sys/sioctl.h>
 # endif /* ISC */
-# ifdef ESIX
-#  include <lan/net_ioctl.h>
-# endif /* ESIX */
 #endif /* i386 */
 
 #ifdef SVR4
@@ -97,12 +81,12 @@ extern int errno;
 # include <sync/queue.h>
 # include <sync/sema.h>
 #endif
-#ifndef MINIX
+#ifdef __GNU__
+#include <netdb.h>
+#undef SIOCGIFCONF
+#else /* __GNU__ */
 #include <net/if.h>
-#else
-#include <net/netlib.h>
-#include <net/gen/netdb.h>
-#endif /* !MINIX */
+#endif /* __GNU__ */
 
 #if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
 #define SYSV_SIOCGIFCONF
@@ -121,35 +105,15 @@ int chown(int a,int b,int c) {}
 #include <io.h>
 #endif
 
-extern int	MitInitAuth ();
-extern Xauth	*MitGetAuth ();
-
-#ifdef HASXDMAUTH
-extern int	XdmInitAuth ();
-extern Xauth	*XdmGetAuth ();
-#ifdef XDMCP
-extern void	XdmGetXdmcpAuth ();
-#else
-#define XdmGetXdmcpAuth NULL
-#endif
-#endif
-
-#ifdef SECURE_RPC
-extern int	SecureRPCInitAuth ();
-extern Xauth	*SecureRPCGetAuth ();
-#endif
-
-#ifdef K5AUTH
-extern int	Krb5InitAuth ();
-extern Xauth	*Krb5GetAuth ();
-#endif
-
 struct AuthProtocol {
     unsigned short  name_length;
     char	    *name;
-    int		    (*InitAuth)();
-    Xauth	    *(*GetAuth)();
-    void	    (*GetXdmcpAuth)();
+    void	    (*InitAuth)(unsigned short len, char *name);
+    Xauth	    *(*GetAuth)(unsigned short len, char *name);
+    void	    (*GetXdmcpAuth)(
+    			struct protoDisplay	*pdpy,
+    			unsigned short	authorizationNameLen,
+    			char		*authorizationName);
     int		    inited;
 };
 
@@ -177,9 +141,7 @@ static struct AuthProtocol AuthProtocols[] = {
 #define NUM_AUTHORIZATION (sizeof (AuthProtocols) / sizeof (AuthProtocols[0]))
 
 static struct AuthProtocol *
-findProtocol (name_length, name)
-    unsigned short  name_length;
-    char	    *name;
+findProtocol (unsigned short name_length, char *name)
 {
     int	i;
 
@@ -192,9 +154,8 @@ findProtocol (name_length, name)
     return (struct AuthProtocol *) 0;
 }
 
-ValidAuthorization (name_length, name)
-    unsigned short  name_length;
-    char	    *name;
+int
+ValidAuthorization (unsigned short name_length, char *name)
 {
     if (findProtocol (name_length, name))
 	return TRUE;
@@ -202,9 +163,7 @@ ValidAuthorization (name_length, name)
 }
 
 static Xauth *
-GenerateAuthorization (name_length, name)
-unsigned short	name_length;
-char		*name;
+GenerateAuthorization (unsigned short name_length, char *name)
 {
     struct AuthProtocol	*a;
     Xauth   *auth = 0;
@@ -223,7 +182,7 @@ char		*name;
 	auth = (*a->GetAuth) (name_length, name);
 	if (auth)
 	{
-	    Debug ("Got 0x%x (%d %*.*s) ", auth,
+	    Debug ("Got %p (%d %*.*s) ", auth,
 		auth->name_length, auth->name_length,
  		auth->name_length, auth->name);
 	    for (i = 0; i < (int)auth->data_length; i++)
@@ -242,11 +201,11 @@ char		*name;
 
 #ifdef XDMCP
 
-SetProtoDisplayAuthorization (pdpy,
-    authorizationNameLen, authorizationName)
-    struct protoDisplay	*pdpy;
-    unsigned short	authorizationNameLen;
-    char		*authorizationName;
+void
+SetProtoDisplayAuthorization (
+    struct protoDisplay	*pdpy,
+    unsigned short	authorizationNameLen,
+    char		*authorizationName)
 {
     struct AuthProtocol	*a;
     Xauth   *auth;
@@ -272,7 +231,7 @@ SetProtoDisplayAuthorization (pdpy,
 	    pdpy->xdmcpAuthorization = 0;
 	}
 	if (auth)
-	    Debug ("Got 0x%x (%d %*.*s)\n", auth,
+	    Debug ("Got %p (%d %*.*s)\n", auth,
 		auth->name_length, auth->name_length,
  		auth->name_length, auth->name);
 	else
@@ -283,9 +242,7 @@ SetProtoDisplayAuthorization (pdpy,
 #endif /* XDMCP */
 
 void
-CleanUpFileName (src, dst, len)
-    char *src, *dst;
-    int	 len;
+CleanUpFileName (char *src, char *dst, int len)
 {
     while (*src) {
 	if (--len <= 0)
@@ -309,9 +266,8 @@ CleanUpFileName (src, dst, len)
 static char authdir1[] = "authdir";
 static char authdir2[] = "authfiles";
 
-static
-MakeServerAuthFile (d)
-    struct display  *d;
+static int
+MakeServerAuthFile (struct display *d)
 {
     int len;
 #ifdef SYSV
@@ -370,10 +326,11 @@ MakeServerAuthFile (d)
     return TRUE;
 }
 
-SaveServerAuthorizations (d, auths, count)
-    struct display  *d;
-    Xauth	    **auths;
-    int		    count;
+int
+SaveServerAuthorizations (
+    struct display  *d,
+    Xauth	    **auths,
+    int		    count)
 {
     FILE	*auth_file;
     int		mask;
@@ -395,7 +352,7 @@ SaveServerAuthorizations (d, auths, count)
     }
     else
     {
-    	Debug ("File: %s auth: %x\n", d->authFile, auths);
+    	Debug ("File: %s auth: %p\n", d->authFile, auths);
 	ret = TRUE;
 	for (i = 0; i < count; i++)
 	{
@@ -421,8 +378,7 @@ SaveServerAuthorizations (d, auths, count)
 }
 
 void
-SetLocalAuthorization (d)
-    struct display	*d;
+SetLocalAuthorization (struct display *d)
 {
     Xauth	*auth, **auths;
     int		i, j;
@@ -479,8 +435,8 @@ SetLocalAuthorization (d)
  * Well, actually we could use SUN-DES-1 because we tell the server
  * to allow root in.  This is bogus and should be fixed.
  */
-SetAuthorization (d)
-    struct display  *d;
+void
+SetAuthorization (struct display *d)
 {
     register Xauth **auth = d->authorizations;
     int i;
@@ -498,10 +454,8 @@ SetAuthorization (d)
     }
 }
 
-static
-openFiles (name, new_name, oldp, newp)
-char	*name, *new_name;
-FILE	**oldp, **newp;
+static int
+openFiles (char *name, char *new_name, FILE **oldp, FILE **newp)
 {
 	int	mask;
 
@@ -520,21 +474,17 @@ FILE	**oldp, **newp;
 	return 1;
 }
 
-static
-binaryEqual (a, b, len)
-char	*a, *b;
-unsigned short	len;
+static int
+binaryEqual (char *a, char *b, unsigned short len)
 {
 	while (len-- > 0)
 		if (*a++ != *b++)
-			return 0;
-	return 1;
+			return FALSE;
+	return TRUE;
 }
 
-static
-dumpBytes (len, data)
-unsigned short	len;
-char	*data;
+static void
+dumpBytes (unsigned short len, char *data)
 {
 	unsigned short	i;
 
@@ -544,9 +494,8 @@ char	*data;
 	Debug ("\n");
 }
 
-static
-dumpAuth (auth)
-    Xauth	*auth;
+static void
+dumpAuth (Xauth *auth)
 {
 	Debug ("family: %d\n", auth->family);
 	Debug ("addr:   ");
@@ -572,14 +521,14 @@ struct addrList {
 
 static struct addrList	*addrs;
 
-static
-initAddrs ()
+static void
+initAddrs (void)
 {
 	addrs = 0;
 }
 
-static
-doneAddrs ()
+static void
+doneAddrs (void)
 {
 	struct addrList	*a, *n;
 	for (a = addrs; a; a = n) {
@@ -592,11 +541,10 @@ doneAddrs ()
 	}
 }
 
-static checkEntry ();
+static int checkEntry (Xauth *auth);
 
 static void
-saveEntry (auth)
-    Xauth	*auth;
+saveEntry (Xauth *auth)
 {
 	struct addrList	*new;
 
@@ -643,9 +591,8 @@ saveEntry (auth)
 	addrs = new;
 }
 
-static
-checkEntry (auth)
-    Xauth	*auth;
+static int
+checkEntry (Xauth *auth)
 {
 	struct addrList	*a;
 
@@ -666,10 +613,8 @@ checkEntry (auth)
 
 static int  doWrite;
 
-static
-writeAuth (file, auth)
-    FILE	*file;
-    Xauth	*auth;
+static void
+writeAuth (FILE *file, Xauth *auth)
 {
     if (debugLevel >= 15) {	/* normally too verbose */
         Debug ("writeAuth: doWrite = %d\n", doWrite);
@@ -679,13 +624,13 @@ writeAuth (file, auth)
 	    XauWriteAuth (file, auth);
 }
 
-static
-writeAddr (family, addr_length, addr, file, auth)
-    int		family;
-    int		addr_length;
-    char	*addr;
-    FILE	*file;
-    Xauth	*auth;
+static void
+writeAddr (
+    int		family,
+    int		addr_length,
+    char	*addr,
+    FILE	*file,
+    Xauth	*auth)
 {
 	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
@@ -695,12 +640,13 @@ writeAddr (family, addr_length, addr, file, auth)
 	saveEntry (auth);
 }
 
-static
-DefineLocal (file, auth)
-    FILE	*file;
-    Xauth	*auth;
+static void
+DefineLocal (FILE *file, Xauth *auth)
 {
 	char	displayname[100];
+	char	tmp_displayname[100];
+
+	strcpy(tmp_displayname, "");
 
 	/* stolen from xinit.c */
 
@@ -727,6 +673,8 @@ DefineLocal (file, auth)
 	strcpy(displayname, name.nodename);
 	}
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
+
+	strcpy(tmp_displayname, displayname);
 #endif
 
 #if (!defined(NEED_UTSNAME) || defined (hpux))
@@ -740,9 +688,15 @@ DefineLocal (file, auth)
 	 * is achieved by using gethostname().  For compatability, we must
 	 * also still create the entry using uname() above.
 	 */
-
 	gethostname(displayname, sizeof(displayname));
-	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
+
+	/*
+	 * If gethostname and uname both returned the same name,
+	 * do not write a duplicate entry.
+	 */
+	if (strcmp (displayname, tmp_displayname))
+	    writeAddr (FamilyLocal, strlen (displayname), displayname, 
+		       file, auth);
 #endif
 }
 
@@ -751,10 +705,7 @@ DefineLocal (file, auth)
 /* Deal with different SIOCGIFCONF ioctl semantics on SYSV, SVR4 */
 
 static int
-ifioctl (fd, cmd, arg)
-    int fd;
-    int cmd;
-    char *arg;
+ifioctl (int fd, int cmd, char *arg)
 {
     struct strioctl ioc;
     int ret;
@@ -811,10 +762,7 @@ ifioctl (fd, cmd, arg)
  * TLI version, written without sufficient documentation.
  */
 static void
-DefineSelf (fd, file, auth)
-    int fd;
-    FILE	*file;
-    Xauth	*auth;
+DefineSelf (int fd, FILE *file, Xauth *auth)
 {
     struct netbuf	netb;
     char		addrret[1024]; /* easier than t_alloc */
@@ -843,13 +791,10 @@ DefineSelf (fd, file, auth)
 #include <netinet/in_var.h>
 
 static void
-DefineSelf (fd, file, auth)
-    int fd;
-    FILE *file;
-    Xauth *auth;
+DefineSelf (int fd, FILE *file, Xauth *auth)
 {
     /*
-     * The Wolongong drivers used by NCR SVR4/MP-RAS don't understand the
+     * The Wollongong drivers used by NCR SVR4/MP-RAS don't understand the
      * socket IO calls that most other drivers seem to like. Because of
      * this, this routine must be special cased for NCR. Eventually,
      * this will be cleared up.
@@ -921,14 +866,10 @@ DefineSelf (fd, file, auth)
  * for this fd and add them to the selfhosts list.
  */
 static void
-DefineSelf (fd, file, auth)
-    int fd;
-    FILE	*file;
-    Xauth	*auth;
+DefineSelf (int fd, FILE *file, Xauth *auth)
 {
     char		buf[2048], *cp, *cplim;
     struct ifconf	ifc;
-    register int	n;
     int 		len;
     char 		*addr;
     int 		family;
@@ -962,7 +903,7 @@ DefineSelf (fd, file, auth)
 	} else
 #endif
 	{
-	    if (ConvertAddr (&ifr->ifr_addr, &len, &addr) < 0)
+	    if (ConvertAddr ((XdmcpNetaddr) &ifr->ifr_addr, &len, &addr) < 0)
 		continue;
 	    if (len == 0)
  	    {
@@ -996,8 +937,7 @@ DefineSelf (fd, file, auth)
  * for this fd and add them to the selfhosts list.
  */
 static void
-DefineSelf (fd, file, auth)
-    int fd;
+DefineSelf (int fd, int file, int auth)
 {
     register int n;
     int	len;
@@ -1039,10 +979,8 @@ DefineSelf (fd, file, auth)
 #endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
 
 
-static
-setAuthNumber (auth, name)
-    Xauth   *auth;
-    char    *name;
+static void
+setAuthNumber (Xauth *auth, char *name)
 {
     char	*colon;
     char	*dot, *number;
@@ -1069,16 +1007,10 @@ setAuthNumber (auth, name)
     }
 }
 
-static
-writeLocalAuth (file, auth, name)
-    FILE	*file;
-    Xauth	*auth;
-    char	*name;
+static void
+writeLocalAuth (FILE *file, Xauth *auth, char *name)
 {
     int	fd;
-#ifdef MINIX
-    char *tcp_device;
-#endif
 
     Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
@@ -1090,14 +1022,7 @@ writeLocalAuth (file, auth, name)
     t_close (fd);
 #endif
 #ifdef TCPCONN
-#ifdef MINIX
-    tcp_device= getenv("TCP_DEVICE");
-    if (tcp_device == NULL)
-    	tcp_device= TCP_DEVICE;
-    fd = open(tcp_device, O_RDWR);
-#else
     fd = socket (AF_INET, SOCK_STREAM, 0);
-#endif
     DefineSelf (fd, file, auth);
     close (fd);
 #endif
@@ -1112,12 +1037,7 @@ writeLocalAuth (file, auth, name)
 #ifdef XDMCP
 
 static void
-writeRemoteAuth (file, auth, peer, peerlen, name)
-    FILE	    *file;
-    Xauth	    *auth;
-    XdmcpNetaddr    peer;
-    int		    peerlen;
-    char	    *name;
+writeRemoteAuth (FILE *file, Xauth *auth, XdmcpNetaddr peer, int peerlen, char *name)
 {
     int	    family = FamilyLocal;
     char    *addr;
@@ -1143,19 +1063,16 @@ writeRemoteAuth (file, auth, peer, peerlen, name)
 #endif /* XDMCP */
 
 void
-SetUserAuthorization (d, verify)
-    struct display		*d;
-    struct verify_info	*verify;
+SetUserAuthorization (struct display *d, struct verify_info *verify)
 {
     FILE	*old, *new;
     char	home_name[1024], backup_name[1024], new_name[1024];
-    char	*name;
+    char	*name = 0;
     char	*home;
     char	*envname = 0;
     int	lockStatus;
     Xauth	*entry, **auths;
-    int	setenv;
-    char	**setEnv (), *getEnv ();
+    int		setenv = 0;
     struct stat	statb;
     int		i;
     int		magicCookie;
@@ -1256,7 +1173,7 @@ SetUserAuthorization (d, verify)
 	    if (fstat (fileno (old), &statb) != -1)
 		chmod (new_name, (int) (statb.st_mode & 0777));
 	    /*SUPPRESS 560*/
-	    while (entry = XauReadAuth (old)) {
+	    while ((entry = XauReadAuth (old))) {
 		if (!checkEntry (entry))
 		{
 		    Debug ("Writing an entry\n");
@@ -1294,9 +1211,7 @@ SetUserAuthorization (d, verify)
 }
 
 void
-RemoveUserAuthorization (d, verify)
-    struct display	*d;
-    struct verify_info	*verify;
+RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 {
     char    *home;
     Xauth   **auths, *entry;
@@ -1305,7 +1220,6 @@ RemoveUserAuthorization (d, verify)
     FILE    *old, *new;
     struct stat	statb;
     int	    i;
-    char    *getEnv ();
 
     if (!(auths = d->authorizations))
 	return;
@@ -1340,7 +1254,7 @@ RemoveUserAuthorization (d, verify)
 	    if (fstat (fileno (old), &statb) != -1)
 		chmod (new_name, (int) (statb.st_mode & 0777));
 	    /*SUPPRESS 560*/
-	    while (entry = XauReadAuth (old)) {
+	    while ((entry = XauReadAuth (old))) {
 		if (!checkEntry (entry))
 		{
 		    Debug ("Writing an entry\n");
