@@ -18,8 +18,8 @@ msgid "no help available."
 msgstr ""
 "wdm je grafické rozhraní pro přihlášení uživatele do systému.\n"
 "\n"
-"Zadejte své uživatelské jméno (userid) a stiskněte <enter>.Panel poté "
-"zobrazí výzvu k zadání hesla. Zadejte hesloa stisknět e <enter>.\n"
+"Zadejte své uživatelské jméno (userid) a stiskněte <enter>. Panel poté "
+"zobrazí výzvu k zadání hesla. Zadejte hesloa stiskněte <enter>.\n"
 "\n"
 "\n"
 "Dále se provede přihlášení a spustí se windowmanager.\n"
@@ -82,19 +82,19 @@ msgstr "Opustit"
 
 #: bl/src/wdmLogin/Login.c:118
 msgid "Login failed"
-msgstr ""
+msgstr "Přihlášení se nezdařilo"
 
 #: bl/src/wdmLogin/Login.c:118
 msgid "Reboot failed"
-msgstr ""
+msgstr "Restartování se nezdařilo"
 
 #: bl/src/wdmLogin/Login.c:119
 msgid "Halt failed"
-msgstr ""
+msgstr "Ukončení se nezdařilo"
 
 #: bl/src/wdmLogin/Login.c:119
 msgid "ExitLogin failed"
-msgstr ""
+msgstr "Opuštění se nezdařilo"
 
 #: bl/src/wdmLogin/Login.c:280
 msgid "NoChange"
