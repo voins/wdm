@@ -529,7 +529,8 @@ StartClient (
     char		*name,
     char		*passwd)
 {
-    char	**f, *home;
+    char	**f;
+    const char	*home;
     char	*failsafeArgv[2];
     int	pid;
 #ifdef HAS_SETUSERCONTEXT

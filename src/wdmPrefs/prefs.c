@@ -80,7 +80,7 @@ AddSectionButton(Panel *panel, const char *iconfile)
 		color.green = 0xaa;
 		color.blue = 0xae;
 		color.alpha = 0;
-		filename = WMPathForResourceOfType(iconfile, NULL);
+		filename = WMPathForResourceOfType((char*)iconfile, NULL);
 		if(filename)
 		{
 			icon = WMCreateBlendedPixmapFromFile(

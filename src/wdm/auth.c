@@ -1016,7 +1016,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
     FILE	*old, *new;
     char	home_name[1024], backup_name[1024], new_name[1024];
     char	*name = 0;
-    char	*home;
+    const char	*home;
     char	*envname = 0;
     int	lockStatus;
     Xauth	*entry, **auths;
@@ -1165,7 +1165,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 void
 RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 {
-    char    *home;
+    const char    *home;
     Xauth   **auths, *entry;
     char    name[1024], new_name[1024];
     int	    lockStatus;

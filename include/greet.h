@@ -67,7 +67,7 @@ struct dlfuncs {
     void (*_DeleteXloginResources)(struct display *d, Display *dpy);
     int (*_source)(char **environ, char *file);
     char **(*_defaultEnv)(void);
-    char **(*_WDMSetEnv)(char **e, char *name, char *value);
+    char **(*_WDMSetEnv)(char **e, const char *name, const char *value);
     char **(*_WDMPutEnv)(char **env, const char *string);
     char **(*_parseArgs)(char **argv, char *string);
     void (*_WDMPrintEnv)(char **e);

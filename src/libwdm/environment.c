@@ -22,7 +22,7 @@
 #include <string.h>
 
 const char *
-WDMGetEnv(const char **env, const char *name)
+WDMGetEnv(char * const env[], const char *name)
 {
 	size_t len;
 	
