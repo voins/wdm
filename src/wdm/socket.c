@@ -65,9 +65,9 @@ CreateWellKnownSockets (void)
     struct sockaddr_in	sock_addr;
     char *name;
 
-    if (request_port == 0)
+    if (request_port.i == 0)
 	    return;
-    WDMDebug("creating socket %d\n", request_port);
+    WDMDebug("creating socket %d\n", request_port.i);
     xdmcpFd = socket (AF_INET, SOCK_DGRAM, 0);
     if (xdmcpFd == -1) {
 	WDMError("XDMCP socket creation failed, errno %d\n", errno);
@@ -82,11 +82,11 @@ CreateWellKnownSockets (void)
     sock_addr.sin_len = sizeof(sock_addr);
 #endif
     sock_addr.sin_family = AF_INET;
-    sock_addr.sin_port = htons ((short) request_port);
+    sock_addr.sin_port = htons ((short) request_port.i);
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
     if (bind (xdmcpFd, (struct sockaddr *)&sock_addr, sizeof (sock_addr)) == -1)
     {
-	WDMError("error %d binding socket address %d\n", errno, request_port);
+	WDMError("error %d binding socket address %d\n", errno, request_port.i);
 	close (xdmcpFd);
 	xdmcpFd = -1;
 	return;

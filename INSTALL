@@ -51,9 +51,6 @@ The simplest way to compile this package is:
      Running `configure' takes awhile.	While running, it prints some
      messages telling which features it is checking for.
 
-*****Examine (and optionally modify) the configuration files in
-     ./config
-
      ./configure --help can be used to see what options are
      available.
 
@@ -67,6 +64,9 @@ The simplest way to compile this package is:
   2. Type `make' to compile the package.  A number of the configure options
      can be overriden (or just plain specified) on the make command line.
 
+*****Examine (and optionally modify) the configuration files in
+     ./configs directory
+
   3. Type `make install' to install the programs and any data files and
      documentation.  To install into a path other than that specified by
      ./configure --prefix=<...> (such as testing the install), you can
@@ -76,14 +76,9 @@ The simplest way to compile this package is:
 
      will install the binaries into /tmp/wdm-root/usr/local/bin.
 
-  4. You can remove the program binaries and object files from the
-     source code directory by typing `make clean'.  To also remove the
-     files that `configure' created (so you can compile the package for
-     a different kind of computer), type `make distclean'.  There is
-     also a `make maintainer-clean' target, but that is intended mainly
-     for the package's developers.  If you use it, you may have to get
-     all sorts of other programs in order to regenerate files that came
-     with the distribution.
+  4. You can remove all files created by make command in source code
+     directory by typing `make clean'. To also remove the files created 
+     by `configure' script type `make distclean'.
 
   5. Modify system initialization (/etc/inittab on RedHat Linux) to
      invoke wdm at system startup or start wdm (as root) with

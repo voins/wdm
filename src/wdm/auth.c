@@ -614,7 +614,7 @@ static int  doWrite;
 static void
 writeAuth (FILE *file, Xauth *auth)
 {
-    if (debugLevel >= 15) {	/* normally too verbose */
+    if (debugLevel.i >= 15) {	/* normally too verbose */
         WDMDebug("writeAuth: doWrite = %d\n", doWrite);
 	dumpAuth (auth);	/* does Debug only */
     }

@@ -61,7 +61,8 @@ src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook [select_c %]
 	[make_action [make_var CC] [make_var %_ldflags] [c_to_o [select_c %]] [make_var %_libs] -o bin/%];
 	[make_line];
 	[make_line [destbindir]%\: bin/%];
-	[make_action [make_var INSTALL_PROGRAM] -D bin/% \\$\\@];
+	[make_action [make_var INSTALL] -d \\$\\(\\@D\\)];
+	[make_action [make_var INSTALL_PROGRAM] bin/% \\$\\@];
 	[make_line];
 }
 
@@ -77,7 +78,8 @@ doc/%.man.M: etc/makefile.cook
 		[make_line];
 	}
 	[make_line [destman1dir]/%.1\: doc/%.man];
-	[make_action [make_var INSTALL_DATA] -D doc/%.man \\$\\@];
+	[make_action [make_var INSTALL] -d \\$\\(\\@D\\)];
+	[make_action [make_var INSTALL_DATA] doc/%.man \\$\\@];
 	[make_line];
 }
 
@@ -89,7 +91,8 @@ po/%.mo.M: etc/makefile.cook
 	[make_action [make_var msgfmt] -o \\$\\@ po/%.po];
 	[make_line];
 	[make_line [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo];
-	[make_action [make_var INSTALL_DATA] -D po/%.mo \\$\\@];
+	[make_action [make_var INSTALL] -d \\$\\(\\@D\\)];
+	[make_action [make_var INSTALL_DATA] po/%.mo \\$\\@];
 	[make_line];
 }
 
@@ -112,13 +115,15 @@ configs/%.M: etc/makefile.cook etc/functions.cook
 	if [in configs/% [pam_configs]] then
 	{
 		[make_line [pamdir]/[stripext %]\: configs/%];
-		[make_action [make_var INSTALL] -m [perm] -D configs/% \\$\\@];
+		[make_action [make_var INSTALL] -d \\$\\(\\@D\\)];
+		[make_action [make_var INSTALL] -m [perm] configs/% \\$\\@];
 		[make_line];
 	}
 	else
 	{
 		[make_line [configdir]/%\: configs/%];
-		[make_action [make_var INSTALL] -m [perm] -D configs/% \\$\\@];
+		[make_action [make_var INSTALL] -d \\$\\(\\@D\\)];
+		[make_action [make_var INSTALL] -m [perm] configs/% \\$\\@];
 		[make_line];
 	}
 	echo >> [target];
@@ -134,7 +139,8 @@ pixmaps/%.M: etc/makefile.cook
 	rm -f [target];
 
 	[make_line [gfxdir]/%\: pixmaps/%];
-	[make_action [make_var INSTALL_DATA] -D pixmaps/% \\$\\@];
+	[make_action [make_var INSTALL] -d \\$\\(\\@D\\)];
+	[make_action [make_var INSTALL_DATA] pixmaps/% \\$\\@];
 	[make_line];
 }
 
@@ -147,13 +153,16 @@ m_files =
 	[fromto %0% %0%.M [mo_files]]
 	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]];
 
-clean_files = [fromto %0%.c %0%.o [match_mask src/%0%.c [source_files]]];
+clean_files = [fromto %0%.c %0%.o [match_mask src/%0%.c [source_files]]]
+		[g_configs] [mo_files] [g_manfiles]
+		[addprefix bin/ [program_list]]
+		[fromto % bin/%.a [libraries_list]];
+
 dist_clean_files = [clean_files] [addprefix bin/ [program_list]]
-	[fromto % bin/%.a [libraries_list]] [g_manfiles] [g_configs] 
 	config.status config.log include/config.h include/gnuLogo.xpm Makefile;
 
-Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
-	[m_files]
+Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook
+		etc/Howto.cook [m_files]
 {
 	rm -f [target];
 	sed [resolve etc/Howto.conf.in] \
@@ -182,7 +191,8 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line];
 	[make_line all-config\: [g_configs]];
 	[make_line];
-	[make_line install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
+	[make_line install-config\:
+			[fromto %0% [configdir]/% [configs] [i_configs]]
 			install-pam-[make_var USE_PAM]
 			[configdir]/authdir];
 	[make_action install -d -m 0700 [make_var DESTDIR][make_var FAKEHOME]];
@@ -192,7 +202,7 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line install-pam-yes\: [fromto %0%.pamd [pamdir]/% [pam_configs]]];
 	[make_line];
 	[make_line [configdir]/authdir\:];
-	[make_action [make_var INSTALL] -m 700 -D -d \\$\\@];
+	[make_action [make_var INSTALL] -m 700 -d \\$\\@];
 	
 
 	[make_line];

@@ -1,4 +1,25 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.26 -- Sep 18 2003 
+	- more options in wdmLogin-config file
+	- development of wdmPrefs and wdmChooser programs 
+	  started.
+	- en locale is now different from C locale. [that trick
+	  allowed to remove last compile-time warning]
+	- wdm now compiles with -Wall -Werror. :)
+	- install target of Makefile.in fixed
+	- daemon mode works again
+	- fixed problem with wdm not reacting to signals sent
+	  to process with pid written to pid file.
+	- spanish translation added
+	  (by Manolo Padron Martinez <manolopm@cip.es>)
+	- czech translation added
+	  (by Vladimir Nadvornik <nadvornik@suse.cz>)
+	- parts of code dealing with streams (-DSTREAMSCONN)
+	  DECnet (-DDNETCONN) and Chaos was completely removed
+	  from wdm sources. More unused code will be removed later
+	- xdm source tree removed from wdm tarball.
+	- fixed problem with pam (same as in kdm)
+
 wdm-1.25 -- Jun 06 2003
 	- removed call to wstrndup function, that appeared only
 	  in post 0.80.1 cvs snapshots.

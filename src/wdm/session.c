@@ -47,6 +47,7 @@ from The Open Group.
 #include <stdio.h>
 #include <ctype.h>
 #include <grp.h>	/* for initgroups */
+#include <sys/types.h>
 #ifdef AIXV3
 # include <usersec.h>
 #endif
@@ -69,19 +70,15 @@ from The Open Group.
 
 static	int	runAndWait (char **args, char **environ);
 
-#if defined(CSRG_BASED) || defined(__osf__) || defined(__DARWIN__) || defined(__QNXNTO__)
-#include <sys/types.h>
-#include <grp.h>
-#else
-/* should be in <grp.h> */
-extern	void	setgrent(void);
-extern	struct group	*getgrent(void);
-extern	void	endgrent(void);
-#endif
-
 #ifdef HAVE_SHADOW_H
 #include <shadow.h>
 #endif
+
+#ifdef WITH_SELINUX
+#include <selinux/get_context_list.h>
+#include <selinux/selinux.h>
+#endif
+
 
 #if defined(CSRG_BASED)
 #include <pwd.h>
@@ -648,6 +645,27 @@ StartClient (
 #endif /* AIXV3 */
 
 	/*
+	 * for Security Enhanced Linux,
+	 * set the default security context for this user.
+    */
+#ifdef WITH_SELINUX
+	if (is_selinux_enabled())
+	{
+		security_context_t scontext;
+		if (get_default_context(name,NULL,&scontext))
+			WDMError("Failed to get default security context"
+					" for %s.", name);
+		WDMDebug("setting security context to %s", scontext);
+		if (setexeccon(scontext))
+		{
+			freecon(scontext);
+			WDMError("Failed to set exec security context %s "
+					"for %s.", scontext, name);
+		}
+		freecon(scontext);
+	}
+#endif
+	/*
 	 * for user-based authorization schemes,
 	 * use the password to get the user's credentials.
 	 */
@@ -899,7 +917,7 @@ defaultEnv (void)
     char    **env, **exp, *value;
 
     env = 0;
-    for (exp = exportList; exp && *exp; ++exp)
+    for (exp = exportList.l; exp && *exp; ++exp)
     {
 	value = getenv (*exp);
 	if (value)

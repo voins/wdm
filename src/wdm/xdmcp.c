@@ -460,7 +460,7 @@ NetworkAddressToName(
 		}
 		else
 		{
-		    if (removeDomainname)
+		    if (removeDomainname.i)
 		    {
 		    	char    *localDot, *remoteDot;
     

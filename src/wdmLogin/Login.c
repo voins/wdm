@@ -1,6 +1,6 @@
 /*
  * wdm - WINGs display manager
- * Copyright (C) 2003 Alexey Voinov <voins@voins.program.ru>
+ * Copyright (C) 2003, 2004 Alexey Voinov <voins@voins.program.ru>
  * Copyright (C) 1998 Gene Czarcinski
  *
  * This program is free software; you can redistribute it and/or modify
@@ -112,12 +112,17 @@ static char *LoginPswd = NULL;
 
 static int OptionCode = 0;
 static char *ExitStr[] = { N_("Login"), N_("Reboot"), N_("Halt"),
-	N_("ExitLogin"), NULL
-};
+#ifdef WITH_EXITLOGIN
+	N_("ExitLogin"),
+#endif
+	NULL };
 
 static char *ExitFailStr[] = { N_("Login failed"), N_("Reboot failed"),
-	N_("Halt failed"), N_("ExitLogin failed"), NULL
-};
+	N_("Halt failed"),
+#ifdef WITH_EXITLOGIN
+	N_("ExitLogin failed"),
+#endif
+	NULL };
 
 static int WmOptionCode = 0;
 static char WmDefault[] = "wmaker:afterstep:xsession";
@@ -175,7 +180,7 @@ parse_helpArg(void)
 
 	/* a good default value, even in case of errors */
 	defaultHelpText = wstrconcat("wdm --- " PACKAGE_VERSION "\n\n\n\n\n",
-				     gettext(HelpMsg));
+				     _(HelpMsg));
 	HelpText = defaultHelpText;
 
 	if(helpArg)
@@ -829,7 +834,7 @@ CreatePopups(LoginPanel * panel)
 	i = 0;
 	while(WmStr[i] != NULL)
 	{
-		WMAddPopUpButtonItem(panel->wmBtn, gettext(WmStr[i]));
+		WMAddPopUpButtonItem(panel->wmBtn, _(WmStr[i]));
 		i++;
 	}
 
@@ -848,7 +853,7 @@ CreatePopups(LoginPanel * panel)
 	i = 0;
 	while(ExitStr[i] != NULL)
 	{
-		WMAddPopUpButtonItem(panel->exitBtn, gettext(ExitStr[i]));
+		WMAddPopUpButtonItem(panel->exitBtn, _(ExitStr[i]));
 		i++;
 	}
 }
@@ -1239,7 +1244,7 @@ static void
 SignalUsr1(int ignored)		/* oops, an error */
 {
 	InitializeLoginInput(panel);
-	PrintErrMsg(panel, gettext(ExitFailStr[OptionCode]));
+	PrintErrMsg(panel, _(ExitFailStr[OptionCode]));
 	signal(SIGUSR1, SignalUsr1);
 }
 

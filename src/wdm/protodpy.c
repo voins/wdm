@@ -47,20 +47,6 @@ in this Software without prior written authorization from The Open Group.
 
 static struct protoDisplay	*protoDisplays;
 
-#ifdef DEBUG
-static
-PrintProtoDisplay (pdpy)
-    struct protoDisplay	*pdpy;
-{
-    Debug ("ProtoDisplay 0x%x\n", pdpy);
-    Debug ("\taddress: ");
-    PrintSockAddr (pdpy->address, pdpy->addrlen);
-    Debug ("\tdate %d (%d from now)\n", pdpy->date, time(0) - pdpy->date);
-    Debug ("\tdisplay Number %d\n", pdpy->displayNumber);
-    Debug ("\tsessionID %d\n", pdpy->sessionID);
-}
-#endif
-
 struct protoDisplay *
 FindProtoDisplay (
     XdmcpNetaddr    address,
