@@ -74,14 +74,8 @@ static char *displayArg = displayArgDefault;
 static int WmDefUser = False;	       /* default username */
 
 static char *helpArg = NULL;
-static char *HelpFile = NULL;
 static char  *HelpMsg =
-		PACKAGE_NAME
-		" --- Version "
-		PACKAGE_VERSION
-		"\n\n\n\n\n"
-		PACKAGE_NAME
-		" is a graphical "
+		N_("wdm is a graphical "
 		"interface used to authenticate a user to "
 		"the system and perform the login process.\n\n\n"
 		"Enter your user name (userid) at the prompt and press "
@@ -121,7 +115,7 @@ static char  *HelpMsg =
 		"There are numerous options for setting "
 		"the background color or pixmap, the LoginPanel logo, "
 		"the selection of window managers to start, and "
-		"the login verification for Reboot, halt and exit.";
+		"the login verification for Reboot, halt and exit.");
 
 /*###################################################################*/
 
@@ -179,48 +173,55 @@ static int   smoothScale = True;
 
 char *ProgName= "Login";
 
-void parse_helpArg(void)
+char *read_help_file(int handle)
 {
-	int handle;
+	char *HelpText = NULL;
 	struct stat s;
 
-	HelpFile = HelpMsg;	/* a good default value, even in case of errors */
-	if (helpArg != NULL)
+	if(fstat(handle, &s) == 0)
 	{
-		handle = open(helpArg, O_RDONLY);
-		if (handle != -1)
+		HelpText = wmalloc(s.st_size + 1);
+		if(read(handle, HelpText, s.st_size) == -1)
 		{
-			if (! fstat(handle, &s))
-			{
-				HelpFile = (char *)malloc((sizeof(char) * s.st_size) + 2);
-				if (HelpFile != NULL)
-				{
-					read(handle, HelpFile, s.st_size);
-					HelpFile[s.st_size] = '\0';
-				}
-				else
-					fprintf(stderr, "%s - parse_helpArg(): malloc failed\n", ProgName);
-			}
-			else
-				fprintf(stderr, "%s - parse_helpArg(): can't fstat %s\n", ProgName, helpArg);
-			close(handle);
+			fprintf(stderr, "%s - read_help_file(): can't read %s\n", ProgName, helpArg);
+			wfree(HelpText);
+			return NULL;
 		}
-		else
-			fprintf(stderr, "%s - parse_helpArg(): can't open %s\n", ProgName, helpArg);
+		HelpText[s.st_size] = '\0';
 	}
+	else
+		fprintf(stderr, "%s - read_help_file(): can't stat %s\n", ProgName, helpArg);
+
+	return HelpText;
 }
 
-int countlines(char *str)
+char *parse_helpArg(void)
 {
-	int nbl = 0;
+	int handle;
+	char *HelpText = NULL;
+	char *defaultHelpText = NULL;
+	
+	/* a good default value, even in case of errors */
+	defaultHelpText = wstrconcat(
+		"wdm --- " PACKAGE_VERSION "\n\n\n\n\n",
+		gettext(HelpMsg));
+	HelpText = defaultHelpText;
 
-	while (*str)
+	if(helpArg)
 	{
-		if (*str == '\n')
-			nbl++;
-		str++;
+		if((handle = open(helpArg, O_RDONLY)) == -1)
+		{
+			fprintf(stderr, "%s - parse_helpArg(): can't open %s\n", ProgName, helpArg);
+			return defaultHelpText;
+		}
+	
+		if((HelpText = read_help_file(handle)) != NULL)
+			wfree(defaultHelpText);
+
+		close(handle);
 	}
-	return(nbl + 1); /* +1: nicer */
+
+	return HelpText;
 }
 
 /*###################################################################*/
@@ -831,7 +832,8 @@ static void CreateButtons(LoginPanel *panel)
 
 static void CreateHelpFrames(LoginPanel *panel)
 {
-    int nblines;
+    int height;
+    char *HelpText = NULL;
 
     panel->helpF = WMCreateFrame(panel->win);
     WMSetFrameRelief(panel->helpF,WRRaised);
@@ -847,24 +849,24 @@ static void CreateHelpFrames(LoginPanel *panel)
     WMSetScrollViewHasHorizontalScroller(panel->helpSV, False);
     WMSetScrollViewLineScroll(panel->helpSV,12);
 
-    parse_helpArg();
-    nblines = countlines(HelpFile);
+    HelpText = parse_helpArg();
 
     panel->helpTextF = WMCreateFrame(panel->helpF);
     WMSetFrameRelief(panel->helpTextF,WRFlat);
-
-    /* 14 * nblines is far from perfect !!! */
-    WMResizeWidget(panel->helpTextF, (P_WIDTH-50), 14 * nblines); /* 620 */
-
     panel->helpTextL = WMCreateLabel(panel->helpTextF);
     WMSetLabelTextAlignment(panel->helpTextL,WALeft);
+
+    height = W_GetTextHeight(WMDefaultSystemFont(panel->scr),
+		    HelpText, (P_WIDTH-60), True) + 10;
+
+    WMResizeWidget(panel->helpTextF, (P_WIDTH-50), height);
     WMMoveWidget(panel->helpTextL, 2, 1);
+    WMResizeWidget(panel->helpTextL,(P_WIDTH-60), height - 5);
 
-    /* 14 * nblines is far from perfect !!! */
-    WMResizeWidget(panel->helpTextL,(P_WIDTH-60), 14 * nblines - 5); /* 615 */
-
-    WMSetLabelText(panel->helpTextL,HelpFile);
+    WMSetLabelText(panel->helpTextL, HelpText);
     WMSetLabelWraps(panel->helpTextL, True);
+
+    wfree(HelpText);
 }
 
 static LoginPanel *CreateLoginPanel(WMScreen *scr)
