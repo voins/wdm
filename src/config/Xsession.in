@@ -1,4 +1,5 @@
-#!#SHELL#
+#!@SHELL_LOGIN@
+# @configure_input@
 # $XConsortium: Xsession /main/10 1995/12/18 18:21:28 gildea $
 
 # This is the basic login script for a user.  Much of the logic/code
@@ -8,14 +9,14 @@
 # ~/.Xclients.
 
 # cleanup wdm resources
-        #XRDB# -load /dev/null
+        @XRDB_PATH@ -load /dev/null
 
 
 case $# in
 1)
         case $1 in
         failsafe)
-                exec #FAILSAFE# -geometry 80x24-0-0
+                exec @FAILSAFE@ -geometry 80x24-0-0
                 ;;
         esac
         echo $1 >$HOME/.wm_style
@@ -63,13 +64,13 @@ done
 #       if [ -x $HOME/.mystartup ]; then
 #           . $HOME/.mystartup
 #       fi
-#       exec #configdir#/Xclients
+#       exec @DMDIR@/Xclients
 
 startup=$HOME/.xsession
 resources=$HOME/.Xresources
 
 if [ -f $resources ]; then
-        #XRDB# -load $resources
+        @XRDB_PATH@ -load $resources
 fi
 
 if [ -x $startup ]; then
@@ -80,8 +81,8 @@ if [ -x $HOME/.Xclients ]; then
         exec $HOME/.Xclients
 fi
 
-if [ -x #configdir#/Xclients ]; then
-        exec #configdir#/Xclients
+if [ -x @DMDIR@/Xclients ]; then
+        exec @DMDIR@/Xclients
 fi
 
 # if nothing else, start X's standard session manager

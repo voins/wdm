@@ -40,26 +40,19 @@ AC_SUBST(DEF_SERVER)
 
 AC_ARG_VAR(SYSTEM_SHELL, [Path to default shell])
 AC_PATH_PROG(SYSTEM_SHELL, sh)
-AC_DEFINE_UNQUOTED(DEF_SYSTEM_SHELL, "$SYSTEM_SHELL", [Value is default system shell])
-
-
 AC_PATH_PROG(SHELL_BASH,bash,,$PATH:/usr/local/bin)
-AC_PATH_PROG(SHELL_SH,sh)
-
-dnl TODO: why need bash? <<<
-if test "x$SHELL_SH" = "x"; then
+if test "x$SYSTEM_SHELL" = "x"; then
 	AC_MSG_ERROR(the program sh cannot be found)
 fi
 dnl hope this is correct:
 if test "x$SHELL_BASH" = "x"; then
-	SHELL_LOGIN="$SHELL_SH -"
+	SHELL_LOGIN="$SYSTEM_SHELL -"
 else
 	SHELL_LOGIN="$SHELL_BASH -login"
 fi
 AC_SUBST(SHELL_LOGIN)
-AC_SUBST(SHELL_BASH)
-AC_SUBST(SHELL_SH)
-dnl >>>
+AC_SUBST(SYSTEM_SHELL)
+
 
 
 AC_HEADER_STDC
@@ -613,9 +606,13 @@ dnl ==========================================================
 AC_CONFIG_FILES([Makefile
 	  doc/Makefile
 	  src/Makefile
-	  src/config/Makefile
 	  src/pixmaps/Makefile
 	  src/config/wdm-config
-	  src/config/Xclients])
+	  src/config/Xclients
+	  src/config/Xsetup_0
+	  src/config/Xsession
+	  src/config/Xservers
+	  src/config/Xservers.ws
+	  src/config/wdmReconfig])
 AC_OUTPUT
 

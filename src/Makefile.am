@@ -6,7 +6,7 @@
 
 # Note: chooser is no longer compiled.  It was not being installed anyway.
 
-SUBDIRS = config pixmaps
+SUBDIRS = pixmaps
 
 bin_PROGRAMS = wdmLogin wdm
 
