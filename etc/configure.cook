@@ -1,5 +1,6 @@
 if [not [defined autoheader]] then autoheader=autoheader_2.5;
 if [not [defined autoconf]] then autoconf=autoconf_2.5;
+if [not [defined PACKAGE_VERSION]] then PACKAGE_VERSION=0.0;
 
 if [exists /usr/local/share/autoconf/install-sh] then
 	install-sh = /usr/local/share/autoconf/install-sh;
