@@ -23,16 +23,24 @@ gfxdir = [configdir]/pixmaps;
 pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
 localedir = \\$\\(DESTDIR\\)\\$\\(NLSDIR\\);
 
+src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+{
+	echo "bin/%.a: " [c_to_o [select_c %]] > [target];
+	echo -e "\"\\t\""mkdir -p bin >> [target];
+	echo -e "\"\\t\""ar cru bin/%.a [c_to_o [select_c %]] >> [target]; 
+	echo -e "\"\\t\""ranlib bin/%.a >> [target]; 
+	echo >> [target];
+}
+
 src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
-	echo "bin/%: " [c_to_o [select_c %]] > [target];
+	echo "bin/%: " [c_to_o [select_c %]] [lib_deps [get_libs %_]]> [target];
 	echo -e "\"\\t\""mkdir -p bin >> [target];
 	echo -e "\"\\t\""\\$\\(CC\\) \\$\\(%_ldflags\\) [c_to_o [select_c %]] \\$\\(%_libs\\) -o bin/% >> [target]; 
 	echo >> [target];
 	echo [destbindir]%\: bin/% >> [target];
 	echo -e "\"\\t\""\\$\\(INSTALL_PROGRAM\\) -D bin/% \\$\\@ >> [target];
 	echo >> [target];
-	
 }
 
 doc/%.man.M: etc/makefile.cook
@@ -113,6 +121,7 @@ pixmaps/%.M: etc/makefile.cook
 m_files = 
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
 	[fromto % src/%.M [program_list]]
+	[fromto % src/%.a.M [libraries_list]]
 	[fromto %0% %0%.M [manfiles]]
 	[fromto %0% %0%.M [gfxfiles]]
 	[fromto %0% %0%.M [mo_files]]
@@ -128,7 +137,8 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 {
 	rm -f [target];
 	sed [resolve etc/Howto.conf.in] \
-		-e "'s@\\[prepost.*\\[.*\\]\\]@-I./include@'" \
+		-e "'s@\\[prepost.*-I.*\\[.*\\]\\]@-I./include@'" \
+		-e "'s@\\[prepost.*-L.*\\[.*\\]\\]@-L./bin@'" \
 		-e "'s@\\[\\([^\\[]*\\)\\]@\\$(\\1)@g'" \
 		-e "'s@;$@@'" \
 		-e "'s@/\\*\\*\\(.*\\)\\*/@\\1@'" \
