@@ -29,7 +29,7 @@ all: [wdm_config_files]
 	make;
 }
 
-config.status : configure.in
+config.status : configure.ac
 {
 	rm -rf autom4te*.cache;
 	rm -f config.log stamp-h stamp-h.in aclocal.m4
@@ -38,8 +38,8 @@ config.status : configure.in
 		src/pixmaps/Makefile.in config.status
 		config.h.in acconfig.h;
 	[aclocal];
-	[autoheader];
-	[autoconf] [resolve configure.in] > configure;
+	[autoheader] [resolve configure.ac];
+	[autoconf] [resolve configure.ac] > configure;
 	[automake] --add-missing;
 	sh configure;
 }
