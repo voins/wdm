@@ -120,16 +120,17 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 	WDMDictionaryStruct *fields = spec->fields;
 	void **data = (void**)target;
 	WMPropList *key = NULL, *value = NULL;
+	Bool plok;
 
 	WDMDebug("WDMCheckPLDictionary(%p, %p, %p)\n", (void*)pl, def, target);
-	if(!pl || !WMIsPLDictionary(pl)) return False;
-
+	
+	plok = pl && WMIsPLDictionary(pl);
 	*data = (void*)wmalloc(spec->size);
 	memset(*data, 0, spec->size);
 	while(fields->key)
 	{
 		key = WMCreatePLString(fields->key);
-		value = WMGetFromPLDictionary(pl, key);
+		value = plok?WMGetFromPLDictionary(pl, key):NULL;
 
 		(*fields->checker)(value, fields->data, *data + fields->offset);
 
