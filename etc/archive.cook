@@ -22,12 +22,12 @@ wdm-[PACKAGE_VERSION].tar.gz : [archive_files]
 		| gzip -9 > [target];
 }
 
-project_timestamp = [collect aereport -f [resolve etc/project_timestamp.rpt] -pl 30000 | sed -e"'"1,6 d"'"];
+project_timestamp = [collect aereport -f [resolve etc/project_timestamp.rpt] -pl 30000 -p wdm | sed -e"'"1,6 d"'"];
 
 echo [project_timestamp] "'>'" [mtime-seconds ChangeLog] "=" [expr [project_timestamp] ">" [mtime-seconds ChangeLog]] set silent;
 ChangeLog: etc/changelog.rpt etc/archive.cook etc/project_timestamp.rpt
 	set ["if" [expr [project_timestamp] ">" [mtime-seconds ChangeLog]] "then" force] unlink no-time-adjust
 {
-	aereport -f [resolve etc/changelog.rpt] -pl 30000
+	aereport -f [resolve etc/changelog.rpt] -pl 30000 -p wdm
 		| sed -e"'"1,6 d"'" > [target];
 }
