@@ -112,12 +112,17 @@ static char *LoginPswd = NULL;
 
 static int OptionCode = 0;
 static char *ExitStr[] = { N_("Login"), N_("Reboot"), N_("Halt"),
-	N_("ExitLogin"), NULL
-};
+#ifdef WITH_EXITLOGIN
+	N_("ExitLogin"),
+#endif
+	NULL };
 
 static char *ExitFailStr[] = { N_("Login failed"), N_("Reboot failed"),
-	N_("Halt failed"), N_("ExitLogin failed"), NULL
-};
+	N_("Halt failed"),
+#ifdef WITH_EXITLOGIN
+	N_("ExitLogin failed"),
+#endif
+	NULL };
 
 static int WmOptionCode = 0;
 static char WmDefault[] = "wmaker:afterstep:xsession";

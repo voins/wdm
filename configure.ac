@@ -444,6 +444,12 @@ if test "$enable_aafont" = "yes"; then
 	AC_DEFINE(USE_AA, 1, [Define if you want support for antialiased fonts])
 fi
 
+AC_ARG_ENABLE(exitlogin,
+	AC_HELP_STRING([--enable-exitlogin],[enable ExitLogin command in wdmLogin.]))
+if test "$enable_exitlogin" = "yes"; then
+	AC_DEFINE(WITH_EXITLOGIN, 1, [Define if you want to have ExitLogin])
+fi
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
