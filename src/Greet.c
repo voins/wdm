@@ -140,7 +140,7 @@ extern int   wdmVerify;
 extern int   wdmAnimations;
 
 static int      pipe_filedes[2];
-static char	name[LOGNAME_LEN + 1], password[LOGNAME_LEN + 1];
+static char	name[128], password[128];
 static char     xsessionArg[256], exitArg[256];
 
 struct display *Save_d=NULL;
