@@ -149,17 +149,18 @@ main (int argc, char **argv)
 	exit (1);
     }
     	WDMLogLevel(debugLevel);
-	if(debugLevel == 0)
+	if(useSyslog)
 	{
-		if(errorLogFile && *errorLogFile)
-		{
-			int f;
-			if((f = open(errorLogFile,
-					O_CREAT | O_WRONLY | O_APPEND, 0600)) == -1)
-				WDMError("cannot open errorLogFile %s\n", errorLogFile);
-			else
-				WDMLogStream(fdopen(f, "w"));
-		}
+		WDMUseSysLog("wdm", WDMStringToFacility(syslogFacility));
+	}
+	else if(errorLogFile && *errorLogFile)
+	{
+		int f;
+		if((f = open(errorLogFile,
+				O_CREAT | O_WRONLY | O_APPEND, 0600)) == -1)
+			WDMError("cannot open errorLogFile %s\n", errorLogFile);
+		else
+			WDMLogStream(fdopen(f, "w"));
 	}
 
     if (nofork_session == 0) {

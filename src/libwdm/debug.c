@@ -22,6 +22,7 @@
 #include <stdarg.h>
 #include <syslog.h>
 #include <stdlib.h>
+#include <string.h>
 
 static Bool use_syslog = False;
 
@@ -76,6 +77,52 @@ WDMLevelToSyslog(int level)
 			return LOG_CRIT;
 	}
 	return LOG_DEBUG;
+}
+
+int
+WDMStringToFacility(const char *facility)
+{
+	if(strcasecmp(facility, "auth") == 0)
+		return LOG_AUTH;
+	if(strcasecmp(facility, "authpriv") == 0)
+		return LOG_AUTHPRIV;
+	if(strcasecmp(facility, "cron") == 0)
+		return LOG_CRON;
+	if(strcasecmp(facility, "daemon") == 0)
+		return LOG_DAEMON;
+	if(strcasecmp(facility, "ftp") == 0)
+		return LOG_FTP;
+	if(strcasecmp(facility, "kern") == 0)
+		return LOG_KERN;
+	if(strcasecmp(facility, "local0") == 0)
+		return LOG_LOCAL0;
+	if(strcasecmp(facility, "local1") == 0)
+		return LOG_LOCAL1;
+	if(strcasecmp(facility, "local2") == 0)
+		return LOG_LOCAL2;
+	if(strcasecmp(facility, "local3") == 0)
+		return LOG_LOCAL3;
+	if(strcasecmp(facility, "local4") == 0)
+		return LOG_LOCAL4;
+	if(strcasecmp(facility, "local5") == 0)
+		return LOG_LOCAL5;
+	if(strcasecmp(facility, "local6") == 0)
+		return LOG_LOCAL6;
+	if(strcasecmp(facility, "local7") == 0)
+		return LOG_LOCAL7;
+	if(strcasecmp(facility, "lpr") == 0)
+		return LOG_LPR;
+	if(strcasecmp(facility, "mail") == 0)
+		return LOG_MAIL;
+	if(strcasecmp(facility, "news") == 0)
+		return LOG_NEWS;
+	if(strcasecmp(facility, "syslog") == 0)
+		return LOG_SYSLOG;
+	if(strcasecmp(facility, "user") == 0)
+		return LOG_USER;
+	if(strcasecmp(facility, "uucp") == 0)
+		return LOG_UUCP;
+	return LOG_USER;
 }
 
 static void

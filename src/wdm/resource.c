@@ -48,6 +48,8 @@ char	*servers;
 int	request_port;
 int	debugLevel;
 char	*errorLogFile;
+char	*syslogFacility;
+int	useSyslog;
 int	daemonMode;
 char	*pidFile;
 int	lockPidFile;
@@ -232,6 +234,10 @@ struct dmResources {
 				"0"} ,
 { "errorLogFile","ErrorLogFile",	DM_STRING,	&errorLogFile,
 				""} ,
+{ "syslogFacility","SyslogFacility",	DM_STRING,	&syslogFacility,
+				""} ,
+{ "useSyslog",	"UseSyslog",	DM_BOOL,	(char **) &useSyslog,
+				"false"} ,
 { "daemonMode",	"DaemonMode",	DM_BOOL,	(char **) &daemonMode,
 				"true"} ,
 { "pidFile",	"PidFile",	DM_STRING,	&pidFile,
@@ -483,7 +489,10 @@ XrmOptionDescRec optionTable [] = {
 {"-debug",	"*debugLevel",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-xrm",	NULL,			XrmoptionResArg,	(caddr_t) NULL },
 {"-daemon",	".daemonMode",		XrmoptionNoArg,		"true"         },
-{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        }
+{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        },
+{"-syslog",	".syslogFacility",	XrmoptionSepArg,	(caddr_t) NULL },
+{"-usesyslog",	".useSyslog",		XrmoptionNoArg,		"true"         },
+{"-useerrfile",	".useSyslog",		XrmoptionNoArg,		"false"        }
 };
 
 static int	originalArgc;
