@@ -70,10 +70,10 @@ AC_CHECK_FUNC(mkstemp,
 
 dnl Password processing options
 AC_ARG_ENABLE(pam,
-	AC_HELP_STRING([--disable-pam], [don't use of PAM for authentication]))
+	AC_HELP_STRING([--disable-pam], [don't use PAM for authentication]))
 
 AC_ARG_ENABLE(shadow,
-	AC_HELP_STRING([--disable-shadow], [don't use of shadow for authentication]))
+	AC_HELP_STRING([--disable-shadow], [don't use shadow for authentication]))
 
 AC_ARG_WITH(pamdir,
 	AC_HELP_STRING([--with-pamdir],[specify where pam directory is]),
