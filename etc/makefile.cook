@@ -19,6 +19,7 @@
 destbindir = \\$\\(DESTDIR\\)\\$\\(bindir\\)/;
 destman1dir = \\$\\(DESTDIR\\)\\$\\(MANDIR\\)/man1;
 configdir = \\$\\(DESTDIR\\)\\$\\(DMDIR\\);
+gfxdir = [configdir]/pixmaps;
 pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
 
 bin/M/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
@@ -78,10 +79,30 @@ configs/%.M: etc/makefile.cook etc/functions.cook
 	echo >> [target];
 }
 
+function is_xpm =
+{
+	return [matches %.xpm [@1]];
+}
+
+pixmaps/%.M: etc/makefile.cook
+{
+	rm -f [target];
+	if [is_xpm %] then
+	{
+		echo include/%\: pixmaps/% >> [target];
+		echo -e "\"\\t\""ln -s ../pixmaps/% \\$\\@ >> [target];
+		echo >> [target];
+	}
+	echo [gfxdir]/%\: pixmaps/% >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D pixmaps/% \\$\\@ >> [target];
+	echo >> [target];
+}
+
 Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
 	[fromto % bin/M/%.M [program_list]]
 	[fromto %0% %0%.M [manfiles]]
+	[fromto %0% %0%.M [gfxfiles]]
 	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]]
 {
 	rm -f [target];
@@ -100,7 +121,7 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 
 	cat [resolve [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]] >> [target];
 	cat [resolve [fromto % bin/M/%.M [program_list]]] >> [target];
-	echo install\: [addprefix [destbindir] [program_list]] install-config install-doc>> [target];
+	echo install\: [addprefix [destbindir] [program_list]] install-config install-doc install-gfx>> [target];
 
 
 	echo >> [target];
@@ -126,5 +147,11 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	echo install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]] >> [target];
 	echo >> [target];
 	cat [resolve [fromto %0% %0%.M [manfiles]]] >> [target];
+
+	
+	echo >> [target];
+	echo install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]] >> [target];
+	echo >> [target];
+	cat [resolve [fromto %0% %0%.M [gfxfiles]]] >> [target];
 }
 

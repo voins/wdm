@@ -1,3 +1,11 @@
+include/%.xpm: pixmaps/%.xpm
+{
+	rm -f [target];
+	ln -s ../[need] [target]
+		set clearstat; 
+}
+
+cascade src/wdmLogin/Login.c = include/gnuLogo.xpm;
 
 %0%.o : %0%.c etc/functions.cook etc/Howto.conf
 {

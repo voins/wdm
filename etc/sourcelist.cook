@@ -30,6 +30,9 @@ sec_configs = [addprefix configs/ wdm-config];
 /* list of config files sources to install along with generated files*/
 i_configs = [addprefix configs/ wdm-config.in Xclients.in];
 
+/* list of graphics files */
+gfxfiles = [match_mask pixmaps/% [source_files]];
+
 program_list = wdmLogin TestLogin wdm;
 
 all = tarball [addprefix bin/ [program_list]];

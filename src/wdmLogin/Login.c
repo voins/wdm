@@ -33,7 +33,7 @@ void WMSetScrollViewLineScroll(WMScrollView *sPtr, int amount);
 void WMSetScrollViewPageScroll(WMScrollView *sPtr, int amount);
 #endif
 
-#include <pixmaps/gnuLogo.xpm>
+#include <gnuLogo.xpm>
 
 /*###################################################################*/
 
