@@ -35,6 +35,7 @@ gfxfiles = [match_mask pixmaps/% [source_files]];
 
 /* list of programs in project list */
 program_list = [stringset [fromto src/%1/%2.c %1 [match_mask src/%1/%2.c [source_files]]]];
+program_list = [filter_out lib% [program_list]];
 
 /* internal programs that is will not be installed */
 i_program_list = TestLogin;

@@ -40,7 +40,13 @@ cascade src/wdmLogin/Login.c = include/gnuLogo.xpm;
 #include-cooked-nowarn [fromto %0% %0%.dep [match_mask src/%0%.c [source_files]]]
 cascade include/wdmconfig.h = include/config.h;
 
-bin/% : [c_to_o [select_c %]] etc/Howto.conf
+bin/%.a : [c_to_o [select_c %]] etc/Howto.conf
+{
+	ar cru bin/%.a [resolve [c_to_o [select_c %]]];
+	ranlib bin/%.a;
+}
+
+bin/% : [c_to_o [select_c %]] etc/Howto.conf [lib_deps [get_libs %_]]
 {
 	[cc] [get_cflags %_] [get_ldflags %_]
 		[resolve [c_to_o [select_c %]]]
