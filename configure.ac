@@ -396,14 +396,6 @@ AC_SUBST(NLSDIR)
 AC_SUBST(XGETTEXT)
 AC_SUBST(MSGFMT)
 
-dnl ==========================================================
-AC_MSG_RESULT(full gfx include paths and flags are $XCFLAGS $GFXFLAGS)
-AC_MSG_RESULT(full gfx paths and libraries are $XLDFLAGS $GFXLIBS)
-AC_MSG_RESULT(gfx library formats: $supported_gfx)
-dnl ==========================================================
-
-
-
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
