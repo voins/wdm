@@ -79,6 +79,7 @@ int	wdmRoot;		/* if true only username=root and verified */
 				/* password can do Exit, reboot or halt */
 int	wdmAnimations;		/* if true, enable shake and rollup animations */
 				/* if false, disable animations */
+char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -357,6 +358,8 @@ struct dmResources wdmResources[] = {
 				""} ,
 { "wdmAnimations",	"WdmAnimations",	DM_BOOL,	&wdmAnimations,
 				"true"} ,
+{ "wdmLocale",		"WdmLocale",		DM_STRING,	&wdmLocale,
+				""} ,
 };
 
 # define NUM_WDM_RESOURCES	(sizeof wdmResources/\
