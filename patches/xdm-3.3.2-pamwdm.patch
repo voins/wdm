@@ -1,6 +1,6 @@
 diff -Ncr xdm/verify.c xdm-pam/verify.c
-*** xdm/verify.c	Tue May 27 15:22:28 1997
---- xdm-pam/verify.c	Mon Feb 28 19:53:26 2000
+*** xdm/verify.c	Tue May 27 10:22:28 1997
+--- xdm-pam/verify.c	Tue Jan 23 14:54:49 2001
 ***************
 *** 41,46 ****
 --- 41,49 ----
@@ -210,8 +210,8 @@ diff -Ncr xdm/verify.c xdm-pam/verify.c
   	verify->gid = p->pw_gid;
   	home = p->pw_dir;
 diff -Ncr xdm/session.c xdm-pam/session.c
-*** xdm/session.c	Mon Mar  2 20:56:36 1998
---- xdm-pam/session.c	Mon Feb 28 19:59:25 2000
+*** xdm/session.c	Mon Mar  2 14:56:36 1998
+--- xdm-pam/session.c	Tue Jan 23 14:55:27 2001
 ***************
 *** 55,60 ****
 --- 55,66 ----
@@ -241,22 +241,22 @@ diff -Ncr xdm/session.c xdm-pam/session.c
   static SIGVAL
   catchTerm (n)
 ***************
-*** 482,487 ****
---- 492,505 ----
-  	    }
-  	}
-  #endif /* K5AUTH */
+*** 448,453 ****
+--- 458,471 ----
+  SessionExit (d, status, removeAuth)
+      struct display  *d;
+  {
 + #ifdef USE_PAM
-+ 	if (pamh) {
-+ 	  /* shutdown PAM session */
-+ 	  pam_close_session(pamh, 0);
-+ 	  pam_end(pamh, PAM_SUCCESS);
-+ 	  pamh = NULL;
-+ 	}
++     if (pamh) {
++ 	/* shutdown PAM session */
++ 	pam_close_session(pamh, 0);
++ 	pam_end(pamh, PAM_SUCCESS);
++ 	pamh = NULL;
++     }
 + #endif
-      }
-      Debug ("Display %s exiting with status %d\n", d->name, status);
-      exit (status);
+      /* make sure the server gets reset after the session is over */
+      if (d->serverPid >= 2 && d->resetSignal)
+  	kill (d->serverPid, d->resetSignal);
 ***************
 *** 513,523 ****
   		Debug ("%s ", *f);
@@ -300,8 +300,8 @@ diff -Ncr xdm/session.c xdm-pam/session.c
   #ifndef AIXV3
   #ifndef HAS_SETUSERCONTEXT
 diff -Ncr xdm/util.c xdm-pam/util.c
-*** xdm/util.c	Thu Oct  3 17:49:48 1996
---- xdm-pam/util.c	Mon Feb 28 18:52:07 2000
+*** xdm/util.c	Thu Oct  3 12:49:48 1996
+--- xdm-pam/util.c	Tue Jan 23 14:54:49 2001
 ***************
 *** 141,146 ****
 --- 141,172 ----
