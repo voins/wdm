@@ -18,6 +18,7 @@
  *
  * prefs.c: wdmPrefs program. configuration tool for wdm
  */
+#include <config.h>
 #include <wdmlib.h>
 #include <stdlib.h>
 
@@ -25,8 +26,73 @@ typedef struct _wdmPrefsPanel
 {
 	WMWindow *win;
 	WMFrame *fsects;
+	WMArray *sections;
 } wdmPrefsPanel;
-wdmPrefsPanel wdmPrefs;
+wdmPrefsPanel wdmPrefs = {NULL, NULL, NULL};
+
+typedef struct _Panel
+{
+	WMBox *box;
+	char *description;
+} Panel;
+
+static void
+ChangeSection(WMWidget *self, void *data)
+{
+}
+
+static void
+DestroyButton(void *data)
+{
+}
+
+void
+AddSectionButton(Panel *panel, const char *iconfile)
+{
+	WMButton *button;
+	char *filename;
+	RColor color;
+	WMPixmap *icon;
+
+	button = WMCreateCustomButton(wdmPrefs.fsects,
+			WBBStateLightMask | WBBStateChangeMask);
+	WMResizeWidget(button, 70, 70);
+	WMMoveWidget(button, WMGetArrayItemCount(wdmPrefs.sections) *
+			WMWidgetWidth(button), 0);
+	WMSetButtonImagePosition(button, WIPImageOnly);
+	WMSetButtonAction(button, ChangeSection, panel);
+	WMHangData(button, panel);
+
+	if(panel && panel->description)
+		WMSetBalloonTextForView(panel->description,
+				WMWidgetView(button));
+
+	WMAddToArray(wdmPrefs.sections, button);
+	if(WMGetArrayItemCount(wdmPrefs.sections) > 1)
+		WMGroupButtons(WMGetFromArray(wdmPrefs.sections, 0), button);
+
+	WMResizeWidget(wdmPrefs.fsects,
+			WMGetArrayItemCount(wdmPrefs.sections) * 70, 70);
+
+	if(iconfile)
+	{
+		color.red = 0xae;
+		color.green = 0xaa;
+		color.blue = 0xae;
+		color.alpha = 0;
+		filename = WMPathForResourceOfType(iconfile, NULL);
+		if(filename)
+		{
+			icon = WMCreateBlendedPixmapFromFile(
+				WMWidgetScreen(button), filename, &color);
+			WMSetButtonImage(button, icon);
+			if(icon) WMReleasePixmap(icon);
+			wfree(filename);
+		}
+	}
+
+	WMMapWidget(button);
+}
 
 void
 closeAction(WMWidget *self, void *data)
@@ -105,6 +171,9 @@ CreateSections(WMBox *box)
 	WMMapWidget(frame);
 	WMSetFrameRelief(frame, WRFlat);
 
+	AddSectionButton(NULL, NULL);
+	AddSectionButton(NULL, NULL);
+
 	/* TODO: here will be calls to initers
 	 * of various sections with parent = frame. */
 
@@ -139,11 +208,13 @@ int main(int argc, char *argv[])
 {
 	WMScreen *scr;
 
+	wdmPrefs.sections = WMCreateArrayWithDestructor(0, DestroyButton);
 	WMInitializeApplication("wdmPrefs", &argc, argv);
 	scr = WMOpenScreen(NULL);
 	if(scr == NULL)
 		WDMPanic("could not initialize Screen");
 
+	WMSetResourcePath(WGFXDIR);
 
 	CreatePrefsWindow(scr);
 	WMResizeWidget(wdmPrefs.win, 600, 400);
