@@ -1,0 +1,37 @@
+%0%.c.Md: %0%.c etc/makefile.cook 
+{
+	c_incl -nc -ns -eia
+		[prepost -I /include [search_list]]
+		[resolve %0%.c]
+		[addprefix -rlp\= [search_list]]
+		-nsri
+		-o [target];
+}
+
+%0%.c.M: %0%.c.Md etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+{
+	rm -f [target];
+	echo "%0%.o: %0%.c" [collect cat [resolve %0%.c.Md]] > [target];
+	echo -e "\"\\t\"" \\$\\(CC\\) -c \\$\\([get_program %0]cflags\\) %0%.c -o %0%.o >> [target];
+	echo >> [target];
+}
+
+bin/M/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+{
+	echo "bin/%: " [c_to_o [select_c %]] > [target];
+	echo -e "\"\\t\"" mkdir -p bin >> [target];
+	echo -e "\"\\t\"" \\$\\(CC\\) \\$\\(%_ldflags\\) [c_to_o [select_c %]] \\$\\(%_libs\\) -o bin/% >> [target]; 
+	echo >> [target];
+}
+
+Makefile.in : etc/Howto.conf.in etc/Makefile.sh etc/makefile.cook etc/Howto.cook
+	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
+	[fromto bin/% bin/M/%.M [program_list]]
+{
+	sh [resolve etc/Makefile.sh] [resolve etc/Howto.conf.in] [target];
+	echo all\: [program_list] >> [target];
+	echo >> [target];
+	cat [resolve [fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]] >> [target];
+	cat [resolve [fromto bin/% bin/M/%.M [program_list]]] >> [target];
+}
+

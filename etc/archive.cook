@@ -1,0 +1,21 @@
+archive_files =
+	configure
+	Makefile.in
+	include/config.h.in
+	[source_files];
+
+release = 1.20.1;
+
+wdm-[release].tar.bz2 : wdm-[release].tar.gz
+{
+	gunzip < wdm-[release].tar.gz | bzip2 > [target];
+}
+
+wdm-[release].tar.gz : [archive_files]
+{
+	tar --create --file - --dereference [resolve [archive_files]]
+		| tardy -unu 0 -gnu 0 -una Alexey -gna Voinov 
+			-p wdm-[release] -ms 644 -mc 07022 -now
+			[prepost "-rp=" "" [search_list]]
+		| gzip -9 > [target];
+}

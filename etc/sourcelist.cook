@@ -1,0 +1,3 @@
+change_files = [collect aegis -list cf -terse -p [project] -c [change]];
+project_files = [collect aegis -list pf -terse -p [project]];
+source_files = [sort [stringset [change_files] [project_files]]];
