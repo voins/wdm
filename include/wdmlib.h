@@ -58,5 +58,11 @@ extern int WDMDebugLevel(int level);
 extern FILE *WDMDebugStream(FILE *debugfile);
 extern void WDMDebug(char *fmt, ...);
 
+
+extern void *WDMSockaddrGetPort(struct sockaddr *from, int *len);
+extern void *WDMSockaddrGetAddr(struct sockaddr *from, int *len);
+extern char *WDMGetHostName(struct sockaddr *from);
+extern char *WDMGetHostAddr(struct sockaddr *from);
+
 #endif
 
