@@ -82,22 +82,6 @@ makeEnv (char *name, char *value)
 	return result;
 }
 
-char *
-getEnv (char **e, char *name)
-{
-	int	l = strlen (name);
-
-	if (!e) return 0;
-
-	while (*e) {
-		if ((int)strlen (*e) > l && !strncmp (*e, name, l) &&
-			(*e)[l] == '=')
-			return (*e) + l + 1;
-		++e;
-	}
-	return 0;
-}
-
 char **
 setEnv (char **e, char *name, char *value)
 {

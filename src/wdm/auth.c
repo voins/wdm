@@ -1083,7 +1083,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
     WDMDebug("SetUserAuthorization\n");
     auths = d->authorizations;
     if (auths) {
-	home = getEnv (verify->userEnviron, "HOME");
+	home = WDMGetEnv(verify->userEnviron, "HOME");
 	lockStatus = LOCK_ERROR;
 	if (home) {
 	    strcpy (home_name, home);
@@ -1229,7 +1229,7 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 
     if (!(auths = d->authorizations))
 	return;
-    home = getEnv (verify->userEnviron, "HOME");
+    home = WDMGetEnv(verify->userEnviron, "HOME");
     if (!home)
 	return;
     WDMDebug("RemoveUserAuthorization\n");

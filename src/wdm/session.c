@@ -731,11 +731,11 @@ StartClient (
 #endif /* K5AUTH */
 	bzero(passwd, strlen(passwd));
 	SetUserAuthorization (d, verify);
-	home = getEnv (verify->userEnviron, "HOME");
+	home = WDMGetEnv(verify->userEnviron, "HOME");
 	if (home)
 	    if (chdir (home) == -1) {
 		WDMError("user \"%s\": cannot chdir to home \"%s\" (err %d), using \"/\"\n",
-			  getEnv (verify->userEnviron, "USER"), home, errno);
+			  WDMGetEnv(verify->userEnviron, "USER"), home, errno);
 		chdir ("/");
 		verify->userEnviron = setEnv(verify->userEnviron, "HOME", "/");
 	    }

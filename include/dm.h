@@ -452,7 +452,6 @@ extern char *localHostname (void);
 extern char **parseArgs (char **argv, char *string);
 extern char **setEnv (char **e, char *name, char *value);
 extern char **putEnv(const char *string, char **env);
-extern char *getEnv (char **e, char *name);
 extern void CleanUpChild (void);
 extern void freeArgs (char **argv);
 extern void freeEnv (char **env);
