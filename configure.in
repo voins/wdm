@@ -7,6 +7,61 @@ AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
+
+
+AC_ARG_VAR(XRDB_PATH, [Path to xrdb program from X])
+AC_PATH_PROG(XRDB_PATH, xrdb)
+AC_DEFINE_UNQUOTED(XRDB_PROGRAM, "$XRDB_PATH", [Value is a path for xrdb program])
+AC_SUBST(XRDB_PATH)
+
+
+AC_ARG_VAR(XCONSOLE, [Path to xconsole program])
+AC_PATH_PROG(XCONSOLE, xconsole)
+AC_SUBST(XCONSOLE)
+
+
+AC_ARG_VAR(SHUTDOWN, [Path to shutdown program])
+AC_PATH_PROG(SHUTDOWN,shutdown,,$PATH:/sbin:/usr/sbin)
+AC_SUBST(SHUTDOWN)
+
+
+AC_ARG_VAR(FAILSAFE_PATH, [Path to program, that is used as failsafe client])
+AC_PATH_PROG(FAILSAFE_PATH, xterm)
+AC_DEFINE_UNQUOTED(DEF_FAILSAFE_CLIENT, "$FAILSAFE_PATH", [Value is a path for program used as failsafe client])
+AC_DEFINE_UNQUOTED(DEF_SESSION, "$FAILSAFE_PATH -ls", [Value is a command for default session])
+AC_SUBST(FAILSAFE_PATH)
+
+
+AC_ARG_VAR(DEF_SERVER, [Path to default X server])
+AC_PATH_PROG(DEF_SERVER, X)
+AC_DEFINE_UNQUOTED(DEF_SERVER_LINE, ":0 local $DEF_SERVER :0", [Value is default command to start X server])
+AC_SUBST(DEF_SERVER)
+
+
+AC_ARG_VAR(SYSTEM_SHELL, [Path to default shell])
+AC_PATH_PROG(SYSTEM_SHELL, sh)
+AC_DEFINE_UNQUOTED(DEF_SYSTEM_SHELL, "$SYSTEM_SHELL", [Value is default system shell])
+
+
+AC_PATH_PROG(SHELL_BASH,bash,,$PATH:/usr/local/bin)
+AC_PATH_PROG(SHELL_SH,sh)
+
+dnl TODO: why need bash? <<<
+if test "x$SHELL_SH" = "x"; then
+	AC_MSG_ERROR(the program sh cannot be found)
+fi
+dnl hope this is correct:
+if test "x$SHELL_BASH" = "x"; then
+	SHELL_LOGIN="$SHELL_SH -"
+else
+	SHELL_LOGIN="$SHELL_BASH -login"
+fi
+AC_SUBST(SHELL_LOGIN)
+AC_SUBST(SHELL_BASH)
+AC_SUBST(SHELL_SH)
+dnl >>>
+
+
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h syslog.h)
 
@@ -89,6 +144,7 @@ AC_CHECK_FUNC(shmat, [],
 	])
 AC_SUBST(LIBSOCKET)
 
+LIBUCB=
 AC_CHECK_LIB(ucb, killpg, [LIBUCB="-lucb"]) dnl for Solaris2.4
 AC_SUBST(LIBUCB)
 
@@ -547,43 +603,8 @@ AC_SUBST(WMLIST)
 
 
 
-AC_PATH_PROG(SHELL_BASH,bash,,$PATH:/usr/local/bin)
-AC_PATH_PROG(SHELL_SH,sh)
 
-if test "x$SHELL_SH" = "x"; then
-	AC_MSG_ERROR(the program sh cannot be found)
-fi
-dnl hope this is correct:
-if test "x$SHELL_BASH" = "x"; then
-	SHELL_LOGIN="$SHELL_SH -"
-else
-	SHELL_LOGIN="$SHELL_BASH -login"
-fi
-AC_SUBST(SHELL_LOGIN)
-AC_SUBST(SHELL_BASH)
-AC_SUBST(SHELL_SH)
 
-AC_PATH_PROG(XRDB_PATH,xrdb)
-AC_DEFINE_UNQUOTED(XRDB_PROGRAM, "$XRDB_PATH", [Value is a path for xrdb program])
-AC_SUBST(XRDB_PATH)
-
-AC_PATH_PROG(FAILSAFE_PATH,xterm)
-AC_DEFINE_UNQUOTED(DEF_FAILSAFE_CLIENT, "$FAILSAFE_PATH", [Value is a path for program used as failsafe client])
-AC_DEFINE_UNQUOTED(DEF_SESSION, "$FAILSAFE_PATH -ls", [Value is a command for default session])
-AC_SUBST(FAILSAFE_PATH)
-
-AC_PATH_PROG(DEF_SERVER,X)
-AC_DEFINE_UNQUOTED(DEF_SERVER_LINE, ":0 local $DEF_SERVER :0", [Value is default server line])
-AC_SUBST(DEF_SERVER)
-
-AC_PATH_PROG(SYSTEM_SHELL,sh)
-AC_DEFINE_UNQUOTED(DEF_SYSTEM_SHELL, "$SYSTEM_SHELL", [Value is default system shell])
-
-AC_PATH_PROG(XCONSOLE,xconsole)
-AC_SUBST(XCONSOLE)
-
-AC_PATH_PROG(SHUTDOWN,shutdown,,$PATH:/sbin:/usr/sbin)
-AC_SUBST(SHUTDOWN)
 
 dnl ==========================================================
 AC_MSG_RESULT(full gfx include paths and flags are $XCFLAGS $GFXFLAGS)
