@@ -267,7 +267,7 @@ LinksDone:
 	cp -pf ../xdm/resource.c resource.c
 	patch -p1 <../patches/xdm-3.3.2-resource2.patch
 	cp -pf ../xdm/greeter/verify.c verify.c
-	patch -p2 <../patches/xdm-3.3.2-pamwdm.patch
+	patch -p1 <../patches/xdm-3.3.2-pamwdm.patch
 	touch LinksDone
 
 

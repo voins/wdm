@@ -1,6 +1,6 @@
-diff -Ncr xdm/greeter/verify.c xdm-pam/greeter/verify.c
-*** xdm/greeter/verify.c	Tue May 27 15:22:28 1997
---- xdm-pam/greeter/verify.c	Mon Feb 28 19:53:26 2000
+diff -Ncr xdm/verify.c xdm-pam/verify.c
+*** xdm/verify.c	Tue May 27 15:22:28 1997
+--- xdm-pam/verify.c	Mon Feb 28 19:53:26 2000
 ***************
 *** 41,46 ****
 --- 41,49 ----

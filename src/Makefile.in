@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -352,7 +352,7 @@ TestLogin: $(TestLogin_OBJECTS) $(TestLogin_DEPENDENCIES)
 all-recursive install-data-recursive install-exec-recursive \
 installdirs-recursive install-recursive uninstall-recursive  \
 check-recursive installcheck-recursive info-recursive dvi-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
+	@set fnord $$MAKEFLAGS; amf=$$2; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -372,7 +372,7 @@ check-recursive installcheck-recursive info-recursive dvi-recursive:
 
 mostlyclean-recursive clean-recursive distclean-recursive \
 maintainer-clean-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
+	@set fnord $$MAKEFLAGS; amf=$$2; \
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
@@ -741,7 +741,7 @@ LinksDone:
 	cp -pf ../xdm/resource.c resource.c
 	patch -p1 <../patches/xdm-3.3.2-resource2.patch
 	cp -pf ../xdm/greeter/verify.c verify.c
-	patch -p2 <../patches/xdm-3.3.2-pamwdm.patch
+	patch -p1 <../patches/xdm-3.3.2-pamwdm.patch
 	touch LinksDone
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
