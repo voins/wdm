@@ -134,47 +134,6 @@ fi
 AC_SUBST(DFLAGS)
 
 dnl ===========================================
-dnl make sure xdm has been gunziped and untared
-dnl
-dnl if this is not done, make will fail
-dnl confusion will occur
-dnl ===========================================
-
-AC_MSG_CHECKING(if  xdm source exists)
-if test -f xdm/dm.h; then
-    xdmexists=yes
-else
-    xdmexists=no
-fi
-AC_MSG_RESULT($xdmexists)
-
-if test "$xdmexists" = no; then
-    AC_MSG_CHECKING([check if xdm-332.tar.gz exists])
-    if test -f xdm-332.tar.gz; then
-	xdmtarexists=yes
-    else
-	xdmtarexists=no
-    fi
-    AC_MSG_RESULT($xdmtarexists)
-
-    if test "$xdmtarexists" = yes; then
-	(gunzip -c xdm-332.tar.gz | tar xf -)
-    fi
-
-    AC_MSG_CHECKING(again if xdm source exists)
-    if test -f xdm/dm.h; then
-	xdmexists=yes
-    else
-	xdmexists=no
-    fi
-    AC_MSG_RESULT($xdmexists)
-
-    if test "$xdmexists" = no; then
-	AC_MSG_ERROR([xdm source and tar missing, create it and rerun])
-    fi
-fi
-
-dnl ===========================================
 dnl		Stuff that uses X
 dnl ===========================================
 
