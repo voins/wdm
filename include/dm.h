@@ -450,8 +450,6 @@ extern void CreateWellKnownSockets (void);
 /* in util.c */
 extern char *localHostname (void);
 extern char **parseArgs (char **argv, char *string);
-extern char **setEnv (char **e, char *name, char *value);
-extern char **putEnv(const char *string, char **env);
 extern void CleanUpChild (void);
 extern void freeArgs (char **argv);
 extern void freeEnv (char **env);

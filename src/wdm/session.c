@@ -126,8 +126,8 @@ static	struct dlfuncs	dlfuncs = {
 	DeleteXloginResources,
 	source,
 	defaultEnv,
-	setEnv,
-	putEnv,
+	WDMSetEnv,
+	WDMPutEnv,
 	parseArgs,
 	printEnv,
 	systemEnv,
@@ -569,7 +569,7 @@ StartClient (
 	    long i;
 	    char **pam_env = pam_getenvlist(pamh);
 	    for(i = 0; pam_env && pam_env[i]; i++) {
-		verify->userEnviron = putEnv(pam_env[i], verify->userEnviron);
+		verify->userEnviron = WDMPutEnv(verify->userEnviron, pam_env[i]);
 	    }
 	}
 #endif
@@ -711,7 +711,7 @@ StartClient (
 	    if (result == 0) {
 		/* point session clients at the Kerberos credentials cache */
 		verify->userEnviron =
-		    setEnv(verify->userEnviron,
+		    WDMSetEnv(verify->userEnviron,
 			   "KRB5CCNAME", Krb5CCacheName(d->name));
 	    } else {
 		for (i = 0; i < d->authNum; i++)
@@ -737,7 +737,7 @@ StartClient (
 		WDMError("user \"%s\": cannot chdir to home \"%s\" (err %d), using \"/\"\n",
 			  WDMGetEnv(verify->userEnviron, "USER"), home, errno);
 		chdir ("/");
-		verify->userEnviron = setEnv(verify->userEnviron, "HOME", "/");
+		verify->userEnviron = WDMSetEnv(verify->userEnviron, "HOME", "/");
 	    }
 	if (verify->argv) {
 		WDMDebug("executing session %s\n", verify->argv[0]);
@@ -898,7 +898,7 @@ defaultEnv (void)
     {
 	value = getenv (*exp);
 	if (value)
-	    env = setEnv (env, *exp, value);
+	    env = WDMSetEnv(env, *exp, value);
     }
     return env;
 }
@@ -908,19 +908,19 @@ systemEnv (struct display *d, char *user, char *home)
 {
     char	**env;
     
-    env = defaultEnv ();
-    env = setEnv (env, "DISPLAY", d->name);
+    env = defaultEnv();
+    env = WDMSetEnv(env, "DISPLAY", d->name);
     if (home)
-	env = setEnv (env, "HOME", home);
+	env = WDMSetEnv(env, "HOME", home);
     if (user)
     {
-	env = setEnv (env, "USER", user);
-	env = setEnv (env, "LOGNAME", user);
+	env = WDMSetEnv(env, "USER", user);
+	env = WDMSetEnv(env, "LOGNAME", user);
     }
-    env = setEnv (env, "PATH", d->systemPath);
-    env = setEnv (env, "SHELL", d->systemShell);
+    env = WDMSetEnv(env, "PATH", d->systemPath);
+    env = WDMSetEnv(env, "SHELL", d->systemShell);
     if (d->authFile)
-	    env = setEnv (env, "XAUTHORITY", d->authFile);
+	    env = WDMSetEnv(env, "XAUTHORITY", d->authFile);
     return env;
 }
 

@@ -1204,9 +1204,9 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	    unlink (new_name);
 	}
 	if (setenv) {
-	    verify->userEnviron = setEnv (verify->userEnviron,
+	    verify->userEnviron = WDMSetEnv(verify->userEnviron,
 				    "XAUTHORITY", envname);
-	    verify->systemEnviron = setEnv (verify->systemEnviron,
+	    verify->systemEnviron = WDMSetEnv(verify->systemEnviron,
 				    "XAUTHORITY", envname);
 	}
 	XauUnlockAuth (name);

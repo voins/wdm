@@ -218,10 +218,10 @@ static int InitGreet (struct display *d)
         env = (char **)systemEnv(d, (char*)NULL, FAKEHOME);
 
 	if(*wdmLocale)
-		env = setEnv(env, "LANG", wdmLocale);
+		env = WDMSetEnv(env, "LANG", wdmLocale);
 
 	if(*wdmCursorTheme)
-		env = setEnv(env, "XCURSOR_THEME", wdmCursorTheme);
+		env = WDMSetEnv(env, "XCURSOR_THEME", wdmCursorTheme);
 
 	if((argv[0] = strrchr(wdmLogin, '/')) == NULL)
 		argv[0] = wdmLogin;
