@@ -1,4 +1,12 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.21 -- Jan 07 2003
+	- development started again. This release collects almost
+	  all patches I can find on net. If you have more patches
+	  please send them.
+	- directories rearranged, build system rewritten (see
+	  README.voins for explanations).
+	- everything is ready to start migration to newer xdm base.
+	
 wdm-1.20 -- Feb 29 2000
 	- a problem which forbid for some wdm's resources to be set
 	  differently for multiple displays was corrected.

@@ -1,4 +1,4 @@
-1.21	- still not released - Alexey Voinov
+1.21	- Jan 05 2003 - Alexey Voinov <voins@voins.program.ru>
 	- Applied all my patches used in ALT Linux package. 
 	  This fixes problem with long passwords, makes wdm
 	  compile and run with newer WindowMaker (post 0.80.2 cvs),
@@ -8,13 +8,12 @@
 	  minor changes.
 	- configure.in rewriten and renamed to configure.ac. Can be broken 
 	  for some systems. Mail me if it is true for you. 
-	  autoconf >= 2.53 is now required.
+	  autoconf >= 2.53 is now required (for developers).
 	- Directories rearranged. New directory structure allows me to
 	  fully automate generation of Makefile.in (automake is not used
 	  anymore). Now src/ keeps complete wdm sources,
 	  xdm/ keeps complete xdm sources, used as a base for wdm.
 	  xdm/ directory is needed for referencal purposes only.
-	- all warnings removed (I hate warnings)
 1.20	- Feb 29 2000 - Jerome Alet
 	- Jerome Alet: Modified xdm-3.3.2-resource2.patch to allow
 	  most of wdm's configuration resources to be set on a per

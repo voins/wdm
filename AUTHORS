@@ -34,8 +34,8 @@ would not have happened.
 Thanks to the folks working on kde for their automake/autoconf
 stuff which they did for kdm.
 
-Please see the README file in src/pixmaps (or the WDMDIR/pixmaps
-directory for information about the source of the images.
+Please see the README.pixmaps file for information about the source 
+of the images.
 
 Gene Czarcinski <genec@mindspring.com>
 
