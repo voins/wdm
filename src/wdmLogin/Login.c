@@ -67,48 +67,7 @@ static char *displayArg = displayArgDefault;
 static int WmDefUser = False;	/* default username */
 
 static char *helpArg = NULL;
-static char *HelpMsg =
-N_("wdm is a graphical "
-   "interface used to authenticate a user to "
-   "the system and perform the login process.\n\n\n"
-   "Enter your user name (userid) at the prompt and press "
-   "<enter>.  The panel will then present a prompt to "
-   "enter your password.  Enter the password and "
-   "press <enter>.\n\n\n"
-   "The login will then be performed and your "
-   "window manager started.\n\n\n"
-   "The Start WM PopUp selection specifies the parameter "
-   "to pass to Xsession to start the window manager.\n\n\n"
-   "NoChange will start the same window manager the user "
-   "used for their last session.\n\n\n"
-   "failsafe is a simple xterm session and the other "
-   "listed options will start the indicated "
-   "(installation specific) window manager.\n\n\n"
-   "The Options PopUp selection specifies:\n\n"
-   "     Login - logon to the system\n\n"
-   "     Reboot - shutdown and reboot the system\n\n"
-   "     Halt - shutdown the system and halt\n\n"
-   "     ExitLogin - exit the display manager\n\n\n"
-   "The installation may require a valid username and password "
-   "or username=root and root's password to perform Reboot, "
-   "Halt or Exit.\n\n\n"
-   "NOTE:  "
-   "ExitLogin (or, as it is sometimes refered to: exit) "
-   "is intended for use primarily in wdm testing.  "
-   "It will shut down the x-server but the wdm must be "
-   "terminated by other means.  Starting wdm as a detached "
-   "process will result that it will be very difficult "
-   " to terminate.\n\n\n"
-   "ExitLogin performs the same operation as ctrl-r does "
-   "for xdm.\n\n\n"
-   "1. The StartOver button will erase the current login "
-   "Information and begin the login process again.\n\n\n"
-   "2. See the man page for additional information on "
-   "configuring this package.  "
-   "There are numerous options for setting "
-   "the background color or pixmap, the LoginPanel logo, "
-   "the selection of window managers to start, and "
-   "the login verification for Reboot, halt and exit.");
+static char *HelpMsg = N_("no help available.");
 
 /*###################################################################*/
 
