@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2003-02-08 16:40+0300\n"
+"POT-Creation-Date: 2003-02-08 22:32+0300\n"
 "PO-Revision-Date: 2003-02-07 19:59+0300\n"
 "Last-Translator: Hiroshi Miura <miura@da-cha.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,82 +15,199 @@ msgstr ""
 "Content-Type: text/plain; charset=euc-jp\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/wdmLogin/Login.c:171
+#: src/wdmLogin/Login.c:84
+msgid ""
+"wdm is a graphical interface used to authenticate a user to the system and "
+"perform the login process.\n"
+"\n"
+"\n"
+"Enter your user name (userid) at the prompt and press <enter>.  The panel "
+"will then present a prompt to enter your password.  Enter the password and "
+"press <enter>.\n"
+"\n"
+"\n"
+"The login will then be performed and your window manager started.\n"
+"\n"
+"\n"
+"The Start WM PopUp selection specifies the parameter to pass to Xsession to "
+"start the window manager.\n"
+"\n"
+"\n"
+"NoChange will start the same window manager the user used for their last "
+"session.\n"
+"\n"
+"\n"
+"failsafe is a simple xterm session and the other listed options will start "
+"the indicated (installation specific) window manager.\n"
+"\n"
+"\n"
+"The Options PopUp selection specifies:\n"
+"\n"
+"     Login - logon to the system\n"
+"\n"
+"     Reboot - shutdown and reboot the system\n"
+"\n"
+"     Halt - shutdown the system and halt\n"
+"\n"
+"     ExitLogin - exit the display manager\n"
+"\n"
+"\n"
+"The installation may require a valid username and password or username=root "
+"and root's password to perform Reboot, Halt or Exit.\n"
+"\n"
+"\n"
+"NOTE:  ExitLogin (or, as it is sometimes refered to: exit) is intended for "
+"use primarily in wdm testing.  It will shut down the x-server but the wdm "
+"must be terminated by other means.  Starting wdm as a detached process will "
+"result that it will be very difficult  to terminate.\n"
+"\n"
+"\n"
+"ExitLogin performs the same operation as ctrl-r does for xdm.\n"
+"\n"
+"\n"
+"1. The StartOver button will erase the current login Information and begin "
+"the login process again.\n"
+"\n"
+"\n"
+"2. See the man page for additional information on configuring this package.  "
+"There are numerous options for setting the background color or pixmap, the "
+"LoginPanel logo, the selection of window managers to start, and the login "
+"verification for Reboot, halt and exit."
+msgstr ""
+"%s -- Version %s\n"
+"\n"
+"\n"
+"\n"
+"\n"
+"%s はユーザのシステム認証を行うのに用いるグラフィカルインターフェースで、ログ\n"
+"イン処理を行います。\n"
+"\n"
+"\n"
+"\n"
+"あなたのユーザ名(userid)を欄へ入力し、<enter>を押してください。パネルには、あ\n"
+"なたのパスワードを入力するよう表示されます。パスワードを入力し、<enter>を押し\n"
+"てください。\n"
+"\n"
+"ログインが行われ、あなたの設定したウインドウマネージャが開始されます。\n"
+"\n"
+"\n"
+"開始WMポップアップを選択することで、Xsessionへ開始するウインドウマネージャの\n"
+"パラメータを指定することができます。\n"
+"\n"
+"変更なし は前回ユーザが使用したのと同じウインドウマネージャを開始させます。\n"
+"\n"
+"フェイルセーフは、単純なxtermセッションを開始します。また、残りは(インストー\n"
+"ル時に決まる)それぞれのウインドウマネージャを開始させます。\n"
+"\n"
+"オプションポップアップは\n"
+"\n"
+"      ログイン - システムにログオンします。\n"
+"\n"
+"      再起動   - システムのシャットダウンとリブートを行います。\n"
+"\n"
+"      終了     - システムをシャットダウンし停止します。\n"
+"\n"
+"      ログイン終了 - ディスプレーマネージャを終了します。\n"
+"\n"
+"\n"
+"インストール条件では、再起動や終了、ログイン終了の場合、有効なユーザ名とパス\n"
+"ワードか、username=root とルートのパスワードが必要です。\n"
+"\n"
+"\n"
+"注意: ログイン終了 (または、時々は終了として扱われますが）は、一義的にはwdmの\n"
+"テストのために準備されています。これは、Xサーバを停止し、wdmが違う意味で終了\n"
+"します。独立したプロセスとしてwdmを開始することは、終了させることをとても難し\n"
+"くするからだ。\n"
+"\n"
+"\n"
+"ログイン終了は、xdmにおけるCtrl-rと同じ操作を提供する。\n"
+"\n"
+"\n"
+"1. やりなおしボタンは現在のログイン情報を消去し、ログイン処理を最初から行\n"
+"う。\n"
+"\n"
+"\n"
+"2. このパッケージの設定について追加の情報を見たいときには、manページを見るこ\n"
+"と。バックグランドの色やpixmap、LoginPanel ロゴ、開始するウインドウマネージャ\n"
+"の選択肢の指定、再起動、終了、停止のログイン認証を設定するようなたくさんのオ\n"
+"プションがある。"
+
+#: src/wdmLogin/Login.c:166
 msgid "Login"
 msgstr "ログイン"
 
-#: src/wdmLogin/Login.c:171
+#: src/wdmLogin/Login.c:166
 msgid "Reboot"
 msgstr "リブート"
 
-#: src/wdmLogin/Login.c:171
+#: src/wdmLogin/Login.c:166
 msgid "Halt"
 msgstr "終了"
 
-#: src/wdmLogin/Login.c:172
+#: src/wdmLogin/Login.c:167
 msgid "ExitLogin"
 msgstr "ログイン終了"
 
-#: src/wdmLogin/Login.c:301
+#: src/wdmLogin/Login.c:305
 msgid "NoChange"
 msgstr "変更なし"
 
-#: src/wdmLogin/Login.c:316
+#: src/wdmLogin/Login.c:320
 msgid "failsafe"
 msgstr "フェールセーフ"
 
-#: src/wdmLogin/Login.c:411
+#: src/wdmLogin/Login.c:415
 msgid "ERROR"
 msgstr "エラー"
 
-#: src/wdmLogin/Login.c:453
+#: src/wdmLogin/Login.c:457
 msgid "Password:"
 msgstr "パスワード:"
 
-#: src/wdmLogin/Login.c:460 src/wdmLogin/Login.c:741
+#: src/wdmLogin/Login.c:464 src/wdmLogin/Login.c:745
 msgid "Login name:"
 msgstr "ログイン名:"
 
-#: src/wdmLogin/Login.c:485
+#: src/wdmLogin/Login.c:489
 msgid "invalid name"
 msgstr "不正な名前"
 
-#: src/wdmLogin/Login.c:504
+#: src/wdmLogin/Login.c:508
 msgid "validating"
 msgstr "認証中"
 
-#: src/wdmLogin/Login.c:506 src/wdmLogin/Login.c:534
+#: src/wdmLogin/Login.c:510 src/wdmLogin/Login.c:538
 msgid "exiting"
 msgstr "終了します"
 
-#: src/wdmLogin/Login.c:548
+#: src/wdmLogin/Login.c:552
 msgid "Close Help"
 msgstr "へルプを閉じる"
 
-#: src/wdmLogin/Login.c:553 src/wdmLogin/Login.c:828
+#: src/wdmLogin/Login.c:557 src/wdmLogin/Login.c:832
 msgid "Help"
 msgstr "へルプ"
 
-#: src/wdmLogin/Login.c:693
+#: src/wdmLogin/Login.c:697
 msgid "Login Authentication"
 msgstr "ログイン認証中"
 
-#: src/wdmLogin/Login.c:702
+#: src/wdmLogin/Login.c:706
 msgid "Welcome to"
 msgstr "ようこそ"
 
-#: src/wdmLogin/Login.c:783
+#: src/wdmLogin/Login.c:787
 msgid "Start WM"
 msgstr "WMスタート"
 
-#: src/wdmLogin/Login.c:800
+#: src/wdmLogin/Login.c:804
 msgid "Options"
 msgstr "オプション"
 
-#: src/wdmLogin/Login.c:835
+#: src/wdmLogin/Login.c:839
 msgid "Start Over"
 msgstr "やりなおし"
 
-#: src/wdmLogin/Login.c:842
+#: src/wdmLogin/Login.c:846
 msgid "Go!"
 msgstr "開始！"

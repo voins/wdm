@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wdm 1.22\n"
-"POT-Creation-Date: 2003-02-08 15:58+0300\n"
+"POT-Creation-Date: 2003-02-08 20:59+0300\n"
 "PO-Revision-Date: 2003-02-06 23:59+0300\n"
 "Last-Translator: Grigory Batalov <bga@altlinux.ru>\n"
 "Language-Team: None\n"
@@ -9,82 +9,198 @@ msgstr ""
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/wdmLogin/Login.c:171
+#: src/wdmLogin/Login.c:84
+msgid ""
+"wdm is a graphical interface used to authenticate a user to the system and "
+"perform the login process.\n"
+"\n"
+"\n"
+"Enter your user name (userid) at the prompt and press <enter>.  The panel "
+"will then present a prompt to enter your password.  Enter the password and "
+"press <enter>.\n"
+"\n"
+"\n"
+"The login will then be performed and your window manager started.\n"
+"\n"
+"\n"
+"The Start WM PopUp selection specifies the parameter to pass to Xsession to "
+"start the window manager.\n"
+"\n"
+"\n"
+"NoChange will start the same window manager the user used for their last "
+"session.\n"
+"\n"
+"\n"
+"failsafe is a simple xterm session and the other listed options will start "
+"the indicated (installation specific) window manager.\n"
+"\n"
+"\n"
+"The Options PopUp selection specifies:\n"
+"\n"
+"     Login - logon to the system\n"
+"\n"
+"     Reboot - shutdown and reboot the system\n"
+"\n"
+"     Halt - shutdown the system and halt\n"
+"\n"
+"     ExitLogin - exit the display manager\n"
+"\n"
+"\n"
+"The installation may require a valid username and password or username=root "
+"and root's password to perform Reboot, Halt or Exit.\n"
+"\n"
+"\n"
+"NOTE:  ExitLogin (or, as it is sometimes refered to: exit) is intended for "
+"use primarily in wdm testing.  It will shut down the x-server but the wdm "
+"must be terminated by other means.  Starting wdm as a detached process will "
+"result that it will be very difficult  to terminate.\n"
+"\n"
+"\n"
+"ExitLogin performs the same operation as ctrl-r does for xdm.\n"
+"\n"
+"\n"
+"1. The StartOver button will erase the current login Information and begin "
+"the login process again.\n"
+"\n"
+"\n"
+"2. See the man page for additional information on configuring this package.  "
+"There are numerous options for setting the background color or pixmap, the "
+"LoginPanel logo, the selection of window managers to start, and the login "
+"verification for Reboot, halt and exit."
+msgstr
+"wdm - это графический интерфейс для аутентификации пользователя\n"
+"в системе и выполнения процесса входа в систему.\n"
+"\n"
+"\n"
+"Укажите имя пользователя (или userid) в поле ввода и нажмите <enter>.\n"
+"На панели появится приглашение ввести пароль.  Наберите пароль\n"
+"и нажмите <enter>.\n"
+"\n"
+"\n"
+"Будет выполнен вход в систему и запущен оконный менеджер.\n"
+"\n"
+"\n"
+"Выбор из всплывающего списка \"Оконный менеджер\" определяет\n"
+"передаваемый Xsession параметр для запуска оконного менеджера.\n"
+"\n"
+"\n"
+"\"Тот же\" означает менеджер, использованный в прошлый раз.\n"
+"\n"
+"\n"
+"\"Безопасный\" - это простая xterm-сессия; остальные перечисленные\n"
+"значения означают запуск соответствующего оконного менеджера\n"
+"(зависит от настроек системы).\n"
+"\n"
+"\n"
+"Выбор из списка \"Действия\" определяет:\n"
+"\n"
+"     Войти - войти в систему\n"
+"\n"
+"     Перезагрузить - остановить и перезагрузить систему\n"
+"\n"
+"     Выключить - остановить систему и выключить\n"
+"\n"
+"     Выйти - покинуть программу\n"
+"\n"
+"\n"
+"Система может потребовать существующее имя и пароль или пароль\n"
+"root-а для выполнения перезагрузки, выключения или выхода.\n"
+"\n"
+"\n"
+"Примечание: пункт \"Выйти\" (или \"выход\") предназначен\n"
+"преимущественно для тестирования wdm.  Он отключает X-сервер,\n"
+"wdm должен быть остановлен другим способом.  Запуск wdm отдельным\n"
+"процессом чреват тем, что его потом трудно остановить.\n"
+"\n"
+"\n"
+"\"Выход\" выполняет ту же операцию, что и ctrl-r в xdm.\n"
+"\n"
+"\n"
+"1. Кнопка \"Стереть\" удаляет текущую информацию о пользователе\n"
+"и начинает процесс регистрации заново.\n"
+"\n"
+"\n"
+"2. Для дополнительной информации о настройках смотрите руководство\n"
+"(man wdm). Имеются несколько параметров для установки цвета или\n"
+"рисунка фона, заставки панели, выбора оконного менеджера и проверки\n"
+"пользователя перед перезагрузкой, выключением и выходом."
+
+#: src/wdmLogin/Login.c:166
 msgid "Login"
 msgstr "Вход"
 
-#: src/wdmLogin/Login.c:171
+#: src/wdmLogin/Login.c:166
 msgid "Reboot"
 msgstr "Перезапуск"
 
-#: src/wdmLogin/Login.c:171
+#: src/wdmLogin/Login.c:166
 msgid "Halt"
 msgstr "Выключение"
 
-#: src/wdmLogin/Login.c:172
+#: src/wdmLogin/Login.c:167
 msgid "ExitLogin"
 msgstr "Выход"
 
-#: src/wdmLogin/Login.c:301
+#: src/wdmLogin/Login.c:305
 msgid "NoChange"
 msgstr "Тот же"
 
-#: src/wdmLogin/Login.c:316
+#: src/wdmLogin/Login.c:320
 msgid "failsafe"
 msgstr "безопасный"
 
-#: src/wdmLogin/Login.c:411
+#: src/wdmLogin/Login.c:415
 msgid "ERROR"
 msgstr "ОШИБКА"
 
-#: src/wdmLogin/Login.c:453
+#: src/wdmLogin/Login.c:457
 msgid "Password:"
 msgstr "Пароль:"
 
-#: src/wdmLogin/Login.c:460 src/wdmLogin/Login.c:741
+#: src/wdmLogin/Login.c:464 src/wdmLogin/Login.c:745
 msgid "Login name:"
 msgstr "Имя:"
 
-#: src/wdmLogin/Login.c:485
+#: src/wdmLogin/Login.c:489
 msgid "invalid name"
 msgstr "плохое имя"
 
-#: src/wdmLogin/Login.c:504
+#: src/wdmLogin/Login.c:508
 msgid "validating"
 msgstr "проверка"
 
-#: src/wdmLogin/Login.c:506 src/wdmLogin/Login.c:534
+#: src/wdmLogin/Login.c:510 src/wdmLogin/Login.c:538
 msgid "exiting"
 msgstr "выход"
 
-#: src/wdmLogin/Login.c:548
+#: src/wdmLogin/Login.c:552
 msgid "Close Help"
 msgstr "Убрать"
 
-#: src/wdmLogin/Login.c:553 src/wdmLogin/Login.c:828
+#: src/wdmLogin/Login.c:557 src/wdmLogin/Login.c:832
 msgid "Help"
 msgstr "Помощь"
 
-#: src/wdmLogin/Login.c:693
+#: src/wdmLogin/Login.c:697
 msgid "Login Authentication"
 msgstr "Проверка пароля"
 
-#: src/wdmLogin/Login.c:702
+#: src/wdmLogin/Login.c:706
 msgid "Welcome to"
 msgstr "Добро пожаловать на"
 
-#: src/wdmLogin/Login.c:783
+#: src/wdmLogin/Login.c:787
 msgid "Start WM"
 msgstr "Оконный менеджер"
 
-#: src/wdmLogin/Login.c:800
+#: src/wdmLogin/Login.c:804
 msgid "Options"
 msgstr "Действия"
 
-#: src/wdmLogin/Login.c:835
+#: src/wdmLogin/Login.c:839
 msgid "Start Over"
 msgstr "Стереть"
 
-#: src/wdmLogin/Login.c:842
+#: src/wdmLogin/Login.c:846
 msgid "Go!"
 msgstr "Вперёд!"

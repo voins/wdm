@@ -56,6 +56,7 @@ int	autoRescan;
 int	removeDomainname;
 char	*keyFile;
 char	*accessFile;
+char	*accessFilePL;
 char	**exportList;
 char	*randomFile;
 char	*greeterLib;
@@ -80,6 +81,7 @@ int	wdmRoot;		/* if true only username=root and verified */
 int	wdmAnimations;		/* if true, enable shake and rollup animations */
 				/* if false, disable animations */
 char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
+char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -138,6 +140,9 @@ char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
 #ifndef DEF_ACCESS_FILE
 #define DEF_ACCESS_FILE	""
 #endif
+#ifndef DEF_ACCESS_FILE_PL
+#define DEF_ACCESS_FILE_PL	""
+#endif
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE "/dev/mem"
 #endif
@@ -193,6 +198,9 @@ char	*wdmLocale;		/* this will be LANG value before starting wdmLogin */
 #ifndef DEF_ACCESS_FILE
 #define DEF_ACCESS_FILE	""
 #endif
+#ifndef DEF_ACCESS_FILE_PL
+#define DEF_ACCESS_FILE_PL	""
+#endif
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE ""
 #endif
@@ -234,6 +242,8 @@ struct dmResources {
 				DEF_KEY_FILE} ,
 { "accessFile",	"AccessFile",	DM_STRING,	&accessFile,
 				DEF_ACCESS_FILE} ,
+{ "accessFilePL","AccessFilePL",DM_STRING,	&accessFilePL,
+				DEF_ACCESS_FILE_PL} ,
 { "exportList",	"ExportList",	DM_ARGV,	(char **) &exportList,
 				""} ,
 { "randomFile",	"RandomFile",	DM_STRING,	&randomFile,
@@ -360,6 +370,8 @@ struct dmResources wdmResources[] = {
 				"true"} ,
 { "wdmLocale",		"WdmLocale",		DM_STRING,	&wdmLocale,
 				""} ,
+{ "wdmLoginConfig",	"WdmLoginConfig",	DM_STRING,	&wdmLoginConfig,
+				DEF_WDMLOGIN_CONFIG} ,
 };
 
 # define NUM_WDM_RESOURCES	(sizeof wdmResources/\

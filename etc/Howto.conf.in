@@ -25,11 +25,13 @@ DESTDIR =;
 NLSDIR = @NLSDIR@;
 xgettext = @XGETTEXT@;
 msgfmt = @MSGFMT@;
+ranlib = @RANLIB@;
+ar = ar;
 
 cc = [CC];
 cflags = [CPPFLAGS] [CFLAGS] [DEFS] [prepost -I /include [search_list]];
-ldflags = [LDFLAGS];
-libs = [LIBS];
+ldflags = [LDFLAGS] [prepost -L /bin [search_list]];
+libs = [LIBS] -lwdm;
 
 wdmLogin_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
 wdmLogin_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
@@ -45,3 +47,4 @@ wdm_libs = [libs] [XLIBS] [GFXLIBS] [LIBCRYPT] \
 	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
 	-lXmu -lXau -lXdmcp;
 
+libwdm_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];

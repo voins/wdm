@@ -6,7 +6,7 @@
 
 %0%.mo: %0%.po
 {
-	[msgfmt] -o [target] %0%.po;
+	[msgfmt] -o [target] [resolve %0%.po];
 }
 
 po/wdm.pot: [source_files]
@@ -20,7 +20,7 @@ po/wdm.pot: [source_files]
 nls/%/LC_MESSAGES/wdm.mo: po/%.mo
 {
 	mkdir -p nls/%/LC_MESSAGES;
-	cp po/%.mo [target];
+	cp [resolve po/%.mo] [target];
 }
 
 nlsdir: [fromto po/%.mo nls/%/LC_MESSAGES/wdm.mo [mo_files]]

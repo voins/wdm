@@ -31,7 +31,6 @@ function get_libs =
 
 function get_program =
 {
-	echo [@1];
 	if [matches src/%/ [@1]] then
 		return [fromto src/%/ % [@1]]_;
 	return;
@@ -54,5 +53,28 @@ function octal =
 function stripext =
 {
 	return [fromto %0%.%1 %0% [@1]];
+}
+
+function is_library =
+{
+	if [match_mask lib% [@1]] then
+		return [@1];
+	return;
+}
+
+function lib_deps =
+{
+	targets = [match_mask -l% [arg]];
+	deps = ;
+	loop
+	{
+		lib = [head [targets]];
+		if [not [lib]] then loopstop;
+		targets = [tail [targets]];
+
+		if [match_mask src/[fromto -l% lib% [lib]]/%.c [source_files]] then
+			deps = [deps] [fromto -l% bin/lib%.a [lib]];
+	}
+	return [deps];
 }
 

@@ -1,0 +1,203 @@
+# translation of de.po to deutsch
+# Michael Buesch <freesoftwaredeveloper@web.de>, 2003
+msgid ""
+msgstr ""
+"Project-Id-Version: de\n"
+"POT-Creation-Date: 2003-03-16 19:24+0300\n"
+"PO-Revision-Date: 2003-03-17 17:04+0000\n"
+"Last-Translator: Michael Buesch <freesoftwaredeveloper@web.de>\n"
+"Language-Team: deutsch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.0\n"
+
+#: bl/src/wdmLogin/Login.c:78
+msgid ""
+"wdm is a graphical interface used to authenticate a user to the system and "
+"perform the login process.\n"
+"\n"
+"\n"
+"Enter your user name (userid) at the prompt and press <enter>.  The panel "
+"will then present a prompt to enter your password.  Enter the password and "
+"press <enter>.\n"
+"\n"
+"\n"
+"The login will then be performed and your window manager started.\n"
+"\n"
+"\n"
+"The Start WM PopUp selection specifies the parameter to pass to Xsession to "
+"start the window manager.\n"
+"\n"
+"\n"
+"NoChange will start the same window manager the user used for their last "
+"session.\n"
+"\n"
+"\n"
+"failsafe is a simple xterm session and the other listed options will start "
+"the indicated (installation specific) window manager.\n"
+"\n"
+"\n"
+"The Options PopUp selection specifies:\n"
+"\n"
+"     Login - logon to the system\n"
+"\n"
+"     Reboot - shutdown and reboot the system\n"
+"\n"
+"     Halt - shutdown the system and halt\n"
+"\n"
+"     ExitLogin - exit the display manager\n"
+"\n"
+"\n"
+"The installation may require a valid username and password or username=root "
+"and root's password to perform Reboot, Halt or Exit.\n"
+"\n"
+"\n"
+"NOTE:  ExitLogin (or, as it is sometimes refered to: exit) is intended for "
+"use primarily in wdm testing.  It will shut down the x-server but the wdm "
+"must be terminated by other means.  Starting wdm as a detached process will "
+"result that it will be very difficult  to terminate.\n"
+"\n"
+"\n"
+"ExitLogin performs the same operation as ctrl-r does for xdm.\n"
+"\n"
+"\n"
+"1. The StartOver button will erase the current login Information and begin "
+"the login process again.\n"
+"\n"
+"\n"
+"2. See the man page for additional information on configuring this package.  "
+"There are numerous options for setting the background color or pixmap, the "
+"LoginPanel logo, the selection of window managers to start, and the login "
+"verification for Reboot, halt and exit."
+msgstr ""
+"wdm ist eine grafische Oberfläche, um einen Benutzer am System anzumelden.\n"
+"\n"
+"\n"
+"Geben Sie ihren Benutzernamen (userid) an der Eingabeaufforderung ein und drücken Sie <enter>.  "
+"Danach wird eine Eingabeaufforderung für Ihr Paßwort angezeigt.  Geben Sie Ihr Paßwort ein "
+"und drücken Sie <enter>.\n"
+"\n"
+"\n"
+"Der Anmeldeprozess wird nun durchgeführt und Ihr Window-Manager wird gestartet.\n"
+"\n"
+"\n"
+"Im \"Starte WM\"-Auswahlfeld können Sie den Parameter für Xsession wählen um den "
+"Window-Manager zu starten.\n"
+"\n"
+"\n"
+"\"Letzter\" startet den zuletzt benutzten Window-Manager.\n"
+"\n"
+"\n"
+"\"abgesichert\" startet eine einfache xterm Sitzung. Die anderen aufgelisteten Optionen "
+"starten den angegebenen (installations-spezifischen) Window-Manager.\n"
+"\n"
+"\n"
+"Im \"Optionen\"-Auswahlfeld können Sie wählen:\n"
+"\n"
+"     Anmelden - Meldet Sie am System an.\n"
+"     Neustarten - Startet das Betriebssystem neu.\n"
+"     Herunterfahren - Fährt das Betriebssystem herunter um es abzuschalten.\n"
+"     Login beenden - Beendet den Display-Manager und wechselt zur Console.\n"
+"\n"
+"\n"
+"Möglicherweise wird ein gültiger Benutzername und Paßwort oder das "
+"Superuser-Paßwort benötigt, um das System herunterzufahren, neuzustarten oder WDM zu beenden.\n"
+"\n"
+"\n"
+"Anmerkung: \"Login beenden\" ist zum Testen des WDM gedacht. Es beendet den X-Server, aber WDM "
+"muss anders beendet werden. Wenn WDM \"detached\" gestartet wird, wird es sehr schwierig sein, "
+"den Display-Manager zu beenden.\n"
+"\n"
+"\n"
+"\"Login beenden\" macht das gleiche, wie Strg+r in XDM.\n"
+"\n"
+"\n"
+"1. Die \"Löschen\"-Schaltfläche löscht alle eingegebenen Login-Informationen und "
+"startet den Anmeldeprozess von Vorne.\n"
+"\n"
+"\n"
+"2. Sehen Sie sich die man-pages für zusätzliche Informationen hinsichtlich der Konfiguration des "
+"WDM an. Es gibt viele Optionen um z.B. den Hintergrund, das Logo, die Window-Manager liste "
+"und das Verhalten bei \"Neustarten\" oder \"Herunterfahren\" einzustellen."
+
+#: bl/src/wdmLogin/Login.c:162
+msgid "Login"
+msgstr "Anmeldung"
+
+#: bl/src/wdmLogin/Login.c:162
+msgid "Reboot"
+msgstr "Neustarten"
+
+#: bl/src/wdmLogin/Login.c:162
+msgid "Halt"
+msgstr "Herunterfahren"
+
+#: bl/src/wdmLogin/Login.c:163
+msgid "ExitLogin"
+msgstr "Login aus"
+
+#: bl/src/wdmLogin/Login.c:318
+msgid "NoChange"
+msgstr "Letzter WM"
+
+#: bl/src/wdmLogin/Login.c:337
+msgid "failsafe"
+msgstr "abgesichert"
+
+#: bl/src/wdmLogin/Login.c:409
+msgid "ERROR"
+msgstr "FEHLER"
+
+#: bl/src/wdmLogin/Login.c:451
+msgid "Password:"
+msgstr "Paßwort:"
+
+#: bl/src/wdmLogin/Login.c:459 bl/src/wdmLogin/Login.c:784
+msgid "Login name:"
+msgstr "Benutzer:"
+
+#: bl/src/wdmLogin/Login.c:492
+msgid "invalid name"
+msgstr "ungültiger Benutzername"
+
+#: bl/src/wdmLogin/Login.c:514
+msgid "validating"
+msgstr "prüfe"
+
+#: bl/src/wdmLogin/Login.c:516 bl/src/wdmLogin/Login.c:549
+msgid "exiting"
+msgstr "beende"
+
+#: bl/src/wdmLogin/Login.c:566
+msgid "Close Help"
+msgstr "Hilfe aus"
+
+#: bl/src/wdmLogin/Login.c:572 bl/src/wdmLogin/Login.c:878
+msgid "Help"
+msgstr "Hilfe"
+
+#: bl/src/wdmLogin/Login.c:732
+msgid "Login Authentication"
+msgstr "System-Anmeldung"
+
+#: bl/src/wdmLogin/Login.c:741
+msgid "Welcome to"
+msgstr "Willkommen auf"
+
+#: bl/src/wdmLogin/Login.c:828
+msgid "Start WM"
+msgstr "Starte WM"
+
+#: bl/src/wdmLogin/Login.c:846
+msgid "Options"
+msgstr "Optionen"
+
+#: bl/src/wdmLogin/Login.c:886
+msgid "Start Over"
+msgstr "Löschen"
+
+#: bl/src/wdmLogin/Login.c:893
+msgid "Go!"
+msgstr "Los!"
+

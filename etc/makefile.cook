@@ -1,3 +1,20 @@
+function make_var =
+{
+	return [prepost "\\$\\(" "\\)" [arg]];
+}
+
+function make_line =
+{
+	echo [arg] >>[target] set silent;
+}
+
+function make_action =
+{
+	[make_line -e "\"\\t\""[arg]];
+}
+
+
+
 %0%.c.Md: %0%.c etc/makefile.cook 
 {
 	c_incl -nc -ns -eia
@@ -11,65 +28,81 @@
 %0%.c.M: %0%.c.Md etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
 	rm -f [target];
-	echo "%0%.o: %0%.c" [collect cat [resolve %0%.c.Md]] > [target];
-	echo -e "\"\\t\"" \\$\\(CC\\) -c \\$\\([get_program %0]cflags\\) %0%.c -o %0%.o >> [target];
-	echo >> [target];
+
+	[make_line "%0%.o: %0%.c" [collect cat [resolve %0%.c.Md]]];
+	[make_action [make_var CC] -c [make_var [get_program %0]cflags] %0%.c -o %0%.o];
+	[make_line];
 }
 
-destbindir = \\$\\(DESTDIR\\)\\$\\(bindir\\)/;
-destman1dir = \\$\\(DESTDIR\\)\\$\\(MANDIR\\)/man1;
-configdir = \\$\\(DESTDIR\\)\\$\\(DMDIR\\);
+destbindir = [make_var DESTDIR][make_var bindir]/;
+destman1dir = [make_var DESTDIR][make_var MANDIR]/man1;
+configdir = [make_var DESTDIR][make_var DMDIR];
 gfxdir = [configdir]/pixmaps;
-pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
-localedir = \\$\\(DESTDIR\\)\\$\\(NLSDIR\\);
+pamdir = [make_var DESTDIR][make_var PAMDIR];
+localedir = [make_var DESTDIR][make_var NLSDIR];
+
+src/%.a.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
+{
+	rm -f [target];
+
+	[make_line "bin/%.a: " [c_to_o [select_c %]]];
+	[make_action mkdir -p bin];
+	[make_action [make_var AR] cru bin/%.a [c_to_o [select_c %]]];
+	[make_action [make_var RANLIB] bin/%.a];
+	[make_line];
+}
 
 src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
-	echo "bin/%: " [c_to_o [select_c %]] > [target];
-	echo -e "\"\\t\""mkdir -p bin >> [target];
-	echo -e "\"\\t\""\\$\\(CC\\) \\$\\(%_ldflags\\) [c_to_o [select_c %]] \\$\\(%_libs\\) -o bin/% >> [target]; 
-	echo >> [target];
-	echo [destbindir]%\: bin/% >> [target];
-	echo -e "\"\\t\""\\$\\(INSTALL_PROGRAM\\) -D bin/% \\$\\@ >> [target];
-	echo >> [target];
+	rm -f [target];
 	
+	[make_line "bin/%: " [c_to_o [select_c %]] [lib_deps [get_libs %_]]];
+	[make_action mkdir -p bin]
+	[make_action [make_var CC] [make_var %_ldflags] [c_to_o [select_c %]] [make_var %_libs] -o bin/%];
+	[make_line];
+	[make_line [destbindir]%\: bin/%];
+	[make_action [make_var INSTALL_PROGRAM] -D bin/% \\$\\@];
+	[make_line];
 }
 
 doc/%.man.M: etc/makefile.cook
 {
 	rm -f [target];
+
 	if [in doc/%.man [g_manfiles]] then
 	{
-		echo doc/%.man\: doc/%.man.in > [target];
-		echo -e "\"\\t\""CONFIG_FILES\=\\$\\@\:doc/%.man.in \
-			CONFIG_HEADERS\= ./config.status >> [target];
-		echo >> [target];
+		[make_line doc/%.man\: doc/%.man.in];
+		[make_action CONFIG_FILES\=\\$\\@\:doc/%.man.in \
+			CONFIG_HEADERS\= ./config.status];
+		[make_line];
 	}
-	echo [destman1dir]/%.1\: doc/%.man >> [target];
-	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D doc/%.man \\$\\@ >> [target];
-	echo >> [target];
+	[make_line [destman1dir]/%.1\: doc/%.man];
+	[make_action [make_var INSTALL_DATA] -D doc/%.man \\$\\@];
+	[make_line];
 }
 
 po/%.mo.M: etc/makefile.cook
 {
 	rm -f [target];
-	echo po/%.mo\: po/%.po  > [target];
-	echo -e "\"\\t\""\\$\\(MSGFMT\\) -o \\$\\@ po/%.po >> [target];
-	echo >> [target];
-	echo [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo >> [target];
-	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D po/%.mo \\$\\@ >> [target];
-	echo >> [target];
+
+	[make_line po/%.mo\: po/%.po];
+	[make_action [make_var MSGFMT] -o \\$\\@ po/%.po];
+	[make_line];
+	[make_line [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo];
+	[make_action [make_var INSTALL_DATA] -D po/%.mo \\$\\@];
+	[make_line];
 }
 
 configs/%.M: etc/makefile.cook etc/functions.cook
 {
 	rm -f [target];
+
 	if [in configs/% [g_configs]] then
 	{
-		echo configs/%\: configs/%.in >> [target];
-		echo -e "\"\\t\""CONFIG_FILES\=\\$\\@\:configs/%.in \
-			CONFIG_HEADERS\= ./config.status >> [target];
-		echo >> [target];
+		[make_line configs/%\: configs/%.in];
+		[make_action CONFIG_FILES\=\\$\\@\:configs/%.in \
+			CONFIG_HEADERS\= ./config.status];
+		[make_line];
 	}
 
 	perm = 0644;
@@ -78,15 +111,15 @@ configs/%.M: etc/makefile.cook etc/functions.cook
 
 	if [in configs/% [pam_configs]] then
 	{
-		echo [pamdir]/[stripext %]\: configs/% >> [target];
-		echo -e "\"\\t\""\\$\\(INSTALL\\) -m [perm] -D configs/% \\$\\@ >> [target];
-		echo >> [target];
+		[make_line [pamdir]/[stripext %]\: configs/%];
+		[make_action [make_var INSTALL] -m [perm] -D configs/% \\$\\@];
+		[make_line];
 	}
 	else
 	{
-		echo [configdir]/%\: configs/% >> [target];
-		echo -e "\"\\t\""\\$\\(INSTALL\\) -m [perm] -D configs/% \\$\\@ >> [target];
-		echo >> [target];
+		[make_line [configdir]/%\: configs/%];
+		[make_action [make_var INSTALL] -m [perm] -D configs/% \\$\\@];
+		[make_line];
 	}
 	echo >> [target];
 }
@@ -99,20 +132,22 @@ function is_xpm =
 pixmaps/%.M: etc/makefile.cook
 {
 	rm -f [target];
+
 	if [is_xpm %] then
 	{
-		echo include/%\: pixmaps/% >> [target];
-		echo -e "\"\\t\""ln -s ../pixmaps/% \\$\\@ >> [target];
-		echo >> [target];
+		[make_line include/%\: pixmaps/%];
+		[make_action ln -s ../pixmaps/% \\$\\@];
+		[make_line];
 	}
-	echo [gfxdir]/%\: pixmaps/% >> [target];
-	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D pixmaps/% \\$\\@ >> [target];
-	echo >> [target];
+	[make_line [gfxdir]/%\: pixmaps/%];
+	[make_action [make_var INSTALL_DATA] -D pixmaps/% \\$\\@];
+	[make_line];
 }
 
 m_files = 
 	[fromto %0% %0%.M [match_mask src/%0%.c [source_files]]]
 	[fromto % src/%.M [program_list]]
+	[fromto % src/%.a.M [libraries_list]]
 	[fromto %0% %0%.M [manfiles]]
 	[fromto %0% %0%.M [gfxfiles]]
 	[fromto %0% %0%.M [mo_files]]
@@ -128,7 +163,8 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 {
 	rm -f [target];
 	sed [resolve etc/Howto.conf.in] \
-		-e "'s@\\[prepost.*\\[.*\\]\\]@-I./include@'" \
+		-e "'s@\\[prepost.*-I.*\\[.*\\]\\]@-I./include@'" \
+		-e "'s@\\[prepost.*-L.*\\[.*\\]\\]@-L./bin@'" \
 		-e "'s@\\[\\([^\\[]*\\)\\]@\\$(\\1)@g'" \
 		-e "'s@;$@@'" \
 		-e "'s@/\\*\\*\\(.*\\)\\*/@\\1@'" \
@@ -136,66 +172,70 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 		>> [target];
 	cat [resolve etc/Makefile.head] >> [target];
 
-	echo >> [target];
-	echo all\: all-bin all-doc all-config all-nls>> [target];
-	echo >> [target];
-	echo install\: install-bin install-config install-doc install-gfx install-nls>> [target];
+	[make_line];
+	[make_line all\: all-bin all-doc all-config all-nls];
+	[make_line];
+	[make_line install\: install-bin install-config install-doc install-gfx install-nls];
 
-	echo >> [target];
-	echo all-bin\: [addprefix bin/ [program_list]] >> [target];
-	echo >> [target];
-	echo install-bin\: [addprefix [destbindir] [stringset [program_list] - [i_program_list]]] >> [target];
-	echo >> [target];
+	[make_line];
+	[make_line all-bin\: [addprefix bin/ [program_list]]];
+	[make_line];
+	[make_line install-bin\: [addprefix [destbindir] [stringset [program_list] - [i_program_list]]]];
+	[make_line];
 
 
-	echo >> [target];
-	echo all-config\: [g_configs] >> [target];
-	echo >> [target];
-	echo install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
-			install-pam-\\$\\(USE_PAM\\)
-			[configdir]/authdir >> [target];
-	echo >> [target];
-	echo install-pam-no\: >> [target];
-	echo >> [target];
-	echo install-pam-yes\: [fromto %0%.pamd [pamdir]/% [pam_configs]] >> [target];
-	echo >> [target];
-	echo [configdir]/authdir\: >> [target];
-	echo -e "\"\\t\""\\$\\(INSTALL\\) -m 700 -D -d \\$\\@ >> [target];
+	[make_line];
+	[make_line all-config\: [g_configs]];
+	[make_line];
+	[make_line install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
+			install-pam-[make_var USE_PAM]
+			[configdir]/authdir];
+	[make_line];
+	[make_line install-pam-no\:];
+	[make_line];
+	[make_line install-pam-yes\: [fromto %0%.pamd [pamdir]/% [pam_configs]]];
+	[make_line];
+	[make_line [configdir]/authdir\:];
+	[make_action [make_var INSTALL] -m 700 -D -d \\$\\@];
 	
 
-	echo >> [target];
-	echo all-doc\: [g_manfiles] >> [target];
+	[make_line];
+	[make_line all-doc\: [g_manfiles]];
 
 
 	echo >> [target];
-	echo all-nls\: [mo_files] >> [target];
+	[make_line all-nls\: [mo_files]];
 
 
-	echo >> [target];
-	echo install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]] >> [target];
+	[make_line];
+	[make_line install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]]];
 
 	
-	echo >> [target];
-	echo install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]] >> [target];
+	[make_line];
+	[make_line install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]]];
 
 
-	echo >> [target];
-	echo install-nls\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]] >> [target];
+	[make_line];
+	[make_line install-nls\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]]];
 
 
-	echo >> [target];
+	[make_line];
 	cat [resolve [m_files]] >> [target];
 
 
-	echo >> [target];
-	echo clean\: >> [target];
-	echo -e "\"\\t\""rm -f [clean_files] >> [target];
+	[make_line];
+	[make_line clean\:];
+	[make_action rm -f [clean_files]];
 
 
-	echo >> [target];
-	echo distclean\: >> [target];
-	echo -e "\"\\t\""rm -f [dist_clean_files] >> [target];
-	echo -e "\"\\tif test -e bin; then rmdir bin; fi\"" >> [target];
+	[make_line];
+	[make_line distclean\:];
+	[make_action rm -f [dist_clean_files]];
+	[make_action "'if test -e bin; then rmdir bin; fi'"];
 
+	[make_line];
+	[make_line po/wdm.pot\: [match_mask src/%0%.c [source_files]]];
+	[make_action [make_var xgettext] --keyword\=_ --keyword\=N_
+		--default-domain\=wdm --output\=\\$\\@ [match_mask src/%0%.c [source_files]]];
 }
 

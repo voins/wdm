@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.53)
-AC_INIT([wdm],[1.21],[voins@voins.program.ru])
+AC_INIT([wdm],[1.22.1],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
 AC_CONFIG_HEADERS(include/config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
-
+AC_PROG_RANLIB
 
 AC_ARG_VAR(XRDB_PATH, [Path to xrdb program from X])
 AC_PATH_PROG(XRDB_PATH, xrdb)
@@ -496,6 +496,7 @@ else
 fi
 AC_DEFINE_UNQUOTED(WDMDIR, "$DMDIR", [Value is a path to wdm directory])
 AC_DEFINE_UNQUOTED(DEF_XDM_CONFIG, "$DMDIR/wdm-config", [Value is a path to default wdm config file])
+AC_DEFINE_UNQUOTED(DEF_WDMLOGIN_CONFIG, "$DMDIR/wdmLogin-config", [Value is a path to default wdmLogin config file])
 AC_DEFINE_UNQUOTED(DEF_CHOOSER, "$DMDIR/chooser", [Value is a path to default chooser program])
 AC_DEFINE_UNQUOTED(DEF_AUTH_DIR, "$DMDIR/authdir", [Value is a path to default authdir])
 
