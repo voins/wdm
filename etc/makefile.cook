@@ -232,5 +232,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line distclean\:];
 	[make_action rm -f [dist_clean_files]];
 	[make_action "'if test -e bin; then rmdir bin; fi'"];
+
+	[make_line];
+	[make_line po/wdm.pot\: [match_mask src/%0%.c [source_files]]];
+	[make_action [make_var xgettext] --keyword\=_ --keyword\=N_
+		--default-domain\=wdm --output\=\\$\\@ [match_mask src/%0%.c [source_files]]];
 }
 
