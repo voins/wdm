@@ -1,4 +1,8 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.21 -- Feb 20 2003
+	There was a bug. I forgot to change pam service name
+	from xdm to wdm. This release fixes it.
+	
 wdm-1.22 -- Feb 09 2003
 	- xdm-base upgraded to xdm from XFree86-4.2.1.
 	- wdmLogin translated to russian and japanese.

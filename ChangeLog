@@ -1,3 +1,5 @@
+1.22.1  - Feb 20 2003 - Alexey Voinov <voins@voins.program.ru>
+	- pam service name changed from "xdm" to "wdm"
 1.22	- Feb 09 2003 - Alexey Voinov <voins@voins.program.ru>
 	- Xdm-base of wdm have been upgraded to xdm from
 	  XFree86-4.2.1.1. I haven't touched greet.c yet because 

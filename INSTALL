@@ -16,7 +16,7 @@ This package requires the following:
 1. XFree86 installed (it was developed with 3.3.2)
 
 2. WindowMaker => 0.17.5 (for WINGs and wraster libraries and header files).
-   There are no other dependencies on WindowMaker and wdm can
+   There are no other dependencies on WindowMaker and wdm can run
    any other window manager such as AfterStep, icewm, BlackBox, etc.
 
 3. autoconf => 2.53 for maintenance (any building)...
@@ -225,6 +225,9 @@ help me :-)
 --with-wmlist=LIST_OF_WMs
 	specify a (colon separated) list of window managers which can be
 	started ... overrides ./configure's search for window managers.
+
+--with-nlsdir=PAT
+	specify path wher to look for locale specific .mo-files.
 
 ***NOTE***********************************************************NOTE****
 
