@@ -12,6 +12,7 @@
 #define _(text) text
 #endif
 
+#define N_(x) x
 /* kdebase-1.0/kdm/kdm-config.h was used as a model */
 
 /* xdm stuff which should always be defined */

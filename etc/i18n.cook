@@ -1,11 +1,17 @@
-%0%.mo: %0%.po
+%0%.po.merge: %0%.po po/wdm.pot
 {
-	[msgfmt] -o [target] [need];
+	msgmerge --output\=[target]
+		[resolve %0%.po] [resolve po/wdm.pot];
 }
 
-po/wdm.pot:
+%0%.mo: %0%.po
 {
-	[xgettext] --keyword\=_ 
+	[msgfmt] -o [target] %0%.po;
+}
+
+po/wdm.pot: [source_files]
+{
+	[xgettext] --keyword\=_ --keyword\=N_
 		--default-domain\=wdm
 		--output\=[target]
 		[resolve [match_mask %0%.c [source_files]]];

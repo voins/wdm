@@ -39,6 +39,7 @@ void WMSetScrollViewPageScroll(WMScrollView *sPtr, int amount);
 
 #include <gnuLogo.xpm>
 
+
 /*###################################################################*/
 
 /** Global Variables and Constants **/
@@ -166,20 +167,11 @@ static int   LoginSwitch   = False;
 static char  LoginName[LOGNAME_LEN] = "";
 static char  LoginPswd[PASS_LEN] = "";
 
-static char *Cname  = "Login Name:";
-static char *Cpswd  = "Password:";
-
 static int   OptionCode	   = 0;
-static char  ExitLogin[]   = "Login";
-static char  ExitReboot[]  = "Reboot";
-static char  ExitHalt[]	   = "Halt";
-static char  ExitExit[]	   = "ExitLogin";
-static char *ExitStr[5]	   = {ExitLogin,ExitReboot,ExitHalt,ExitExit,
-			      NULL};
+static char *ExitStr[]	   = {N_("Login"), N_("Reboot"), N_("Halt"),
+		N_("ExitLogin"), NULL};
 
 static int   WmOptionCode  = 0;
-static char  WmNoChange[]  = "NoChange";
-static char  WmFailSafe[]  = "failsafe";
 static char  WmDefault[]   = "wmaker:afterstep:xsession";
 static char *WmArg	   = WmDefault;
 static char **WmStr        = NULL;
@@ -306,7 +298,7 @@ static void SetupWm()
     /* reserve one position fo NULL pointer, one for 'NoChange'
        and one for 'FailSafe' */
     WmStr = (char**)malloc(sizeof(char*) * (n + 4));
-    WmStr[i++] = WmNoChange;
+    WmStr[i++] = N_("NoChange");
 
     if(strcasecmp(WmArg, "none") != 0) /* we explicitly don't want any
 					  choice */
@@ -321,7 +313,7 @@ static void SetupWm()
 	    if(!*ptr) break;
 	    *ptr++ = '\0';
 	}
-	WmStr[i++] = WmFailSafe;
+	WmStr[i++] = N_("failsafe");
     }
     WmStr[i] = NULL;
 }
@@ -458,14 +450,14 @@ static void init_pwdfield(char *pwd)
 #else
 	WMResizeWidget(panel->entryText, text_width, 4); /* make invisible */
 #endif
-	WMSetLabelText(panel->entryLabel,Cpswd);
+	WMSetLabelText(panel->entryLabel, _("Password:"));
 }
 
 static void init_namefield(char *name)
 {
     WMResizeWidget(panel->entryText, text_width, text_heigth);
     WMSetTextFieldText(panel->entryText,name);
-    WMSetLabelText(panel->entryLabel,Cname);
+    WMSetLabelText(panel->entryLabel, _("Login name:"));
     WMSetFocusToWidget(panel->entryText);
 #if (WINGS_H_VERSION > 980722)
 	WMSetTextFieldSecure(panel->entryText, False);
@@ -746,7 +738,7 @@ static void CreateAuthFrame(LoginPanel *panel)
 	WMSetLabelFont(panel->entryLabel,font);
 	WMReleaseFont(font);
     }
-    WMSetLabelText(panel->entryLabel,Cname);
+    WMSetLabelText(panel->entryLabel, _("Login name:"));
     WMSetLabelTextAlignment(panel->entryLabel,WARight);
 
     panel->entryText = WMCreateTextField(panel->authF);
@@ -798,7 +790,7 @@ static void CreatePopups(LoginPanel *panel)
     WMSetPopUpButtonAction(panel->wmBtn, (WMAction*)changeWm, panel);
     i=0;
     while (WmStr[i]!=NULL) {
-	WMAddPopUpButtonItem(panel->wmBtn, WmStr[i]);
+	WMAddPopUpButtonItem(panel->wmBtn, gettext(WmStr[i]));
 	i++;
     }
 
@@ -815,7 +807,7 @@ static void CreatePopups(LoginPanel *panel)
     WMSetPopUpButtonAction(panel->exitBtn, (WMAction*)changeOption, panel);
     i=0;
     while (ExitStr[i]!=NULL) {
-	WMAddPopUpButtonItem(panel->exitBtn, ExitStr[i]);
+	WMAddPopUpButtonItem(panel->exitBtn, gettext(ExitStr[i]));
 	i++;
     }
 }

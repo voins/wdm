@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2003-02-07 08:05+0300\n"
+"POT-Creation-Date: 2003-02-08 16:40+0300\n"
 "PO-Revision-Date: 2003-02-07 19:59+0300\n"
 "Last-Translator: Hiroshi Miura <miura@da-cha.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,51 +15,82 @@ msgstr ""
 "Content-Type: text/plain; charset=euc-jp\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: bl/src/wdmLogin/Login.c:418
+#: src/wdmLogin/Login.c:171
+msgid "Login"
+msgstr "ログイン"
+
+#: src/wdmLogin/Login.c:171
+msgid "Reboot"
+msgstr "リブート"
+
+#: src/wdmLogin/Login.c:171
+msgid "Halt"
+msgstr "終了"
+
+#: src/wdmLogin/Login.c:172
+msgid "ExitLogin"
+msgstr "ログイン終了"
+
+#: src/wdmLogin/Login.c:301
+msgid "NoChange"
+msgstr "変更なし"
+
+#: src/wdmLogin/Login.c:316
+msgid "failsafe"
+msgstr "フェールセーフ"
+
+#: src/wdmLogin/Login.c:411
 msgid "ERROR"
 msgstr "エラー"
 
-#: bl/src/wdmLogin/Login.c:492
+#: src/wdmLogin/Login.c:453
+msgid "Password:"
+msgstr "パスワード:"
+
+#: src/wdmLogin/Login.c:460 src/wdmLogin/Login.c:741
+msgid "Login name:"
+msgstr "ログイン名:"
+
+#: src/wdmLogin/Login.c:485
 msgid "invalid name"
 msgstr "不正な名前"
 
-#: bl/src/wdmLogin/Login.c:511
+#: src/wdmLogin/Login.c:504
 msgid "validating"
 msgstr "認証中"
 
-#: bl/src/wdmLogin/Login.c:513 bl/src/wdmLogin/Login.c:541
+#: src/wdmLogin/Login.c:506 src/wdmLogin/Login.c:534
 msgid "exiting"
 msgstr "終了します"
 
-#: bl/src/wdmLogin/Login.c:555
+#: src/wdmLogin/Login.c:548
 msgid "Close Help"
 msgstr "へルプを閉じる"
 
-#: bl/src/wdmLogin/Login.c:560 bl/src/wdmLogin/Login.c:835
+#: src/wdmLogin/Login.c:553 src/wdmLogin/Login.c:828
 msgid "Help"
 msgstr "へルプ"
 
-#: bl/src/wdmLogin/Login.c:700
+#: src/wdmLogin/Login.c:693
 msgid "Login Authentication"
 msgstr "ログイン認証中"
 
-#: bl/src/wdmLogin/Login.c:709
+#: src/wdmLogin/Login.c:702
 msgid "Welcome to"
 msgstr "ようこそ"
 
-#: bl/src/wdmLogin/Login.c:790
+#: src/wdmLogin/Login.c:783
 msgid "Start WM"
 msgstr "WMスタート"
 
-#: bl/src/wdmLogin/Login.c:807
+#: src/wdmLogin/Login.c:800
 msgid "Options"
 msgstr "オプション"
 
-#: bl/src/wdmLogin/Login.c:842
+#: src/wdmLogin/Login.c:835
 msgid "Start Over"
 msgstr "やりなおし"
 
-#: bl/src/wdmLogin/Login.c:849
+#: src/wdmLogin/Login.c:842
 msgid "Go!"
 msgstr "開始！"
-
