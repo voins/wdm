@@ -1,4 +1,12 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.27 -- Feb 28 2004
+	- french translation added (by Mathieu Roy <yeupou@gnu.org>)
+	- SELinux support added (by Tom Vogt <tom@lemuria.org>)
+	- some FreeBSD compatibility issue fixed
+	- some minor bugs fixed
+	- ExitLogin item removed from menu in wdmLogin by default.
+	  to reenable it use --enable-exitlogin
+
 wdm-1.26 -- Sep 18 2003 
 	- more options in wdmLogin-config file
 	- development of wdmPrefs and wdmChooser programs 
