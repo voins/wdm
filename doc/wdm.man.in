@@ -37,6 +37,18 @@ Specifies the value for the \fBDisplayManager.errorLogFile\fP
 resource.  This file contains errors from \fIwdm\fP as well as
 anything written to stderr by the various scripts and programs run
 during the progress of the session.
+.IP "\fB\-syslog\fP \fIfacility\fP"
+Specifies the value for the \fBDisplayManager.syslogFacility\fP
+resource. This is factility to use with all messages if log is
+redirected to syslog.
+.IP "\fB\-usesyslog\fP"
+Specifies ``true'' as the value for the \fBDisplayManager.useSyslog\dP
+resource. This will force all messages go to syslog with facility
+specified by \fBDisplayManager.syslogFacility\fP resource.
+.IP "\fB\-useerrfile\fP"
+Specifies ``false'' as the value for the \fBDisplayManager.useSyslog\dP
+resource. This will force all messages go to log file
+specified by \fBDisplayManager.errorLogFile\fP resource.
 .IP "\fB\-resources\fP \fIresource_file\fP"
 Specifies the value for the \fBDisplayManager*resources\fP resource.
 This file is loaded using \fIxrdb\fP to specify configuration
