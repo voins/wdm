@@ -5,6 +5,14 @@
 #include <config.h>
 #endif
 
+#if defined(HAVE_LIBINTL_H) && defined(I18N)
+#include <libintl.h>
+#define _(text) gettext(text)
+#else
+#define _(text) text
+#endif
+
+#define N_(x) x
 /* kdebase-1.0/kdm/kdm-config.h was used as a model */
 
 /* xdm stuff which should always be defined */

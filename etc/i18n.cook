@@ -1,0 +1,29 @@
+%0%.po.merge: %0%.po po/wdm.pot
+{
+	msgmerge --output\=[target]
+		[resolve %0%.po] [resolve po/wdm.pot];
+}
+
+%0%.mo: %0%.po
+{
+	[msgfmt] -o [target] %0%.po;
+}
+
+po/wdm.pot: [source_files]
+{
+	[xgettext] --keyword\=_ --keyword\=N_
+		--default-domain\=wdm
+		--output\=[target]
+		[resolve [match_mask %0%.c [source_files]]];
+}
+
+nls/%/LC_MESSAGES/wdm.mo: po/%.mo
+{
+	mkdir -p nls/%/LC_MESSAGES;
+	cp po/%.mo [target];
+}
+
+nlsdir: [fromto po/%.mo nls/%/LC_MESSAGES/wdm.mo [mo_files]]
+{
+}
+

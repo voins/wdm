@@ -21,6 +21,7 @@ destman1dir = \\$\\(DESTDIR\\)\\$\\(MANDIR\\)/man1;
 configdir = \\$\\(DESTDIR\\)\\$\\(DMDIR\\);
 gfxdir = [configdir]/pixmaps;
 pamdir = \\$\\(DESTDIR\\)\\$\\(PAMDIR\\);
+localedir = \\$\\(DESTDIR\\)\\$\\(NLSDIR\\);
 
 src/%.M: etc/makefile.cook etc/functions.cook etc/sourcelist.cook
 {
@@ -46,6 +47,17 @@ doc/%.man.M: etc/makefile.cook
 	}
 	echo [destman1dir]/%.1\: doc/%.man >> [target];
 	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D doc/%.man \\$\\@ >> [target];
+	echo >> [target];
+}
+
+po/%.mo.M: etc/makefile.cook
+{
+	rm -f [target];
+	echo po/%.mo\: po/%.po  > [target];
+	echo -e "\"\\t\""\\$\\(MSGFMT\\) -o \\$\\@ po/%.po >> [target];
+	echo >> [target];
+	echo [localedir]/%/LC_MESSAGES/wdm.mo\: po/%.mo >> [target];
+	echo -e "\"\\t\""\\$\\(INSTALL_DATA\\) -D po/%.mo \\$\\@ >> [target];
 	echo >> [target];
 }
 
@@ -103,6 +115,7 @@ m_files =
 	[fromto % src/%.M [program_list]]
 	[fromto %0% %0%.M [manfiles]]
 	[fromto %0% %0%.M [gfxfiles]]
+	[fromto %0% %0%.M [mo_files]]
 	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]];
 
 clean_files = [fromto %0%.c %0%.o [match_mask src/%0%.c [source_files]]];
@@ -124,9 +137,9 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	cat [resolve etc/Makefile.head] >> [target];
 
 	echo >> [target];
-	echo all\: all-bin all-doc all-config >> [target];
+	echo all\: all-bin all-doc all-config all-nls>> [target];
 	echo >> [target];
-	echo install\: install-bin install-config install-doc install-gfx >> [target];
+	echo install\: install-bin install-config install-doc install-gfx install-nls>> [target];
 
 	echo >> [target];
 	echo all-bin\: [addprefix bin/ [program_list]] >> [target];
@@ -152,12 +165,22 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 
 	echo >> [target];
 	echo all-doc\: [g_manfiles] >> [target];
+
+
+	echo >> [target];
+	echo all-nls\: [mo_files] >> [target];
+
+
 	echo >> [target];
 	echo install-doc\: [fromto %0%.man [destman1dir]/%.1 [manfiles]] >> [target];
 
 	
 	echo >> [target];
 	echo install-gfx\: [fromto %0% [gfxdir]/% [gfxfiles]] >> [target];
+
+
+	echo >> [target];
+	echo install-nls\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]] >> [target];
 
 
 	echo >> [target];

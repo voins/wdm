@@ -1,15 +1,13 @@
 /*
- * $XConsortium: chooser.c /main/27 1996/01/25 18:45:41 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.13 1997/01/18 07:02:20 dawes Exp $
+ * $Xorg: chooser.c,v 1.4 2001/02/09 02:05:40 xorgcvs Exp $
  *
-Copyright (c) 1990  X Consortium
+Copyright 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +15,18 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.24 2001/12/14 20:01:20 dawes Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one
@@ -70,8 +70,15 @@ in this Software without prior written authorization from the X Consortium.
 #include    <stdio.h>
 #include    <ctype.h>
 
+#ifdef USE_XINERAMA
+#include    <X11/extensions/Xinerama.h>
+#endif
+
 #if defined(SVR4) && !defined(SCO325)
 #include    <sys/sockio.h>
+#endif
+#if defined(SVR4) && defined(PowerMAX_OS)
+#include    <sys/stropts.h>
 #endif
 #if defined(SYSV) && defined(i386)
 #include    <sys/stream.h>
@@ -80,24 +87,11 @@ in this Software without prior written authorization from the X Consortium.
 #include    <sys/stropts.h>
 #endif
 #endif
-#ifndef MINIX
-#ifndef Lynx
-#include    <sys/socket.h>
-#else
-#include    <socket.h>
-#endif
-#include    <netinet/in.h>
-#else /* MINIX */
-#include <net/hton.h>
-#include <net/netlib.h>
-#include <net/gen/in.h>
-#include <net/gen/netdb.h>
-#include <net/gen/tcp.h>
-#include <net/gen/tcp_io.h>
-#include <net/gen/udp.h>
-#include <net/gen/udp_io.h>
-#include <sys/nbio.h>
-#endif /* !MINIX */
+
+#include    <dm_socket.h>
+
+#include    <arpa/inet.h>
+
 #include    <sys/ioctl.h>
 #ifdef STREAMSCONN
 #ifdef WINTCP /* NCR with Wollongong TCP */
@@ -123,7 +117,7 @@ in this Software without prior written authorization from the X Consortium.
 #define BROADCAST_HOSTNAME  "BROADCAST"
 
 #ifndef ishexdigit
-#define ishexdigit(c)	(isdigit(c) || 'a' <= (c) && (c) <= 'f')
+#define ishexdigit(c)	(isdigit(c) || ('a' <= (c) && (c) <= 'f'))
 #endif
 
 #ifdef hpux
@@ -136,25 +130,22 @@ in this Software without prior written authorization from the X Consortium.
 # include <sync/queue.h>
 # include <sync/sema.h>
 #endif
-#ifndef MINIX
+#ifndef __GNU__
 # include <net/if.h>
-#endif
+#endif /* __GNU__ */
 #endif /* hpux */
 
-#ifndef MINIX
 #include    <netdb.h>
-#endif
 
-#ifdef MINIX
-static char read_buffer[XDM_MAX_MSGLEN+sizeof(udp_io_hdr_t)];
-static int read_inprogress;
-static int read_size;
-static void read_cb(nbio_ref_t ref, int res, int err);
-#endif
+static int FromHex (char *s, char *d, int len);
 
 Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit, ping;
 
-static void	CvtStringToARRAY8();
+static void	CvtStringToARRAY8(
+    XrmValuePtr	args,
+    Cardinal	*num_args,
+    XrmValuePtr	fromVal,
+    XrmValuePtr	toVal);
 
 static struct _app_resources {
     ARRAY8Ptr   xdmAddress;
@@ -177,9 +168,9 @@ static XtResource  resources[] = {
 #undef offset
 
 static XrmOptionDescRec options[] = {
-    "-xdmaddress",	"*xdmAddress",	    XrmoptionSepArg,	NULL,
-    "-clientaddress",	"*clientAddress",   XrmoptionSepArg,	NULL,
-    "-connectionType",	"*connectionType",  XrmoptionSepArg,	NULL,
+    { "-xdmaddress",	"*xdmAddress",	    XrmoptionSepArg,	NULL },
+    { "-clientaddress",	"*clientAddress",   XrmoptionSepArg,	NULL },
+    { "-connectionType","*connectionType",  XrmoptionSepArg,	NULL },
 };
 
 typedef struct _hostAddr {
@@ -212,15 +203,12 @@ static int  pingTry;
 static XdmcpBuffer	directBuffer, broadcastBuffer;
 static XdmcpBuffer	buffer;
 
-#if ((defined(SVR4) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
+#if ((defined(SVR4) && !defined(sun) && !defined(__sgi) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
 
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
 static int
-ifioctl (fd, cmd, arg)
-    int fd;
-    int cmd;
-    char *arg;
+ifioctl (int fd, int cmd, char *arg)
 {
     struct strioctl ioc;
     int ret;
@@ -271,18 +259,16 @@ ifioctl (fd, cmd, arg)
 
 /* ARGSUSED */
 static void
-PingHosts (closure, id)
-    XtPointer closure;
-    XtIntervalId *id;
+PingHosts (XtPointer closure, XtIntervalId *id)
 {
     HostAddr	*hosts;
 
     for (hosts = hostAddrdb; hosts; hosts = hosts->next)
     {
 	if (hosts->type == QUERY)
-	    XdmcpFlush (socketFD, &directBuffer, hosts->addr, hosts->addrlen);
+	    XdmcpFlush (socketFD, &directBuffer, (XdmcpNetaddr) hosts->addr, hosts->addrlen);
 	else
-	    XdmcpFlush (socketFD, &broadcastBuffer, hosts->addr, hosts->addrlen);
+	    XdmcpFlush (socketFD, &broadcastBuffer, (XdmcpNetaddr) hosts->addr, hosts->addrlen);
     }
     if (++pingTry < TRIES)
 	XtAddTimeOut (PING_INTERVAL, PingHosts, (XtPointer) 0);
@@ -292,19 +278,13 @@ char	**NameTable;
 int	NameTableSize;
 
 static int
-HostnameCompare (a, b)
-#ifdef __STDC__
-    const void *a, *b;
-#else
-    char *a, *b;
-#endif
+HostnameCompare (const void *a, const void *b)
 {
     return strcmp (*(char **)a, *(char **)b);
 }
 
 static void
-RebuildTable (size)
-    int size;
+RebuildTable (int size)
 {
     char	**newTable = 0;
     HostName	*names;
@@ -327,10 +307,7 @@ RebuildTable (size)
 }
 
 static int
-AddHostname (hostname, status, addr, willing)
-    ARRAY8Ptr	    hostname, status;
-    struct sockaddr *addr;
-    int		    willing;
+AddHostname (ARRAY8Ptr hostname, ARRAY8Ptr status, struct sockaddr *addr, int willing)
 {
     HostName	*new, **names, *name;
     ARRAY8	hostAddr;
@@ -381,7 +358,7 @@ AddHostname (hostname, status, addr, willing)
 	    	    if (hostent)
 	    	    {
 			XdmcpDisposeARRAY8 (hostname);
-		    	host = hostent->h_name;
+		    	host = (char *)hostent->h_name;
 			XdmcpAllocARRAY8 (hostname, strlen (host));
 			memmove( hostname->data, host, hostname->length);
 	    	    }
@@ -432,8 +409,7 @@ AddHostname (hostname, status, addr, willing)
 }
 
 static void
-DisposeHostname (host)
-    HostName	*host;
+DisposeHostname (HostName *host)
 {
     XdmcpDisposeARRAY8 (&host->hostname);
     XdmcpDisposeARRAY8 (&host->hostaddr);
@@ -442,9 +418,9 @@ DisposeHostname (host)
     free ((char *) host);
 }
 
+#if 0
 static void
-RemoveHostname (host)
-    HostName	*host;
+RemoveHostname (HostName *host)
 {
     HostName	**prev, *hosts;
 
@@ -462,9 +438,10 @@ RemoveHostname (host)
     NameTableSize--;
     RebuildTable (NameTableSize);
 }
+#endif
 
 static void
-EmptyHostnames ()
+EmptyHostnames (void)
 {
     HostName	*hosts, *next;
 
@@ -480,10 +457,7 @@ EmptyHostnames ()
 
 /* ARGSUSED */
 static void
-ReceivePacket (closure, source, id)
-    XtPointer	closure;
-    int		*source;
-    XtInputId	*id;
+ReceivePacket (XtPointer closure, int *source, XtInputId *id)
 {
     XdmcpHeader	    header;
     ARRAY8	    authenticationName;
@@ -492,42 +466,10 @@ ReceivePacket (closure, source, id)
     int		    saveHostname = 0;
     struct sockaddr addr;
     int		    addrlen;
-#ifdef MINIX
-    int r;
-#endif
-
-#ifdef MINIX
-    if (read_inprogress) abort();
-    if (read_size == 0)
-    {
-    	r= read(socketFD, read_buffer, sizeof(read_buffer));
-    	if (r == -1 && errno == EINPROGRESS)
-    	{
-    		read_inprogress= 1;
-    		nbio_inprogress(socketFD, ASIO_READ, 1 /* read */,
-    			0 /* write */, 0 /* exception */);
-    	}
-    	else if (r <= 0)
-    	{
-    		fprintf(stderr, "chooser: read error: %s\n", r == 0 ?
-    			"EOF" : strerror(errno));
-		return;
-	}
-    }
-#endif
 
     addrlen = sizeof (addr);
-#ifdef MINIX
-    if (!MNX_XdmcpFill (socketFD, &buffer, &addr, &addrlen,
-    	read_buffer, read_size))
-    {
+    if (!XdmcpFill (socketFD, &buffer, (XdmcpNetaddr) &addr, &addrlen))
 	return;
-    }
-    read_size= 0;
-#else
-    if (!XdmcpFill (socketFD, &buffer, &addr, &addrlen))
-	return;
-#endif
     if (!XdmcpReadHeader (&buffer, &header))
 	return;
     if (header.version != XDM_PROTOCOL_VERSION)
@@ -573,10 +515,7 @@ ReceivePacket (closure, source, id)
 }
 
 static void
-RegisterHostaddr (addr, len, type)
-    struct sockaddr *addr;
-    int		    len;
-    xdmOpCode	    type;
+RegisterHostaddr (struct sockaddr *addr, int len, xdmOpCode type)
 {
     HostAddr		*host, **prev;
 
@@ -605,7 +544,7 @@ RegisterHostaddr (addr, len, type)
  *  addresses on the local host.
  */
 
-#ifndef MINIX
+#if !defined(__GNU__)
 
 /* Handle variable length ifreq in BNR2 and later */
 #ifdef VARIABLE_IFREQ
@@ -617,8 +556,7 @@ RegisterHostaddr (addr, len, type)
 #endif
 
 static void
-RegisterHostname (name)
-    char    *name;
+RegisterHostname (char *name)
 {
     struct hostent	*hostent;
     struct sockaddr_in	in_addr;
@@ -626,7 +564,6 @@ RegisterHostname (name)
     register struct ifreq *ifr;
     struct sockaddr	broad_addr;
     char		buf[2048], *cp, *cplim;
-    int			n;
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
@@ -634,6 +571,7 @@ RegisterHostname (name)
     int                 ipfd;
     struct ifconf       *ifcp;
     struct strioctl     ioc;
+    int			n;
 
 	ifcp = (struct ifconf *)buf;
 	ifcp->ifc_buf = buf+4;
@@ -763,11 +701,9 @@ RegisterHostname (name)
 			  QUERY);
     }
 }
-
-#else /* MINIX */
-
-RegisterHostname (name)
-    char    *name;
+#else /* __GNU__ */
+static void
+RegisterHostname (char *name)
 {
     struct hostent	*hostent;
     struct sockaddr_in	in_addr;
@@ -806,14 +742,13 @@ RegisterHostname (name)
 			  QUERY);
     }
 }
-#endif /* !MINIX */
+#endif /* __GNU__ */
 
 static ARRAYofARRAY8	AuthenticationNames;
 
+#if 0
 static void
-RegisterAuthenticationName (name, namelen)
-    char    *name;
-    int	    namelen;
+RegisterAuthenticationName (char *name, int namelen)
 {
     ARRAY8Ptr	authName;
     if (!XdmcpReallocARRAYofARRAY8 (&AuthenticationNames,
@@ -824,20 +759,14 @@ RegisterAuthenticationName (name, namelen)
 	return;
     memmove( authName->data, name, namelen);
 }
+#endif
 
-int
-InitXDMCP (argv)
-    char    **argv;
+static int
+InitXDMCP (char **argv)
 {
     int	soopts = 1;
     XdmcpHeader	header;
     int	i;
-#ifdef MINIX
-    char *udp_device;
-    nwio_udpopt_t udpopt;
-    int flags;
-    nbio_ref_t ref;
-#endif
 
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) BROADCAST_QUERY;
@@ -889,37 +818,8 @@ InitXDMCP (argv)
     freenetconfigent(nconf);
     }
 #else
-#ifdef MINIX
-    udp_device= getenv("UDP_DEVICE");
-    if (udp_device == NULL)
-    	udp_device= UDP_DEVICE;
-    if ((socketFD = open(udp_device, O_RDWR)) == -1)
-    	return 0;
-    udpopt.nwuo_flags= NWUO_SHARED | NWUO_LP_SEL | NWUO_EN_LOC |
-	NWUO_EN_BROAD | NWUO_RP_ANY | NWUO_RA_ANY | NWUO_RWDATALL |
-	NWUO_DI_IPOPT;
-    if (ioctl(socketFD, NWIOSUDPOPT, &udpopt) == -1)
-    {
-    	close(socketFD);
-    	return 0;
-    }
-    if ((flags= fcntl(socketFD, F_GETFD)) == -1)
-    {
-    	close(socketFD);
-    	return 0;
-    }
-    if (fcntl(socketFD, F_SETFD, flags | FD_ASYNCHIO) == -1)
-    {
-    	close(socketFD);
-    	return 0;
-    }
-    nbio_register(socketFD);
-    ref.ref_int= socketFD;
-    nbio_setcallback(socketFD, ASIO_READ, read_cb, ref);
-#else /* !MINIX */
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
-#endif /* MINIX */
 #endif
 #ifndef STREAMSCONN
 #ifdef SO_BROADCAST
@@ -942,26 +842,20 @@ InitXDMCP (argv)
 }
 
 static void
-Choose (h)
-    HostName	*h;
+Choose (HostName *h)
 {
     if (app_resources.xdmAddress)
     {
 	struct sockaddr_in  in_addr;
-	struct sockaddr	*addr;
+	struct sockaddr	*addr = NULL;
 	int		family;
-	int		len;
+	int		len = 0;
 	int		fd;
 	char		buf[1024];
 	XdmcpBuffer	buffer;
 	char		*xdm;
 #if defined(STREAMSCONN)
         struct  t_call  call, rcv;
-#endif
-#ifdef MINIX
-	char		*tcp_device;
-	nwio_tcpconf_t	tcpconf;
-	nwio_tcpcl_t	tcpcl;
 #endif
 
 	xdm = (char *) app_resources.xdmAddress->data;
@@ -1008,31 +902,6 @@ Choose (h)
 	    exit (REMANAGE_DISPLAY);
 	}
 #else
-#ifdef MINIX
-	tcp_device= getenv("TCP_DEVICE");
-	if (tcp_device == NULL)
-		tcp_device= TCP_DEVICE;
-	if ((fd= open(tcp_device, O_RDWR)) == -1)
-	{
-	    fprintf (stderr, "Cannot open '%s': %s\n", tcp_device,
-	    	strerror(errno));
-	    exit (REMANAGE_DISPLAY);
-	}
-	tcpconf.nwtc_flags= NWTC_EXCL | NWTC_LP_SEL | NWTC_SET_RA | NWTC_SET_RP;
-	tcpconf.nwtc_remport= in_addr.sin_port;
-	tcpconf.nwtc_remaddr= in_addr.sin_addr.s_addr;
-	if (ioctl(fd, NWIOSTCPCONF, &tcpconf) == -1)
-	{
-	    fprintf (stderr, "NWIOSTCPCONF failed: %s\n", strerror(errno));
-	    exit (REMANAGE_DISPLAY);
-	}
-	tcpcl.nwtcl_flags= 0;
-	if (ioctl(fd, NWIOTCPCONN, &tcpcl) == -1)
-	{
-	    fprintf (stderr, "NWIOTCPCONN failed: %s\n", strerror(errno));
-	    exit (REMANAGE_DISPLAY);
-	}
-#else /* !MINIX */
 	if ((fd = socket (family, SOCK_STREAM, 0)) == -1)
 	{
 	    fprintf (stderr, "Cannot create response socket\n");
@@ -1043,7 +912,6 @@ Choose (h)
 	    fprintf (stderr, "Cannot connect to xdm\n");
 	    exit (REMANAGE_DISPLAY);
 	}
-#endif /* MINIX */
 #endif
 	buffer.data = (BYTE *) buf;
 	buffer.size = sizeof (buf);
@@ -1084,11 +952,7 @@ Choose (h)
 
 /* ARGSUSED */
 static void
-DoAccept (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoAccept (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     XawListReturnStruct	*r;
     HostName		*h;
@@ -1113,11 +977,7 @@ DoAccept (w, event, params, num_params)
 
 /* ARGSUSED */
 static void
-DoCheckWilling (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoCheckWilling (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     XawListReturnStruct	*r;
     HostName		*h;
@@ -1133,22 +993,14 @@ DoCheckWilling (w, event, params, num_params)
 
 /* ARGSUSED */
 static void
-DoCancel (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoCancel (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     exit (OBEYSESS_DISPLAY);
 }
 
 /* ARGSUSED */
 static void
-DoPing (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoPing (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     EmptyHostnames ();
     pingTry = 0;
@@ -1156,19 +1008,23 @@ DoPing (w, event, params, num_params)
 }
 
 static XtActionsRec app_actions[] = {
-    "Accept",	    DoAccept,
-    "Cancel",	    DoCancel,
-    "CheckWilling", DoCheckWilling,
-    "Ping",	    DoPing,
+    { "Accept",	      DoAccept },
+    { "Cancel",	      DoCancel },
+    { "CheckWilling", DoCheckWilling },
+    { "Ping",	      DoPing },
 };
 
-main (argc, argv)
-    int     argc;
-    char    **argv;
+int
+main (int argc, char **argv)
 {
     Arg		position[3];
     Dimension   width, height;
     Position	x, y;
+#ifdef USE_XINERAMA
+    XineramaScreenInfo *screens;
+    int                 s_num;
+#endif
+
 
     toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), &argc, argv);
 
@@ -1196,8 +1052,23 @@ main (argc, argv)
     XtSetArg (position[0], XtNwidth, &width);
     XtSetArg (position[1], XtNheight, &height);
     XtGetValues (toplevel, position, (Cardinal) 2);
-    x = (Position)(WidthOfScreen (XtScreen (toplevel)) - width) / 2;
-    y = (Position)(HeightOfScreen (XtScreen (toplevel)) - height) / 3;
+#ifdef USE_XINERAMA
+    if (
+	XineramaIsActive(XtDisplay(toplevel)) &&
+	(screens = XineramaQueryScreens(XtDisplay(toplevel), &s_num)) != NULL
+       )
+    {
+	x = (Position)(screens[0].x_org + (screens[0].width - width) / 2);
+	y = (Position)(screens[0].y_org + (screens[0].height - height) / 3);
+	
+	XFree(screens);
+    }
+    else
+#endif
+    {
+	x = (Position)(WidthOfScreen (XtScreen (toplevel)) - width) / 2;
+	y = (Position)(HeightOfScreen (XtScreen (toplevel)) - height) / 3;
+    }
     XtSetArg (position[0], XtNx, x);
     XtSetArg (position[1], XtNy, y);
     XtSetValues (toplevel, position, (Cardinal) 2);
@@ -1215,10 +1086,8 @@ main (argc, argv)
 /* Converts the hex string s of length len into the byte array d.
    Returns 0 if s was a legal hex string, 1 otherwise.
    */
-int
-FromHex (s, d, len)
-    char    *s, *d;
-    int	    len;
+static int
+FromHex (char *s, char *d, int len)
 {
     int	t;
     int ret = len&1;		/* odd-length hex strings are illegal */
@@ -1242,11 +1111,7 @@ FromHex (s, d, len)
 
 /*ARGSUSED*/
 static void
-CvtStringToARRAY8 (args, num_args, fromVal, toVal)
-    XrmValuePtr	args;
-    Cardinal	*num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
+CvtStringToARRAY8 (XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static ARRAY8Ptr	dest;
     char	*s;
@@ -1265,21 +1130,3 @@ CvtStringToARRAY8 (args, num_args, fromVal, toVal)
     toVal->size = sizeof (ARRAY8Ptr);
 }
 
-#ifdef MINIX
-static void read_cb(nbio_ref_t ref, int res, int err)
-{
-	if (!read_inprogress)
-		abort();
-	if (res > 0)
-	{
-		read_size= res;
-	}
-	else
-    	{
-    		fprintf(stderr, "chooser: read error: %s\n", res == 0 ?
-    			"EOF" : strerror(err));
-		read_size= 0;
-	}
-	read_inprogress= 0;
-}
-#endif

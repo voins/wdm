@@ -138,6 +138,7 @@ extern char *wdmHalt;
 extern int   wdmRoot;
 extern int   wdmVerify;
 extern int   wdmAnimations;
+extern char *wdmLocale;
 
 static int      pipe_filedes[2];
 static char	name[128], password[128];
@@ -230,6 +231,10 @@ static int InitGreet (struct display *d)
         fcntl(3, F_SETFD, 0); /* Reset close-on-exec (just in case) */
         
         env = (char **)systemEnv(d, (char*)NULL, (char*)NULL);
+
+	if(wdmLocale[0] != '\0')
+		env = setEnv(env, "LANG", wdmLocale);
+	printEnv(env);
         tmp = strrchr(wdmLogin,'/');
         if (tmp==NULL)
             tmp=wdmLogin;

@@ -1,16 +1,13 @@
-/* $XConsortium: greet.c,v 1.41 94/09/12 21:32:49 converse Exp $ */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.1 1995/10/21 12:52:36 dawes Exp $ */
+/* $Xorg: greet.c,v 1.4 2001/02/09 02:05:41 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,21 +15,22 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.15 2001/12/14 20:01:29 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
- * Author:  Keith Packard, MIT X Consortium
+ * Author:  Keith Packard, X Consortium
  *
  * widget to get username/password
  *
@@ -41,43 +39,65 @@ from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <X11/XKBlib.h>
+
+#ifdef USE_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 
 #include "dm.h"
+#include "dm_error.h"
 #include "greet.h"
 #include "Login.h"
 
-#if GREET_LIB
+#ifdef __OpenBSD__
+#include <syslog.h>
+#endif
+
+#if defined(SECURE_RPC) && defined(sun)
+/* Go figure, there's no getdomainname() prototype available */
+extern int getdomainname(char *name, size_t len);
+#endif
+
+#ifdef GREET_LIB
 /*
  * Function pointers filled in by the initial call ito the library
  */
 
-int     (*__xdm_PingServer)() = NULL;
-int     (*__xdm_SessionPingFailed)() = NULL;
-int     (*__xdm_Debug)() = NULL;
-int     (*__xdm_RegisterCloseOnFork)() = NULL;
-int     (*__xdm_SecureDisplay)() = NULL;
-int     (*__xdm_UnsecureDisplay)() = NULL;
-int     (*__xdm_ClearCloseOnFork)() = NULL;
-int     (*__xdm_SetupDisplay)() = NULL;
-int     (*__xdm_LogError)() = NULL;
-int     (*__xdm_SessionExit)() = NULL;
-int     (*__xdm_DeleteXloginResources)() = NULL;
-int     (*__xdm_source)() = NULL;
-char    **(*__xdm_defaultEnv)() = NULL;
-char    **(*__xdm_setEnv)() = NULL;
-char    **(*__xdm_parseArgs)() = NULL;
-int     (*__xdm_printEnv)() = NULL;
-char    **(*__xdm_systemEnv)() = NULL;
-int     (*__xdm_LogOutOfMem)() = NULL;
-void    (*__xdm_setgrent)() = NULL;
-struct group    *(*__xdm_getgrent)() = NULL;
-void    (*__xdm_endgrent)() = NULL;
+int     (*__xdm_PingServer)(struct display *d, Display *alternateDpy) = NULL;
+void    (*__xdm_SessionPingFailed)(struct display *d) = NULL;
+void    (*__xdm_Debug)(char * fmt, ...) = NULL;
+void    (*__xdm_RegisterCloseOnFork)(int fd) = NULL;
+void    (*__xdm_SecureDisplay)(struct display *d, Display *dpy) = NULL;
+void    (*__xdm_UnsecureDisplay)(struct display *d, Display *dpy) = NULL;
+void    (*__xdm_ClearCloseOnFork)(int fd) = NULL;
+void    (*__xdm_SetupDisplay)(struct display *d) = NULL;
+void    (*__xdm_LogError)(char * fmt, ...) = NULL;
+void    (*__xdm_SessionExit)(struct display *d, int status, int removeAuth) = NULL;
+void    (*__xdm_DeleteXloginResources)(struct display *d, Display *dpy) = NULL;
+int     (*__xdm_source)(char **environ, char *file) = NULL;
+char    **(*__xdm_defaultEnv)(void) = NULL;
+char    **(*__xdm_setEnv)(char **e, char *name, char *value) = NULL;
+char    **(*__xdm_putEnv)(const char *string, char **env) = NULL;
+char    **(*__xdm_parseArgs)(char **argv, char *string) = NULL;
+void    (*__xdm_printEnv)(char **e) = NULL;
+char    **(*__xdm_systemEnv)(struct display *d, char *user, char *home) = NULL;
+void    (*__xdm_LogOutOfMem)(char * fmt, ...) = NULL;
+void    (*__xdm_setgrent)(void) = NULL;
+struct group    *(*__xdm_getgrent)(void) = NULL;
+void    (*__xdm_endgrent)(void) = NULL;
 #ifdef USESHADOW
-struct spwd   *(*__xdm_getspnam)() = NULL;
-void   (*__xdm_endspent)() = NULL;
+struct spwd   *(*__xdm_getspnam)(GETSPNAM_ARGS) = NULL;
+void   (*__xdm_endspent)(void) = NULL;
 #endif
-struct passwd   *(*__xdm_getpwnam)() = NULL;
-char     *(*__xdm_crypt)() = NULL;
+struct passwd   *(*__xdm_getpwnam)(GETPWNAM_ARGS) = NULL;
+#ifdef linux
+void   (*__xdm_endpwent)(void) = NULL;
+#endif
+char     *(*__xdm_crypt)(CRYPT_ARGS) = NULL;
+#ifdef USE_PAM
+pam_handle_t **(*__xdm_thepamhp)(void) = NULL;
+#endif
 
 #endif
 
@@ -101,9 +121,9 @@ static XtIntervalId	pingTimeout;
 
 /*ARGSUSED*/
 static void
-GreetPingServer (closure, intervalId)
-    XtPointer	    closure;
-    XtIntervalId    *intervalId;
+GreetPingServer (
+    XtPointer	    closure,
+    XtIntervalId    *intervalId)
 {
     struct display *d;
 
@@ -116,10 +136,10 @@ GreetPingServer (closure, intervalId)
 
 /*ARGSUSED*/
 static void
-GreetDone (w, data, status)
-    Widget	w;
-    LoginData	*data;
-    int		status;
+GreetDone (
+    Widget	w,
+    LoginData	*data,
+    int		status)
 {
     Debug ("GreetDone: %s, (password is %d long)\n",
 	    data->name, strlen (data->passwd));
@@ -150,8 +170,7 @@ GreetDone (w, data, status)
 }
 
 static Display *
-InitGreet (d)
-    struct display	*d;
+InitGreet (struct display *d)
 {
     Arg		arglist[10];
     int		i;
@@ -159,6 +178,10 @@ InitGreet (d)
     Screen		*scrn;
     static char	*argv[] = { "xlogin", 0 };
     Display		*dpy;
+#ifdef USE_XINERAMA
+    XineramaScreenInfo *screens;
+    int                 s_num;
+#endif
 
     Debug ("greet %s\n", d->name);
     argc = 1;
@@ -170,6 +193,16 @@ InitGreet (d)
     if (!dpy)
 	return 0;
 
+#ifdef XKB
+    {
+    int opcode, evbase, errbase, majret, minret;
+    unsigned int value = XkbPCF_GrabsUseXKBStateMask;
+    if (XkbQueryExtension (dpy, &opcode, &evbase, &errbase, &majret, &minret)) {
+	if (!XkbSetPerClientControls (dpy, XkbPCF_GrabsUseXKBStateMask, &value))
+	    LogError ("%s\n", "SetPerClientControls failed");
+    }
+    }
+#endif
     RegisterCloseOnFork (ConnectionNumber (dpy));
 
     SecureDisplay (d, dpy);
@@ -193,6 +226,21 @@ InitGreet (d)
 				    arglist, i);
     XtRealizeWidget (toplevel);
 
+#ifdef USE_XINERAMA
+    if (
+	XineramaIsActive(dpy) &&
+	(screens = XineramaQueryScreens(dpy, &s_num)) != NULL
+       )
+    {
+	XWarpPointer(dpy, None, XRootWindowOfScreen (scrn),
+			0, 0, 0, 0,
+			screens[0].x_org + screens[0].width / 2,
+			screens[0].y_org + screens[0].height / 2);
+
+	XFree(screens);
+    }
+    else
+#endif
     XWarpPointer(dpy, None, XRootWindowOfScreen (scrn),
 		    0, 0, 0, 0,
 		    XWidthOfScreen(scrn) / 2,
@@ -206,9 +254,8 @@ InitGreet (d)
     return dpy;
 }
 
-static
-CloseGreet (d)
-    struct display	*d;
+static void
+CloseGreet (struct display *d)
 {
     Boolean	    allow;
     Arg	    arglist[1];
@@ -234,12 +281,10 @@ CloseGreet (d)
 }
 
 static int
-Greet (d, greet)
-    struct display *d;
-    struct greet_info *greet;
+Greet (struct display *d, struct greet_info *greet)
 {
     XEvent		event;
-    Arg		arglist[2];
+    Arg		arglist[3];
 
     XtSetArg (arglist[0], XtNallowAccess, False);
     XtSetValues (login, arglist, 1);
@@ -247,8 +292,15 @@ Greet (d, greet)
     Debug ("dispatching %s\n", d->name);
     done = 0;
     while (!done) {
-	    XtAppNextEvent (context, &event);
+	XtAppNextEvent (context, &event);
+	switch (event.type) {
+	case MappingNotify:
+	    XRefreshKeyboardMapping(&event.xmapping);
+	    break;
+	default:
 	    XtDispatchEvent (&event);
+	    break;
+	}
     }
     XFlush (XtDisplay (toplevel));
     Debug ("Done dispatch %s\n", d->name);
@@ -258,7 +310,8 @@ Greet (d, greet)
 	greet->password = password;
 	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
 	XtSetArg (arglist[1], XtNallowNullPasswd, (char *) &(greet->allow_null_passwd));
-	XtGetValues (login, arglist, 2);
+	XtSetArg (arglist[2], XtNallowRootLogin, (char *) &(greet->allow_root_login));
+	XtGetValues (login, arglist, 3);
 	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
     }
     return code;
@@ -266,22 +319,27 @@ Greet (d, greet)
 
 
 static void
-FailedLogin (d, greet)
-    struct display	*d;
-    struct greet_info	*greet;
+FailedLogin (struct display *d, struct greet_info *greet)
 {
+#ifdef __OpenBSD__
+    syslog(LOG_NOTICE, "LOGIN FAILURE ON %s",
+	   d->name);
+    syslog(LOG_AUTHPRIV|LOG_NOTICE,
+	   "LOGIN FAILURE ON %s, %s",
+	   d->name, greet->name);
+#endif
     DrawFail (login);
     bzero (greet->name, strlen(greet->name));
     bzero (greet->password, strlen(greet->password));
 }
 
 
-greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
-    struct display          *d;
-    Display                 ** dpy;
-    struct verify_info      *verify;
-    struct greet_info       *greet;
-    struct dlfuncs       *dlfuncs;
+greet_user_rtn GreetUser(
+    struct display          *d,
+    Display                 ** dpy,
+    struct verify_info      *verify,
+    struct greet_info       *greet,
+    struct dlfuncs        *dlfuncs)
 {
     int i;
 
@@ -303,6 +361,7 @@ greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
     __xdm_source = dlfuncs->_source;
     __xdm_defaultEnv = dlfuncs->_defaultEnv;
     __xdm_setEnv = dlfuncs->_setEnv;
+    __xdm_putEnv = dlfuncs->_putEnv;
     __xdm_parseArgs = dlfuncs->_parseArgs;
     __xdm_printEnv = dlfuncs->_printEnv;
     __xdm_systemEnv = dlfuncs->_systemEnv;
@@ -315,7 +374,13 @@ greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
     __xdm_endspent = dlfuncs->_endspent;
 #endif
     __xdm_getpwnam = dlfuncs->_getpwnam;
+#ifdef linux
+    __xdm_endpwent = dlfuncs->_endpwent;
+#endif
     __xdm_crypt = dlfuncs->_crypt;
+#ifdef USE_PAM
+    __xdm_thepamhp = dlfuncs->_thepamhp;
+#endif
 #endif
 
     *dpy = InitGreet (d);
@@ -329,6 +394,9 @@ greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
 	LogError ("Cannot reopen display %s for greet window\n", d->name);
 	exit (RESERVER_DISPLAY);
     }
+#ifdef __OpenBSD__
+    openlog("xdm", LOG_ODELAY, LOG_AUTH);
+#endif
     for (;;) {
 	/*
 	 * Greet user, requesting name/password

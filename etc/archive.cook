@@ -5,7 +5,7 @@ archive_files =
 	[source_files];
 
 if [not [defined PACKAGE_VERSION]] then PACKAGE_VERSION=0;
-tarball: wdm-[PACKAGE_VERSION].tar.gz;
+tarball: wdm-[PACKAGE_VERSION].tar.gz wdm-[PACKAGE_VERSION].tar.bz2;
 
 wdm-[PACKAGE_VERSION].tar.bz2 : wdm-[PACKAGE_VERSION].tar.gz
 {

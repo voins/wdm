@@ -1,16 +1,13 @@
-/* $XConsortium: policy.c,v 1.12 94/04/17 20:03:41 hersh Exp $ */
-/* $XFree86: xc/programs/xdm/policy.c,v 3.1 1997/01/18 07:02:22 dawes Exp $ */
+/* $Xorg: policy.c,v 1.4 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,15 +15,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -36,22 +33,18 @@ from the X Consortium.
  *
  * policy.c.  Implement site-dependent policy for XDMCP connections
  */
+/* $XFree86: xc/programs/xdm/policy.c,v 3.7 2001/12/27 20:01:56 dawes Exp $ */
 
 # include "dm.h"
+# include "dm_auth.h"
+
+#include <errno.h>
 
 #ifdef XDMCP
 
 # include <X11/X.h>
-#ifndef MINIX
-# ifndef Lynx
-#  include <sys/socket.h>
-# else
-#  include <socket.h>
-# endif
-#ifdef AF_INET
-# include <netinet/in.h>
-#endif
-#endif
+
+# include "dm_socket.h"
 
 static ARRAY8 noAuthentication = { (CARD16) 0, (CARD8Ptr) 0 };
 
@@ -74,8 +67,7 @@ static XdmAuthRec auth[] = {
 #define NumAuth	(sizeof auth / sizeof auth[0])
 
 ARRAY8Ptr
-ChooseAuthentication (authenticationNames)
-    ARRAYofARRAY8Ptr	authenticationNames;
+ChooseAuthentication (ARRAYofARRAY8Ptr authenticationNames)
 {
     int	i, j;
 
@@ -87,9 +79,12 @@ ChooseAuthentication (authenticationNames)
     return &noAuthentication;
 }
 
-CheckAuthentication (pdpy, displayID, name, data)
-    struct protoDisplay	*pdpy;
-    ARRAY8Ptr		displayID, name, data;
+int
+CheckAuthentication (
+    struct protoDisplay	*pdpy,
+    ARRAY8Ptr		displayID,
+    ARRAY8Ptr		name,
+    ARRAY8Ptr		data)
 {
 #ifdef HASXDMAUTH
     if (name->length && !strncmp ((char *)name->data, "XDM-AUTHENTICATION-1", 20))
@@ -99,9 +94,9 @@ CheckAuthentication (pdpy, displayID, name, data)
 }
 
 int
-SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
-    ARRAY8Ptr		authenticationName;
-    ARRAYofARRAY8Ptr	authorizationNames;
+SelectAuthorizationTypeIndex (
+    ARRAY8Ptr		authenticationName,
+    ARRAYofARRAY8Ptr	authorizationNames)
 {
     int	i, j;
 
@@ -125,12 +120,12 @@ SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
 
 /*ARGSUSED*/
 int
-Willing (addr, connectionType, authenticationName, status, type)
-    ARRAY8Ptr	    addr;
-    CARD16	    connectionType;
-    ARRAY8Ptr	    authenticationName;
-    ARRAY8Ptr	    status;
-    xdmOpCode	    type;
+Willing (
+    ARRAY8Ptr	    addr,
+    CARD16	    connectionType,
+    ARRAY8Ptr	    authenticationName,
+    ARRAY8Ptr	    status,
+    xdmOpCode	    type)
 {
     char	statusBuf[256];
     int		ret;
@@ -139,7 +134,26 @@ Willing (addr, connectionType, authenticationName, status, type)
     if (!ret)
 	sprintf (statusBuf, "Display not authorized to connect");
     else
-	sprintf (statusBuf, "Willing to manage");
+    {
+        if (*willing)
+	{   FILE *fd = NULL;
+	    if ((fd = popen(willing, "r")))
+	    {
+		char *s = NULL;
+		while(!(s = fgets(statusBuf, 256, fd)) && errno == EINTR)
+			;
+		if(s)
+			statusBuf[strlen(statusBuf)-1] = 0; /* chop newline */
+		else
+			sprintf (statusBuf, "Willing, but %s failed",willing);
+	    }
+	    else
+	        sprintf (statusBuf, "Willing, but %s failed",willing);
+	    if (fd) pclose(fd);
+	}
+	else
+	    sprintf (statusBuf, "Willing to manage");
+    }
     status->length = strlen (statusBuf);
     status->data = (CARD8Ptr) malloc (status->length);
     if (!status->data)
@@ -151,19 +165,19 @@ Willing (addr, connectionType, authenticationName, status, type)
 
 /*ARGSUSED*/
 ARRAY8Ptr
-Accept (from, fromlen, displayNumber)
-    struct sockaddr *from;
-    int		    fromlen;
-    CARD16	    displayNumber;
+Accept (
+    struct sockaddr *from,
+    int		    fromlen,
+    CARD16	    displayNumber)
 {
     return 0;
 }
 
 /*ARGSUSED*/
 int
-SelectConnectionTypeIndex (connectionTypes, connectionAddresses)
-    ARRAY16Ptr	     connectionTypes;
-    ARRAYofARRAY8Ptr connectionAddresses;
+SelectConnectionTypeIndex (
+    ARRAY16Ptr	     connectionTypes,
+    ARRAYofARRAY8Ptr connectionAddresses)
 {
     return 0;
 }

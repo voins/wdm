@@ -1,16 +1,13 @@
-/* $XConsortium: daemon.c,v 1.16 94/12/01 17:10:49 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.6 1996/06/29 09:10:31 dawes Exp $ */
+/* $Xorg: daemon.c,v 1.4 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.17 2001/12/14 20:01:21 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -42,17 +40,14 @@ from the X Consortium.
 #else
 #include <sys/ioctl.h>
 #endif
-#if defined(__osf__) || defined(linux) || defined(MINIX) || \
-	(defined(IRIX) && !defined(_IRIX4))
+#if defined(__osf__) || defined(linux) || defined(__GNU__) || defined(__CYGWIN__) \
+	|| (defined(IRIX) && !defined(_IRIX4))
 #define setpgrp setpgid
 #endif
 #ifdef hpux
 #include <sys/ptyio.h>
 #endif
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include <sys/types.h>
 #ifdef X_NOT_POSIX
 #define Pid_t int
@@ -60,12 +55,18 @@ extern int errno;
 #define Pid_t pid_t
 #endif
 
-extern void exit ();
+#include <stdlib.h>
 
-BecomeOrphan ()
+#include <dm.h>
+#include <dm_error.h>
+
+void
+BecomeOrphan (void)
 {
     Pid_t child_id;
+#ifndef CSRG_BASED
     int stat;
+#endif
 
     /*
      * fork so that the process goes into the background automatically. Also
@@ -90,7 +91,7 @@ BecomeOrphan ()
 	/* parent */
 
 #ifndef CSRG_BASED
-#if defined(SVR4)
+#if defined(SVR4) || defined(__QNXNTO__)
 	stat = setpgid(child_id, child_id);
 	/* This gets error EPERM.  Why? */
 #else
@@ -98,11 +99,9 @@ BecomeOrphan ()
 	stat = 0;	/* don't know how to set child's process group */
 #else
 	stat = setpgrp(child_id, child_id);
-#ifndef MINIX
 	if (stat != 0)
 	    LogError("setting process grp for daemon failed, errno = %d\n",
 		     errno);
-#endif /* MINIX */
 #endif
 #endif
 #endif /* !CSRG_BASED */
@@ -110,18 +109,17 @@ BecomeOrphan ()
     }
 }
 
-BecomeDaemon ()
+void
+BecomeDaemon (void)
 {
+#ifndef CSRG_BASED
     register int i;
 
     /*
      * Close standard file descriptors and get rid of controlling tty
      */
 
-#ifdef CSRG_BASED
-    daemon (0, 0);
-#else
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) || defined(__QNXNTO__)
     setpgrp ();
 #else
     setpgrp (0, getpid());
@@ -132,17 +130,7 @@ BecomeDaemon ()
     close (2);
 
 #ifndef __EMX__
-#ifdef MINIX
-#if 0
-    /* Use setsid() to get rid of our controlling tty, this requires an extra
-     * fork though.
-     */
-    setsid();
-    if (fork() > 0)
-    	_exit(0);
-#endif
-#else /* !MINIX */
-#if !((defined(SYSV) || defined(SVR4)) && defined(i386))
+#if !((defined(SYSV) || defined(SVR4)) && defined(i386)) && !defined(__CYGWIN__)
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
 	int zero = 0;
@@ -158,7 +146,6 @@ BecomeDaemon ()
 	(void) close (i);
     }
 #endif /* !((SYSV || SVR4) && i386) */
-#endif /* MINIX */
 #endif /* !__EMX__ */
 
     /*
@@ -167,5 +154,7 @@ BecomeDaemon ()
     (void) open ("/", O_RDONLY);	/* root inode already in core */
     (void) dup2 (0, 1);
     (void) dup2 (0, 2);
+#else
+    daemon (0, 0);
 #endif /* CSRG_BASED */
 }

@@ -39,6 +39,8 @@ program_list = [stringset [fromto src/%1/%2.c %1 [match_mask src/%1/%2.c [source
 /* internal programs that is will not be installed */
 i_program_list = TestLogin;
 
+/* list of *.mo files */
+mo_files = [fromto %0%.po %0%.mo [match_mask %0%.po [source_files]]];
 
-all = tarball [addprefix bin/ [program_list]];
+all = tarball [addprefix bin/ [program_list]] nlsdir;
 

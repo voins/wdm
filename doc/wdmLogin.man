@@ -59,8 +59,14 @@ to an image file (tiff, png, jpeg and xpm allowed) and it will be
 scaled to use the full screen.
 .SH FILES
 \fBwdmLogin\fP can be customized by modifying \fI/etc/X11/wdm/wdm-config\fP.
+.SH ENVIRONMENT VARIABLES
+Some variables that defines locale affects the look of wdmLogin. wdm program
+will set LANG environment variable according to `wdmLocale' resource in wdm-config
+file.
 .SH SEE ALSO
 .BR wdm (1x)
+,
+.BR locale (1)
 .SH AUTHOR
 wmdLogin was written by Gene Czarcinski <genec@mindspring.com>. wdm is
 based on work by Tom Rothamel (xdm's external greeter protocol) and

@@ -30,6 +30,7 @@
 #include <WINGs/WINGs.h>
 #include <WINGs/WUtil.h>
 #include <limits.h>
+#include <locale.h>
 
 #if (WINGS_H_VERSION == 980901)
 void WMSetScrollViewLineScroll(WMScrollView *sPtr, int amount);
@@ -37,6 +38,7 @@ void WMSetScrollViewPageScroll(WMScrollView *sPtr, int amount);
 #endif
 
 #include <gnuLogo.xpm>
+
 
 /*###################################################################*/
 
@@ -165,25 +167,14 @@ static int   LoginSwitch   = False;
 static char  LoginName[LOGNAME_LEN] = "";
 static char  LoginPswd[PASS_LEN] = "";
 
-static char *Cname  = "Login Name:";
-static char *Cpswd  = "Password:";
-
 static int   OptionCode	   = 0;
-static char  OptionStr[32] = "Login";
-static char  ExitLogin[]   = "Login";
-static char  ExitReboot[]  = "Reboot";
-static char  ExitHalt[]	   = "Halt";
-static char  ExitExit[]	   = "ExitLogin";
-static char *ExitStr[5]	   = {ExitLogin,ExitReboot,ExitHalt,ExitExit,
-			      NULL};
+static char *ExitStr[]	   = {N_("Login"), N_("Reboot"), N_("Halt"),
+		N_("ExitLogin"), NULL};
 
 static int   WmOptionCode  = 0;
-static char  WmOption[256] = "NoChange";
-static char  WmNoChange[]  = "NoChange";
-static char  WmFailSafe[]  = "failsafe";
 static char  WmDefault[]   = "wmaker:afterstep:xsession";
-static char *WmArg	   = NULL;
-static char *WmStr[17]	   = {WmNoChange,NULL,NULL,NULL,NULL};
+static char *WmArg	   = WmDefault;
+static char **WmStr        = NULL;
 
 static char *logoArg	   = NULL;
 static char *bgArg	   = NULL;
@@ -298,37 +289,33 @@ static void OutputAuth(char *user, char *pswd)
 
 static void SetupWm()
 {
-    char *p1, *p2;
-    int i;
+    int i = 0, n = 0;
+    char *ptr = WmArg;
 
-    if (WmArg!=NULL)
+    /* count number of items, skip empty items.
+       n = number of items - 1 */
+    while(*ptr) if (*ptr++ == ':' && *ptr != ':' && *ptr) ++n;
+    /* reserve one position fo NULL pointer, one for 'NoChange'
+       and one for 'FailSafe' */
+    WmStr = (char**)malloc(sizeof(char*) * (n + 4));
+    WmStr[i++] = N_("NoChange");
+
+    if(strcasecmp(WmArg, "none") != 0) /* we explicitly don't want any
+					  choice */
     {
-	p1=WmArg;
-	if (! strcasecmp(WmArg, "none"))
-		return; /* we explicitly don't want any choice */
+	ptr = WmArg;
+	while(*ptr)
+	{
+	    while(*ptr == ':') ++ptr;
+	    if(!*ptr) break;
+	    WmStr[i++] = ptr;
+	    while(*ptr != ':' && *ptr) ++ptr;
+	    if(!*ptr) break;
+	    *ptr++ = '\0';
+	}
+	WmStr[i++] = N_("failsafe");
     }
-    else
-	p1=WmDefault;
-    i=1;
-    while ((i<14) && (*p1!='\0')) {
-	while (*p1 == ':')
-	   p1++;
-	if (*p1 == '\0')
-	   break;
-	WmStr[i] = p1;
-	p2 = strchr(p1,':');
-	if (p2==NULL)
-	   break;
-	*p2 = '\0';
-	p1 = p2+1;
-	i++;
-    }
-    if (*p1!='\0') {
-	WmStr[i] = p1;
-	i++;
-    }
-    WmStr[i] = WmFailSafe;
-    WmStr[i+1] = NULL;
+    WmStr[i] = NULL;
 }
 
 
@@ -421,7 +408,7 @@ static void PrintErrMsg(LoginPanel *panel, char* msg)
     XSynchronize(dpy,True);
     ClearMsgs(panel);
     WMSetFrameRelief(panel->msgF,WRGroove);
-    WMSetFrameTitle(panel->msgF,"ERROR");
+    WMSetFrameTitle(panel->msgF, _("ERROR"));
     WMSetLabelText(panel->msgL,msg);
     panel->msgFlag = True;
     XFlush(dpy);
@@ -463,14 +450,14 @@ static void init_pwdfield(char *pwd)
 #else
 	WMResizeWidget(panel->entryText, text_width, 4); /* make invisible */
 #endif
-	WMSetLabelText(panel->entryLabel,Cpswd);
+	WMSetLabelText(panel->entryLabel, _("Password:"));
 }
 
 static void init_namefield(char *name)
 {
     WMResizeWidget(panel->entryText, text_width, text_heigth);
     WMSetTextFieldText(panel->entryText,name);
-    WMSetLabelText(panel->entryLabel,Cname);
+    WMSetLabelText(panel->entryLabel, _("Login name:"));
     WMSetFocusToWidget(panel->entryText);
 #if (WINGS_H_VERSION > 980722)
 	WMSetTextFieldSecure(panel->entryText, False);
@@ -495,7 +482,7 @@ static void PerformLogin(LoginPanel *panel, int canexit)
 	strncpy(LoginName,tmp,LOGNAME_LEN);
 	if ((LoginName[0]=='\0') && (WmDefUser == False)) {
 	    InitializeLoginInput(panel);
-	    PrintErrMsg(panel,"invalid name");
+	    PrintErrMsg(panel, _("invalid name"));
 	    return;
 	}
 	LoginSwitch = True;
@@ -514,9 +501,9 @@ static void PerformLogin(LoginPanel *panel, int canexit)
 
     init_namefield("");
     if (OptionCode==0)
-	PrintInfoMsg(panel,"validating");
+	PrintInfoMsg(panel, _("validating"));
     else
-	PrintInfoMsg(panel,"exiting");
+	PrintInfoMsg(panel, _("exiting"));
 
     OutputAuth(LoginName, LoginPswd);
 }
@@ -544,7 +531,7 @@ static void goPressed(WMWidget *self, LoginPanel *panel)
 	WMSetTextFieldText(panel->entryText,"");
 	strncpy(LoginPswd,tmp,PASS_LEN);
     }
-    PrintInfoMsg(panel,"exiting");
+    PrintInfoMsg(panel, _("exiting"));
     OutputAuth(LoginName,LoginPswd);
 }
 
@@ -558,12 +545,12 @@ static void helpPressed(WMWidget *self, LoginPanel *panel)
 {
     if (panel_heigth == P_HEIGTH) {
 	panel_heigth = P_HEIGTH + help_heigth;
-	WMSetButtonText(panel->helpBtn, "Close Help");
+	WMSetButtonText(panel->helpBtn, _("Close Help"));
 	WMResizeWidget(panel->win, panel_width, panel_heigth);
     }
     else {
 	panel_heigth = P_HEIGTH;
-	WMSetButtonText(panel->helpBtn, "Help");
+	WMSetButtonText(panel->helpBtn, _("Help"));
 	WMResizeWidget(panel->win, panel_width, panel_heigth);
     }
 }
@@ -571,8 +558,6 @@ static void helpPressed(WMWidget *self, LoginPanel *panel)
 static void changeWm(WMWidget *self, LoginPanel *panel)
 {
     WmOptionCode = WMGetPopUpButtonSelectedItem(self);
-    strncpy(WmOption,WmStr[WmOptionCode],255);
-    WmOption[255] = '\0';
     WMSetFocusToWidget(panel->entryText);
 }
 
@@ -581,7 +566,6 @@ static void changeOption(WMPopUpButton *self, LoginPanel *panel)
     int item;
 
     item = WMGetPopUpButtonSelectedItem(self);
-    strcpy(OptionStr,ExitStr[item]);
     OptionCode = item;
     WMSetFocusToWidget(panel->entryText);
 }
@@ -673,7 +657,11 @@ static void CreateLogo(LoginPanel *panel)
 #if 0
     fprintf(stderr,"new: ratio=%.5f,width=%i,heigth=%i\n",ratio,w,h);/*DEBUG*/
 #endif
+#ifdef HAVE_SMOOTH_SCALE
+    image2 = RSmoothScaleImage(image1, w, h);
+#else
     image2 = RScaleImage(image1, w, h);
+#endif
     RReleaseImage(image1);
     if (image2==NULL)
 	return;
@@ -702,7 +690,7 @@ static void CreateAuthFrame(LoginPanel *panel)
     panel->authF = WMCreateFrame(panel->winF1);
     WMSetFrameRelief(panel->authF,WRGroove);
     WMSetFrameTitlePosition(panel->authF,WTPAtTop);
-    WMSetFrameTitle(panel->authF,"Login Authentication");
+    WMSetFrameTitle(panel->authF, _("Login Authentication"));
     WMMoveWidget(panel->authF, (panel_width - 290), 10);
     WMResizeWidget(panel->authF, 275, 120);
 
@@ -711,7 +699,7 @@ static void CreateAuthFrame(LoginPanel *panel)
     y=20;
     panel->welcomeMsg1 = WMCreateLabel(panel->authF);
     WMResizeWidget(panel->welcomeMsg1, 255, 26);
-    WMSetLabelText(panel->welcomeMsg1, "Welcome to");
+    WMSetLabelText(panel->welcomeMsg1, _("Welcome to"));
     WMMoveWidget(panel->welcomeMsg1, 11, y);  y += 26;
     WMSetLabelTextAlignment(panel->welcomeMsg1,WACenter);
     font = WMBoldSystemFontOfSize(panel->scr,18);
@@ -750,7 +738,7 @@ static void CreateAuthFrame(LoginPanel *panel)
 	WMSetLabelFont(panel->entryLabel,font);
 	WMReleaseFont(font);
     }
-    WMSetLabelText(panel->entryLabel,Cname);
+    WMSetLabelText(panel->entryLabel, _("Login name:"));
     WMSetLabelTextAlignment(panel->entryLabel,WARight);
 
     panel->entryText = WMCreateTextField(panel->authF);
@@ -792,7 +780,7 @@ static void CreatePopups(LoginPanel *panel)
     panel->wmF = WMCreateFrame(panel->winF1);
     WMSetFrameRelief(panel->wmF,WRGroove);
     WMSetFrameTitlePosition(panel->wmF,WTPAtTop);
-    WMSetFrameTitle(panel->wmF,"Start WM");
+    WMSetFrameTitle(panel->wmF, _("Start WM"));
     WMMoveWidget(panel->wmF, 13, 178);
     WMResizeWidget(panel->wmF, 118, 45);
 
@@ -802,24 +790,24 @@ static void CreatePopups(LoginPanel *panel)
     WMSetPopUpButtonAction(panel->wmBtn, (WMAction*)changeWm, panel);
     i=0;
     while (WmStr[i]!=NULL) {
-	WMAddPopUpButtonItem(panel->wmBtn, WmStr[i]);
+	WMAddPopUpButtonItem(panel->wmBtn, gettext(WmStr[i]));
 	i++;
     }
 
     panel->exitF = WMCreateFrame(panel->winF1);
     WMSetFrameRelief(panel->exitF,WRGroove);
     WMSetFrameTitlePosition(panel->exitF,WTPAtTop);
-    WMSetFrameTitle(panel->exitF,"Options");
+    WMSetFrameTitle(panel->exitF, _("Options"));
     WMMoveWidget(panel->exitF, 134, 178);
-    WMResizeWidget(panel->exitF, 88, 45);
+    WMResizeWidget(panel->exitF, 98, 45);
 
     panel->exitBtn = WMCreatePopUpButton(panel->exitF);
     WMMoveWidget(panel->exitBtn, 4, 15);
-    WMResizeWidget(panel->exitBtn, 80, 25);
+    WMResizeWidget(panel->exitBtn, 90, 25);
     WMSetPopUpButtonAction(panel->exitBtn, (WMAction*)changeOption, panel);
     i=0;
     while (ExitStr[i]!=NULL) {
-	WMAddPopUpButtonItem(panel->exitBtn, ExitStr[i]);
+	WMAddPopUpButtonItem(panel->exitBtn, gettext(ExitStr[i]));
 	i++;
     }
 }
@@ -837,21 +825,21 @@ static void CreateButtons(LoginPanel *panel)
     panel->helpBtn = WMCreateCommandButton(panel->cmdF);
     WMSetButtonAction(panel->helpBtn, (WMAction*)helpPressed, panel);
     WMMoveWidget(panel->helpBtn, i, 8);
-    WMSetButtonText(panel->helpBtn, "Help");
+    WMSetButtonText(panel->helpBtn, _("Help"));
     WMResizeWidget(panel->helpBtn, 80, 25);
 
     i += 96;
     panel->startoverBtn = WMCreateCommandButton(panel->cmdF);
     WMSetButtonAction(panel->startoverBtn, (WMAction*)startoverPressed, panel);
     WMMoveWidget(panel->startoverBtn, i, 8);
-    WMSetButtonText(panel->startoverBtn, "Start Over");
+    WMSetButtonText(panel->startoverBtn, _("Start Over"));
     WMResizeWidget(panel->startoverBtn, 80, 25);
 
     i += 96;
     panel->goBtn = WMCreateCommandButton(panel->cmdF);
     WMSetButtonAction(panel->goBtn, (WMAction*)goPressed, panel);
     WMMoveWidget(panel->goBtn, i, 8);
-    WMSetButtonText(panel->goBtn, "Go!");
+    WMSetButtonText(panel->goBtn, _("Go!"));
     WMResizeWidget(panel->goBtn, 80, 25);
 }
 
@@ -1172,7 +1160,7 @@ static void SignalUsr1(int ignored)	/* oops, an error */
 {
     char msg[64];
 
-    strcpy(msg,OptionStr);
+    strcpy(msg, ExitStr[OptionCode]);
     strcat(msg," failed.");
     InitializeLoginInput(panel);
     PrintErrMsg(panel,msg);
@@ -1198,6 +1186,16 @@ int main(int argc, char **argv)
 
     ProgName = argv[0];
 
+    setlocale(LC_ALL, "");
+    
+#ifdef I18N
+    if(getenv("NLSPATH"))
+        bindtextdomain("wdm", getenv("NLSPATH"));
+    else
+        bindtextdomain("wdm", NLSDIR);
+    textdomain("wdm");
+#endif
+	    
     animate = False;
     LoginArgs(argc, argv);		/* process our args */
     SetupWm();				/* and init the startup list */

@@ -1,16 +1,13 @@
 /*
- * $XConsortium: sessreg.c /main/18 1996/01/25 18:45:57 kaleb $
- * $XFree86: xc/programs/xdm/sessreg.c,v 3.9 1997/01/18 07:02:23 dawes Exp $
+ * $Xorg: sessreg.c,v 1.5 2000/08/17 19:54:15 cpqbld Exp $
  *
- * Copyright (c) 1990  X Consortium
- * 
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
+ * Copyright 1990, 1998  The Open Group
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
  * 
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
@@ -18,20 +15,22 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  * 
- * Except as contained in this notice, the name of the X Consortium shall
+ * Except as contained in this notice, the name of The Open Group shall
  * not be used in advertising or otherwise to promote the sale, use or
  * other dealings in this Software without prior written authorization
- * from the X Consortium.
+ * from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  * Lastlog support and dynamic utmp entry allocation
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
+
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.18 2001/12/14 20:01:24 dawes Exp $ */
 
 /*
  * sessreg
@@ -49,12 +48,14 @@
  */
 
 
+# include	"dm.h"
+
 # include	<X11/Xos.h>
 # include	<X11/Xfuncs.h>
 # include	<stdio.h>
 # include	<utmp.h>
 
-#if defined(SYSV) || defined(SVR4) || defined(Lynx)
+#if defined(SYSV) || defined(SVR4) || defined(Lynx) || defined(__QNX__) || defined(__DARWIN__) || defined(_SEQUENT_)
 #define NO_LASTLOG
 #endif
 
@@ -78,8 +79,10 @@
 #endif
 
 #ifdef CSRG_BASED
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
 /* *BSD doesn't like a ':0' type entry in utmp */
 #define NO_UTMP
+#endif
 #endif
 
 #ifndef WTMP_FILE
@@ -111,17 +114,14 @@
 # endif
 #endif
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 #ifdef X_NOT_POSIX
 extern long	lseek ();
 extern char	*ttyname ();
 #endif
+
+static void set_utmp (struct utmp *u, char *line, char *user, char *host, Time_t date, int addp);
 
 int	wflag, uflag, lflag;
 char	*wtmp_file, *utmp_file, *line;
@@ -143,7 +143,14 @@ int	llog_none, Lflag;
 
 char	*program_name;
 
-usage (x)
+#ifndef SYSV
+static int findslot (char *line_name, char *host_name, int addp, int slot);
+static int Xslot (char *ttys_file, char *servers_file, char *tty_line,
+		  char *host_name, int addp);
+#endif
+
+static int
+usage (int x)
 {
 	if (x) {
 		fprintf (stderr, "%s: usage %s {-a -d} [-w wtmp-file] [-u utmp-file]", program_name, program_name);
@@ -158,10 +165,8 @@ usage (x)
 	return x;
 }
 
-char *
-getstring (avp, flagp)
-char	***avp;
-int	*flagp;
+static char *
+getstring (char ***avp, int *flagp)
 {
 	char	**a = *avp;
 
@@ -174,9 +179,9 @@ int	*flagp;
 	return *a;
 }
 
-syserr (x, s)
-int	x;
-char	*s;
+#ifndef SYSV
+static int
+syserr (int x, char *s)
 {
 	if (x == -1) {
 		perror (s);
@@ -184,10 +189,10 @@ char	*s;
 	}
 	return x;
 }
+#endif
 
-sysnerr (x, s)
-int	x;
-char	*s;
+static int
+sysnerr (int x, char *s)
 {
 	if (x == 0) {
 		perror (s);
@@ -196,9 +201,8 @@ char	*s;
 	return x;
 }
 
-main (argc, argv)
-int	argc;
-char	**argv;
+int
+main (int argc, char **argv)
 {
 #ifndef SYSV
 	int		utmp;
@@ -274,7 +278,7 @@ char	**argv;
 	if (!Lflag)
 		llog_file = LLOG_FILE;
 #endif
-#if !defined(SYSV) && !defined(linux)
+#if !defined(SYSV) && !defined(linux) && !defined(__QNX__)
 	if (!tflag)
 		ttys_file = TTYS_FILE;
 	if (!sflag && !utmp_none) {
@@ -292,7 +296,7 @@ char	**argv;
 		else
 			line = line_tmp;
 	}
-	current_time = time ((Time_t *) 0);
+	time (&current_time);
 	set_utmp (&utmp_entry, line, user_name, host_name, current_time, aflag);
 	if (!utmp_none) {
 #ifdef SYSV
@@ -325,12 +329,13 @@ char	**argv;
 	        struct passwd *pwd = getpwnam(user_name);
 
 	        sysnerr( pwd != NULL, "get user id");
-	        llog = open (llog_file, O_WRONLY);
+	        llog = open64 (llog_file, O_RDWR);
 
 		if (llog != -1) {
-			int	user_id;
 			struct lastlog ll;
 
+			sysnerr (lseek64(llog, (loff_t) pwd->pw_uid*sizeof(ll), 0)
+				        != -1, "seeking lastlog entry");
 			bzero((char *)&ll, sizeof(ll));
 			ll.ll_time = current_time;
 			if (line)
@@ -338,7 +343,6 @@ char	**argv;
 			if (host_name)
 			 (void) strncpy (ll.ll_host, host_name, sizeof (ll.ll_host));
 
-			sysnerr (lseek(llog, (long) pwd->pw_uid*sizeof(ll), 0) != -1, "seeking lastlog entry");
 			sysnerr (write (llog, (char *) &ll, sizeof (ll))
 				        == sizeof (ll), "write lastlog entry");
 			close (llog);
@@ -352,10 +356,8 @@ char	**argv;
  * fill in the appropriate records of the utmp entry
  */
 
-set_utmp (u, line, user, host, date, addp)
-struct utmp	*u;
-char		*line, *user, *host;
-Time_t		date;
+static void
+set_utmp (struct utmp *u, char *line, char *user, char *host, Time_t date, int addp)
 {
 	if (line)
 		(void) strncpy (u->ut_line, line, sizeof (u->ut_line));
@@ -391,7 +393,7 @@ Time_t		date;
 		u->ut_type = DEAD_PROCESS;
 	}
 #endif
-#if !defined(SYSV) || defined(linux)
+#if (!defined(SYSV) && !defined(__QNX__)) || defined(linux)
 	if (addp && host)
 		(void) strncpy (u->ut_host, host, sizeof (u->ut_host));
 	else
@@ -410,12 +412,9 @@ Time_t		date;
  * otherwise use the tty_line argument (i.e., the tty name).
  */
 
-Xslot (ttys_file, servers_file, tty_line, host_name, addp)
-char	*ttys_file;
-char	*servers_file;
-char	*tty_line;
-char	*host_name;
-int	addp;
+static int
+Xslot (char *ttys_file, char *servers_file, char *tty_line, char *host_name,
+       int addp)
 {
 	FILE	*ttys, *servers;
 	int	c;
@@ -434,7 +433,7 @@ int	addp;
 	    if (pos)
 		*pos = '\0';
 	}
-	sysnerr (ttys = fopen (ttys_file, "r"), ttys_file);
+	sysnerr ((int)(long)(ttys = fopen (ttys_file, "r")), ttys_file);
 	while ((c = getc (ttys)) != EOF)
 		if (c == '\n') {
 			++slot;
@@ -444,7 +443,7 @@ int	addp;
 	if (!column0)
 		++slot;
 	(void) fclose (ttys);
-	sysnerr (servers = fopen (servers_file, "r"), servers_file);
+	sysnerr ((int)(long)(servers = fopen (servers_file, "r")), servers_file);
 
 	len = strlen (disp_name);
 	column0 = 1;
@@ -472,11 +471,8 @@ int	addp;
  * past the regular tty entries if necessary, reusing existing entries
  * (identified by (line,hostname)) if possible.
  */
-findslot (line_name, host_name, addp, slot)
-char	*line_name;
-char	*host_name;
-int	addp;
-int	slot;
+static int
+findslot (char *line_name, char *host_name, int addp, int slot)
 {
 	int	utmp;
 	struct	utmp entry;
@@ -496,9 +492,13 @@ int	slot;
 
 	while (read (utmp, (char *) &entry, sizeof (entry)) == sizeof (entry)) {
 		if (strncmp(entry.ut_line, line_name,
-			sizeof(entry.ut_line)) == 0 &&
+			sizeof(entry.ut_line)) == 0 
+#ifndef __QNX__
+                    &&
 		    strncmp(entry.ut_host, host_name,
-			sizeof(entry.ut_host)) == 0) {
+			sizeof(entry.ut_host)) == 0
+#endif
+                   ) {
 			found = 1;
 			break;
 		}

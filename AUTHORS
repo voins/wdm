@@ -1,14 +1,8 @@
-Actual maintainer: Jerome Alet <alet@unice.fr>
-
-Primary developer/packager: Gene Czarcinski <genec@mindspring.com>
-
-See file COPYING for license and warranty information.
-
-Thanks to the following people for their contributions
-to wdm (formally called DisplayMaker):
+Gene Czarcinski <genec@mindspring.com>
+Creator of original wdm package (former DisplayMaker)
 
 Largo <largo@gnu.net>
-For the "logo" artwork: The standard/default DisplayMaker logo
+The "logo" artwork: The standard/default DisplayMaker logo
 is based on the GnuLinux-logo artwork.
 
 Tom Rothamel <tom-xdm@tr.ml.org>
@@ -20,7 +14,7 @@ Tom created the "xdm-extgreet" package using this idea.
 The pip I/O routines are based on Tom's in.c, out.c.
 
 David Reviejo <dreviejo@arrakis.es>
-Created a new look for the login panel.	 Cleaner and also made the
+Created a new look for the login panel. Cleaner and also made the
 help information a scroll view.
 
 Marcelo Magallon <mmagallo@debian.org>
@@ -31,47 +25,45 @@ Dan Pascu <dan@windowmaker.org>
 for creating WindowMaker and WINGs.  Without WINGs, wdm
 would not have happened.
 
-Thanks to the folks working on kde for their automake/autoconf
-stuff which they did for kdm.
+Bevan Broun <bevanb@ee.uwa.edu.au>
+compiled it successfully on an SGI Indy under Irix 6.5.2
 
-Please see the README file in src/pixmaps (or the WDMDIR/pixmaps
-directory for information about the source of the images.
+Berend De Schouwer <bds@ucs.co.za>
+Corrected the configure.in file to allow people to 
+compile wdm easily without needing any ugly hack into the 
+configure script.
 
-Gene Czarcinski <genec@mindspring.com>
+Salman Ahmed <salman.ahmed@leitch.com>
+installation bug report and Xsession patch.
 
---------------------
+Don Bottstein <donb@mapquest.com>
+patch to configure.
 
-New maintainer: Jerome Alet <alet@unice.fr>
+Alexander Kabaev <kabaev@mail.ru>
+patch to session.c.
+patch to correct some hanging problems under at least FreeBSD.
 
-Thanks to the following people for their contributions
-to wdm-1.1 and higher:
-
-Bevan Broun <bevanb@ee.uwa.edu.au> for telling me
-how he finally had compiled it successfully on an SGI Indy
-under Irix 6.5.2
-
-Berend De Schouwer <bds@ucs.co.za> for having corrected the
-configure.in file to allow people to compile wdm easily
-without needing any ugly hack into the configure script.
-
-Salman Ahmed <salman.ahmed@leitch.com> for his installation
-bug report and Xsession patch.
-
-Don Bottstein <donb@mapquest.com> for his patch to configure.
-
-Alexander Kabaev <kabaev@mail.ru> for his patch to session.c
-
-Miodrag Vallat <miodrag@multimania.com> for his various ideas, patches,
-and general help.
+Miodrag Vallat <miodrag@multimania.com>
+various ideas, patches, and general help.
 
 Matsubayashi, 'Shaolin' Kohji <shaolin@rins.st.ryukoku.ac.jp> and Mr. Furukawa
-for their patch to the pam code.
+patch to the pam code.
 
-Alexander N. Kabaev <kabaev@mail.ru> for his patch to correct some
-hanging problems under at least FreeBSD.
-
-Egmont Koblinger <egmont@fazekas.hu> for his patch to center some
-messages one to each other on the login panel, and for his
+Egmont Koblinger <egmont@fazekas.hu>
+patch to center some messages one to each other on the login panel.
 bug/wishes report which I haven't forgotten at all...
 
 Jerome Alet <alet@unice.fr>
+maintainer of wdm code since wdm-1.1 to wdm-1.20
+
+Gregory S. Youngblood <greg@mail.netio.org>
+maintainer of wdm code since 2000 to 2003
+
+Alexey Voinov <voins@voins.program.ru>
+maintainer of wdm code since wdm-1.20
+
+Grigory Batalov <bga@altlinux.ru>
+russian translation
+
+Hiroshi Miura <miura@da-cha.org>
+japanese translation

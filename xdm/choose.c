@@ -1,15 +1,13 @@
 /*
- * $XConsortium: choose.c,v 1.16 94/06/03 16:34:38 mor Exp $
- * $XFree86: xc/programs/xdm/choose.c,v 3.4 1997/01/18 07:02:19 dawes Exp $
+ * $Xorg: choose.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $
  *
-Copyright (c) 1990  X Consortium
+Copyright 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +15,18 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+
+/* $XFree86: xc/programs/xdm/choose.c,v 3.15 2001/12/14 20:01:20 dawes Exp $ */
 
 /*
  * choose.c
@@ -35,18 +35,15 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include "dm.h"
+#include "dm_error.h"
 
 #ifdef XDMCP
 
 #include <X11/X.h>
 #include <sys/types.h>
-#ifndef MINIX
-#ifndef Lynx
-#include <sys/socket.h>
-#else
-#include <socket.h>
-#endif
-#include <netinet/in.h>
+
+#include "dm_socket.h"
+
 #ifndef X_NO_SYS_UN
 #ifndef Lynx
 #include <sys/un.h>
@@ -54,37 +51,23 @@ in this Software without prior written authorization from the X Consortium.
 #include <un.h>
 #endif
 #endif
-#else /* MINIX */
-#include <sys/ioctl.h>
-#include <net/netlib.h>
-#include <net/gen/in.h>
-#include <net/gen/tcp.h>
-#include <net/gen/tcp_io.h>
-#endif /* !MINIX */
+
 #include <ctype.h>
+#include <errno.h>
+
 #if defined(STREAMSCONN)
 # include       <tiuser.h>
 #endif
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
-#ifdef MINIX
-int listen_inprogress;
-int listen_completed;
-#endif
-
-static
-FormatBytes (data, length, buf, buflen)
-    unsigned char *data;
-    int	    length;
-    char    *buf;
-    int	    buflen;
+static int
+FormatBytes (
+    unsigned char *data,
+    int	    length,
+    char    *buf,
+    int	    buflen)
 {
     int	    i;
     static char	    HexChars[] = "0123456789abcdef";
@@ -100,11 +83,11 @@ FormatBytes (data, length, buf, buflen)
     return 1;
 }
 
-static
-FormatARRAY8 (a, buf, buflen)
-    ARRAY8Ptr	a;
-    char	*buf;
-    int		buflen;
+static int
+FormatARRAY8 (
+    ARRAY8Ptr	a,
+    char	*buf,
+    int		buflen)
 {
     return FormatBytes (a->data, a->length, buf, buflen);
 }
@@ -114,13 +97,11 @@ FormatARRAY8 (a, buf, buflen)
    Returns 1 if successful, 0 if not.
    */
 static int
-ARRAY8ToDottedDecimal (a, buf, buflen)
-    ARRAY8Ptr	a;
-    char	*buf;
-    int		buflen;
+ARRAY8ToDottedDecimal (
+    ARRAY8Ptr	a,
+    char	*buf,
+    int		buflen)
 {
-    int i;
-
     if (a->length != 4  ||  buflen < 20)
 	return 0;
     sprintf(buf, "%d.%d.%d.%d",
@@ -136,9 +117,10 @@ typedef struct _IndirectUsers {
 
 static IndirectUsersPtr	indirectUsers;
 
-RememberIndirectClient (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+int
+RememberIndirectClient (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     IndirectUsersPtr	i;
 
@@ -158,9 +140,10 @@ RememberIndirectClient (clientAddress, connectionType)
     return 1;
 }
 
-ForgetIndirectClient (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+void
+ForgetIndirectClient (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     IndirectUsersPtr	i, prev;
 
@@ -182,9 +165,10 @@ ForgetIndirectClient (clientAddress, connectionType)
     }
 }
 
-IsIndirectClient (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+int
+IsIndirectClient (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     IndirectUsersPtr	i;
 
@@ -195,12 +179,8 @@ IsIndirectClient (clientAddress, connectionType)
     return 0;
 }
 
-extern char *NetaddrPort();
-
-static
-FormatChooserArgument (buf, len)
-    char    *buf;
-    int	    len;
+static int
+FormatChooserArgument (char *buf, int len)
 {
     unsigned char   addr_buf[1024];
     int		    addr_len = sizeof (addr_buf);
@@ -208,7 +188,7 @@ FormatChooserArgument (buf, len)
     int		    result_len = 0;
     int		    netfamily;
 
-    if (GetChooserAddr (addr_buf, &addr_len) == -1)
+    if (GetChooserAddr ((char *)addr_buf, &addr_len) == -1)
     {
 	LogError ("Cannot get return address for chooser socket\n");
 	Debug ("Cannot get chooser socket address\n");
@@ -220,7 +200,7 @@ FormatChooserArgument (buf, len)
 	{
 	    char *port;
 	    int portlen;
-	    ARRAY8Ptr localAddress, getLocalAddress ();
+	    ARRAY8Ptr localAddress;
 
 	    port = NetaddrPort((XdmcpNetaddr)addr_buf, &portlen);
 	    result_buf[0] = netfamily >> 8;
@@ -255,9 +235,9 @@ typedef struct _Choices {
 static ChoicePtr   choices;
 
 ARRAY8Ptr
-IndirectChoice (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+IndirectChoice (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     ChoicePtr	c, next, prev;
     Time_t	now;
@@ -267,10 +247,12 @@ IndirectChoice (clientAddress, connectionType)
     for (c = choices; c; c = next)
     {
 	next = c->next;
-	Debug ("Choice checking timeout: %d >? %d\n", now - c->time, choiceTimeout);
+	Debug ("Choice checking timeout: %ld >? %d\n",
+	    (long)(now - c->time), choiceTimeout);
 	if (now - c->time > (Time_t)choiceTimeout)
 	{
-	    Debug ("Timeout choice %d > %d\n", now - c->time, choiceTimeout);
+	    Debug ("Timeout choice %ld > %d\n",
+		(long)(now - c->time), choiceTimeout);
 	    if (prev)
 		prev->next = next;
 	    else
@@ -291,18 +273,28 @@ IndirectChoice (clientAddress, connectionType)
 }
 
 static int
-RegisterIndirectChoice (clientAddress, connectionType, choice)
-    ARRAY8Ptr	clientAddress, choice;
-    CARD16 connectionType;
+RegisterIndirectChoice (
+    ARRAY8Ptr	clientAddress,
+    CARD16      connectionType,
+    ARRAY8Ptr	choice)
 {
     ChoicePtr	c;
     int		insert;
+    int		found = 0;
 
     Debug ("Got indirect choice back\n");
-    for (c = choices; c; c = c->next)
+    for (c = choices; c; c = c->next) {
 	if (XdmcpARRAY8Equal (clientAddress, &c->client) &&
-	    connectionType == c->connectionType)
+	    connectionType == c->connectionType) {
+	    found = 1;
 	    break;
+	}
+    }
+#if 0
+    if (!found)
+	return 0;
+#endif
+
     insert = 0;
     if (!c)
     {
@@ -365,13 +357,13 @@ RemoveIndirectChoice (clientAddress, connectionType)
 #endif
 
 /*ARGSUSED*/
-static
-AddChooserHost (connectionType, addr, closure)
-    CARD16	connectionType;
-    ARRAY8Ptr	addr;
-    char	*closure;
+static void
+AddChooserHost (
+    CARD16	connectionType,
+    ARRAY8Ptr	addr,
+    char	*closure)
 {
-    char	***argp, **parseArgs();
+    char	***argp;
     char	hostbuf[1024];
 
     argp = (char ***) closure;
@@ -386,8 +378,8 @@ AddChooserHost (connectionType, addr, closure)
     }
 }
 
-ProcessChooserSocket (fd)
-    int fd;
+void
+ProcessChooserSocket (int fd)
 {
     int client_fd;
     char	buf[1024];
@@ -400,12 +392,6 @@ ProcessChooserSocket (fd)
     struct t_call *call;
     int flags=0;
 #endif
-#ifdef MINIX
-    nwio_tcpconf_t tcpconf;
-    nwio_tcpcl_t tcpcl;
-    char *tcp_device;
-    int new_fd, flags, r;
-#endif /* MINIX */
 
     Debug ("Process chooser socket\n");
     len = sizeof (buf);
@@ -450,83 +436,7 @@ ProcessChooserSocket (fd)
 	return;
     }
 #else
-#ifdef MINIX
-    if (listen_inprogress) abort();
-    /* If the listen succeeded save the filedescriptor */
-    if (listen_completed)
-    {
-    	client_fd= dup(fd);
-    	if (client_fd == -1)
-    	{
-		LogError ("Dup failed: %s\n", strerror(errno));
-		return;
-    	}
-    }
-    else
-    	client_fd= -1;
-
-    /* Try to setup a new tcp device at the same filedescriptor as the old
-     * one.
-     */
-    if (ioctl(fd, NWIOGTCPCONF, &tcpconf) == -1)
-    {
-	LogError ("NWIOGTCPCONF failed: %s\n", strerror(errno));
-	return;
-    }
-    close(fd);
-    tcp_device= getenv("TCP_DEVICE");
-    if (tcp_device == NULL)
-    	tcp_device= TCP_DEVICE;
-    new_fd= open(tcp_device, O_RDWR);
-    if (new_fd == -1)
-    {
-	LogError ("open '%s' failed: %s\n", tcp_device, strerror(errno));
-	return;
-    }
-    if (new_fd != fd)
-    {
-    	dup2(new_fd, fd);
-    	close(new_fd);
-    }
-    if ((flags= fcntl(fd, F_GETFD)) == -1)
-    {
-	LogError ("F_GETFD failed: %s\n", strerror(errno));
-	return;
-    }
-    if (fcntl(fd, F_SETFD, flags | FD_ASYNCHIO) == -1)
-    {
-	LogError ("F_SETFD failed: %s\n", strerror(errno));
-	return;
-    }
-    tcpconf.nwtc_flags= NWTC_EXCL | NWTC_LP_SET | NWTC_UNSET_RA | NWTC_UNSET_RP;
-    if (ioctl(fd, NWIOSTCPCONF, &tcpconf) == -1)
-    {
-	LogError ("NWIOSTCPCONF failed: %s\n", strerror(errno));
-	return;
-    }
-    listen_inprogress= 0;
-    listen_completed= 0;
-
-    tcpcl.nwtcl_flags= 0;
-    r= ioctl(fd, NWIOTCPLISTEN, &tcpcl);
-    if (r == -1 && errno == EINPROGRESS)
-    {
-    	listen_inprogress= 1;
-    	nbio_inprogress(fd, ASIO_IOCTL, 1 /* read */, 1 /* write */,
-    		0 /* except */);
-    }
-    else if (r == -1)
-    {
-	LogError ("NWIOTCPLISTEN failed: %s\n", strerror(errno));
-	return;
-    }
-    else
-    	listen_completed= 1;
-    if (client_fd == -1)
-    	return;
-#else /* !MINIX */
-    client_fd = accept (fd, (struct sockaddr *)buf, &len);
-#endif /* MINIX */
+    client_fd = accept (fd, (struct sockaddr *)buf, (void *)&len);
     if (client_fd == -1)
     {
 	LogError ("Cannot accept chooser connection\n");
@@ -551,19 +461,26 @@ ProcessChooserSocket (fd)
 	clientAddress.length = 0;
 	choice.data = 0;
 	choice.length = 0;
-	if (XdmcpReadARRAY8 (&buffer, &clientAddress) &&
-	    XdmcpReadCARD16 (&buffer, &connectionType) &&
-	    XdmcpReadARRAY8 (&buffer, &choice))
-	{
-	    Debug ("Read from chooser succesfully\n");
-	    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
+	if (XdmcpReadARRAY8 (&buffer, &clientAddress)) {
+	    if (XdmcpReadCARD16 (&buffer, &connectionType)) {
+		if (XdmcpReadARRAY8 (&buffer, &choice)) {
+		    Debug ("Read from chooser succesfully\n");
+		    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
+		    XdmcpDisposeARRAY8 (&choice);
+		} else {
+		    LogError ("Invalid choice response length %d\n", len);
+		}
+	    } else {
+		LogError ("Invalid choice response length %d\n", len);
+	    }
+	    XdmcpDisposeARRAY8 (&clientAddress);
+	} else {
+	    LogError ("Invalid choice response length %d\n", len);
 	}
-	XdmcpDisposeARRAY8 (&clientAddress);
-	XdmcpDisposeARRAY8 (&choice);
     }
     else
     {
-	LogError ("Invalid choice response length %d\n", len);
+	LogError ("Choice response read error: %s\n", strerror(errno));
     }
 
 #if defined(STREAMSCONN)
@@ -575,15 +492,19 @@ ProcessChooserSocket (fd)
 #endif
 }
 
-RunChooser (d)
-    struct display  *d;
+void
+RunChooser (struct display *d)
 {
-    char    **args, **parseArgs(), **systemEnv();
+    char    **args;
     char    buf[1024];
     char    **env;
 
     Debug ("RunChooser %s\n", d->name);
+#ifndef HAS_SETPROCTITLE
     SetTitle (d->name, "chooser", (char *) 0);
+#else
+    setproctitle("chooser %s", d->name);
+#endif
     LoadXloginResources (d);
     args = parseArgs ((char **) 0, d->chooser);
     strcpy (buf, "-xdmaddress ");
@@ -606,15 +527,3 @@ RunChooser (d)
 
 #endif /* XDMCP */
 
-#ifdef MINIX
-void tcp_listen_cb(nbio_ref_t ref, int res, int err)
-{
-	if (!listen_inprogress)
-		abort();
-	if (res == 0)
-		listen_completed= 1;
-	else
-    		LogError("listen error: %s\n", strerror(err));
-	listen_inprogress= 0;
-}
-#endif

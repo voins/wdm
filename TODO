@@ -1,81 +1,24 @@
-Stuff yet to be implemented:
-
-DONE - redo the "look" of the login panel
-
-DONE - fix gnuLogo.xpm so it is 400x260
-
-DONE - implement switch to turn animations off (wdmAnimations)
-
-DONE - implement option for NO background setting
-
-DONE - update documentation for new options
-
-DONE - bug - for some reason, the error message does not always display
-  (especially if null password is entered) ??
-
-DONE (I hope) - configure bug report from Dalroi
-
-DONE - Dalroi xsession problem
-
-DONE - shell may not be bash and, if bash, may not be in /usr/bin or /bin
-
-FIXED - go! does not work
-
-DONE - fix Xresources .. delete old xlogin stuff
-
-DONE - fiddle with the help panel to make it look better
-
-DONE ? size/alignment of logo and popup buttons
-
-DONE - add the *.in files to the wdm config directory install
-
-DONE - make the rollup more Nextish .. side to side rather than top to bottom.
-
-Release 1:
-
-DONE - update INSTALL to describe all ./configure options
-
-DONE - create multiple Xsession and Xclients scripts for various systems
-
-DONE - fixup .spec for offical release into /usr/X11R6
-
-DONE - add --with-local option
-
-DONE - At i386.rpm install time, run something which updates wdm-config and
-  Xclients to reflect the locations of available window managers.  (Make this
-  available capability available to the user post install?).  Alternately,
-  make "special" Xclients for rhl which uses PATH environment variable
-  and does not need to know the full pathname for a window manager.
-
-Release 2:
-
-- need some "hints" for compiling & installing on different systems
+Here's list of things todo:
 
 - separate program to do configuration for wdm?
+
+- wdmChooser program, replacement for chooser with WINGs look.
 
 - need to reorganize and split Login.c into more than a single file,
   it is getting a bit too big and if chooser code is added, it will
   only get bigger.
 
-- fixup background setting, see if can get rid of crappy default mesh
-  ... if we can
+- i18n support. There's two different patches for it. One from
+  Hiroshi Miura <miura@da-cha.org> available at http://www.da-cha.org/wdm/wdm.html
+  and second from Grigory Batalov <bga@altlinux.ru>. I will try to take best from
+  both.
 
-- add options for rpm or tarball dist (?? more than the spec file??) ...
-  yes, for rpm dist should not include the xdm original source in the
-  wdm tarball, rpm can do this.  On ther other hand, the current stuff works.
+- better PAM support. 
+  "When a user's password expires wdm simply rejects thier login rather
+  then forcing them to change their password like /bin/login does."
+  Little reading of PAM documentation and source code showe that PAM support
+  is indeed rudimentary, and can be improved. It requires changes in
+  wdm <-> wdmLogin interface and major rewrite of greet.c and verify.c.
 
-- make "ping" work (needs some code in xdm/Greet.c) ... ping test if the
-  remote system is still alive
-
-- redo chooser in WINGs
-
-- ?? merge in the xsession package (a WINGs version naturally) ??
-
-- enhance Login to support a "chooser option" (need ping first)
-
-- ?? change the "look" of the Login panel ?? to make it more "nextish" (I have
-  no idea what this means) ??
-
-- ?? Create a WINGs based program to graphically edit/change/update the
-  wdm configuration ??
+- migrate configuration files to PropList format. See README.new-config.
 

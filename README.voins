@@ -1,6 +1,29 @@
+Q: Why I have rewritten all build scripts for wdm?
+A:
+I'm using aegis for development (http://aegis.sourceforge.net/)
+New build scripts allows me to create Makefile.in, wdm-xxx.tar.{gz|bz2}
+automatically. To create a new program which will be installed into 
+$prefix/bin dircetory I only need to create some .c source file in
+src/newprogram/ directory. It will be automatically added to all 
+places where it should be.
+
+Now the best way to do development of wdm is to get wdm-xxx.ae file
+from http://voins.program.ru/wdm, and 'aedist -rec' this file into aegis.
+
 New directory structure:
 src/ -- Wdm sources, untared and uncompressed. All patches
-	applied.
+	(from patches/ directory) applied.
 xdm/ -- Xdm sources, untared and uncompressed. 
         Wdm is built on top of xdm. Working with untared sources
-        is much easier than working with tar.gz.
+        is much easier than working with tar.gz. That directory will be
+	very useful when I start porting wdm to newer xdm base.
+configs/
+     -- (moved from src/configs) Config files that mostly goes to $DMDIR
+        directory. Note, all generated config files removed from source 
+	tarball. They will be generated at 'make all' stage
+doc/ -- man files (no changes here)
+etc/ -- some configuration files needed for aegis
+include/
+     -- all .h files of all programs
+pixmaps/
+     -- (moved from src/pixmaps) all graphics files.

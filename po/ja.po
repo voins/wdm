@@ -1,0 +1,96 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2003-02-08 16:40+0300\n"
+"PO-Revision-Date: 2003-02-07 19:59+0300\n"
+"Last-Translator: Hiroshi Miura <miura@da-cha.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=euc-jp\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/wdmLogin/Login.c:171
+msgid "Login"
+msgstr "ログイン"
+
+#: src/wdmLogin/Login.c:171
+msgid "Reboot"
+msgstr "リブート"
+
+#: src/wdmLogin/Login.c:171
+msgid "Halt"
+msgstr "終了"
+
+#: src/wdmLogin/Login.c:172
+msgid "ExitLogin"
+msgstr "ログイン終了"
+
+#: src/wdmLogin/Login.c:301
+msgid "NoChange"
+msgstr "変更なし"
+
+#: src/wdmLogin/Login.c:316
+msgid "failsafe"
+msgstr "フェールセーフ"
+
+#: src/wdmLogin/Login.c:411
+msgid "ERROR"
+msgstr "エラー"
+
+#: src/wdmLogin/Login.c:453
+msgid "Password:"
+msgstr "パスワード:"
+
+#: src/wdmLogin/Login.c:460 src/wdmLogin/Login.c:741
+msgid "Login name:"
+msgstr "ログイン名:"
+
+#: src/wdmLogin/Login.c:485
+msgid "invalid name"
+msgstr "不正な名前"
+
+#: src/wdmLogin/Login.c:504
+msgid "validating"
+msgstr "認証中"
+
+#: src/wdmLogin/Login.c:506 src/wdmLogin/Login.c:534
+msgid "exiting"
+msgstr "終了します"
+
+#: src/wdmLogin/Login.c:548
+msgid "Close Help"
+msgstr "へルプを閉じる"
+
+#: src/wdmLogin/Login.c:553 src/wdmLogin/Login.c:828
+msgid "Help"
+msgstr "へルプ"
+
+#: src/wdmLogin/Login.c:693
+msgid "Login Authentication"
+msgstr "ログイン認証中"
+
+#: src/wdmLogin/Login.c:702
+msgid "Welcome to"
+msgstr "ようこそ"
+
+#: src/wdmLogin/Login.c:783
+msgid "Start WM"
+msgstr "WMスタート"
+
+#: src/wdmLogin/Login.c:800
+msgid "Options"
+msgstr "オプション"
+
+#: src/wdmLogin/Login.c:835
+msgid "Start Over"
+msgstr "やりなおし"
+
+#: src/wdmLogin/Login.c:842
+msgid "Go!"
+msgstr "開始！"

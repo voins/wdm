@@ -31,6 +31,7 @@ configure: configure.ac etc/configure.cook install-sh
 config.status : configure etc/configure.cook
 {
 	[pathname [resolve configure]]
+		--enable-pam
 		--no-create
 		--cache-file\=/dev/null
 		--verbose
