@@ -195,3 +195,12 @@ WDMFreeEnv(char **env)
 	wfree(env);
 }
 
+void
+WDMPrintEnv(char **env)
+{
+	WDMDebug("WDMPrintEnv env=%p\n", (void *)env);
+
+	while(env && *env)
+		WDMDebug("%s\n", *env++);
+}
+
