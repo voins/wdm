@@ -117,27 +117,12 @@ AC_ARG_ENABLE(pam,
 AC_SUBST(PASSWDLIB)
 AC_SUBST(USE_PAM)
 
-LIBUTIL=
-AC_CHECK_LIB(util, main, [LIBUTIL="-lutil"]) dnl for FreeBSD
-AC_SUBST(LIBUTIL)
-
-dnl crypt is a password and data encryption function
-dnl the related header file is unistd.h
-
-LIBCRYPT=
-AC_CHECK_LIB(crypt, main, [LIBCRYPT="-lcrypt"]) dnl for BSD and RHL
-AC_SUBST(LIBCRYPT)
-
-LIBSOCKET=
-AC_CHECK_FUNC(shmat, [],
-	[
-   		AC_CHECK_LIB(ipc, shmat, [LIBSOCKET="-lipc"]) dnl BSD??
-	])
-AC_SUBST(LIBSOCKET)
-
-LIBUCB=
-AC_CHECK_LIB(ucb, killpg, [LIBUCB="-lucb"]) dnl for Solaris2.4
-AC_SUBST(LIBUCB)
+AC_CHECK_LIB(util, main) dnl for FreeBSD
+AC_CHECK_LIB(crypt, main) dnl for BSD and RHL
+AC_CHECK_FUNC(shmat,
+[],
+[AC_CHECK_LIB(ipc, shmat)]) dnl BSD??
+AC_CHECK_LIB(ucb, killpg) dnl for Solaris2.4
 
 AC_ARG_ENABLE(debug,
 	AC_HELP_STRING([--enable-debug],[enable debugging]),
@@ -148,14 +133,13 @@ AC_ARG_ENABLE(debug,
 AC_PATH_XTRA
 XCFLAGS="$X_CFLAGS"
 XLDFLAGS="$X_LIBS"
-XLIBS="$X_PRE_LIBS -lXext -lXt -lX11 -lm $X_EXTRA_LIBS"
+XLIBS="$X_PRE_LIBS -lXext -lX11 -lm $X_EXTRA_LIBS"
 
 AC_CHECK_LIB(Xinerama, XineramaIsActive,
-	[LIBXINERAMA=-lXinerama
-	AC_DEFINE(HAVE_XINERAMA, 1, Define if Xinerama library is installed)],
-	,
-	[$XLDFLAGS $XLIBS])
-AC_SUBST(LIBXINERAMA)
+[
+	XLIBS="$XLIBS -lXinerama"
+	AC_DEFINE(HAVE_XINERAMA, 1, Define if Xinerama library is installed)
+],,[$XLDFLAGS $XLIBS])
 
 dnl		WINGs support
 AC_CHECK_PROG(GETWINGSFLAGS,get-wings-flags,get-wings-flags,,[$PATH])

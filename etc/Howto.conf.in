@@ -12,12 +12,7 @@ XLIBS = @XLIBS@;
 WCFLAGS = @WCFLAGS@;
 WLDFLAGS = @WLDFLAGS@;
 WLIBS = @WLIBS@;
-LIBCRYPT = @LIBCRYPT@;
 PASSWDLIB = @PASSWDLIB@;
-LIBSOCKET = @LIBSCOKET@;
-LIBUCB = @LIBUCB@;
-LIBUTIL = @LIBUTIL@;
-LIBXINERAMA = @LIBXINERAMA@;
 CC = @CC@;
 PACKAGE_NAME = @PACKAGE_NAME@;
 PACKAGE_VERSION = @PACKAGE_VERSION@;
@@ -35,7 +30,7 @@ libs = [LIBS] -lwdm;
 
 wdmLogin_cflags = [cflags] [XCFLAGS] [WCFLAGS];
 wdmLogin_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
-wdmLogin_libs = [libs] [XLIBS] [WLIBS] [LIBXINERAMA];
+wdmLogin_libs = [libs] [XLIBS] [WLIBS];
 
 TestLogin_cflags = [cflags];
 TestLogin_ldflags = [ldflags];
@@ -43,8 +38,6 @@ TestLogin_libs = [libs];
 
 wdm_cflags = [cflags] [XCFLAGS] [WCFLAGS];
 wdm_ldflags = [ldflags] [XLDFLAGS] [WLDFLAGS];
-wdm_libs = [libs] [XLIBS] [WLIBS] [LIBCRYPT] \
-	[PASSWDLIB] [LIBUCB] [LIBUTIL] \
-	-lXmu -lXau -lXdmcp;
+wdm_libs = [libs] [XLIBS] [WLIBS] [PASSWDLIB] -lXmu -lXau -lXdmcp;
 
 libwdm_cflags = [cflags] [XCFLAGS] [WCFLAGS];
