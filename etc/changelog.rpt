@@ -30,14 +30,17 @@ while(stack_depth > 0)
 		{
 			dn = "";
 		}
-	
-		history[key] =
+
+		if(count(cs.branch.change) == 0)
 		{
-			when = strftime("%d-%b-%Y %H:%M", when);
-			brief = "[" ## pn ## "] " ## dn ## cs.brief_description;
-			descr = cs.description;
-			branch = "";
-		};
+			history[key] =
+			{
+				when = strftime("%d-%b-%Y %H:%M", when);
+				brief = "[" ## pn ## "] " ## dn ## cs.brief_description;
+				descr = cs.description;
+				branch = "";
+			};
+		}
 	}
 
 	/* add branches to stack all */
