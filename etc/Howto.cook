@@ -1,12 +1,14 @@
-
 all:
 {
 	setenv AUTOCONF=autoconf_2.5;
+	setenv AUTOHEADER=autoheader_2.5;
+	rm -rf autom4te*.cache;
 	rm -f config.log stamp-h stamp-h.in aclocal.m4
 		configure Makefile.in doc/Makefile.in
 		src/Makefile.in src/config/Makefile.in
-		src/pixmaps/Makefile.in config.status;
-	./autogen.sh;
+		src/pixmaps/Makefile.in config.status
+		config.h.in acconfig.h;
+	sh ./autogen.sh;
 	make;
 }
 

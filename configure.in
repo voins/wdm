@@ -1,23 +1,25 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.52)
-AC_INIT(wdm,1.20.1,[voins@voins.program.ru])
+AC_PREREQ(2.53)
+AC_INIT([wdm],[1.20.1],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
 AM_INIT_AUTOMAKE
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h fcntl.h sys/param.h syslog.h)
 
-AC_DECL_SYS_SIGLIST
+AC_CHECK_DECLS([sys_siglist])
+
 AC_C_CONST
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 
 dnl if there is mkstemp use it instead of mktemp
-AC_CHECK_FUNC(mkstemp, [AC_DEFINE(HAVE_MKSTEMP)])
-AC_SUBST(HAVE_MKSTEMP)
+AC_CHECK_FUNC(mkstemp, 
+	[AC_DEFINE(HAVE_MKSTEMP, 1,
+		[Define if you have mkstemp function to use it instead of mktemp.])])
 
 dnl Password processing options
 AC_ARG_WITH(pamdir,
@@ -31,9 +33,9 @@ AC_ARG_ENABLE(pam,
 	AC_HELP_STRING([--enable-pam], [enable PAM]), 
 	[
 		AC_MSG_RESULT([yes])
-		AC_DEFINE(USE_PAM)
+		AC_DEFINE(USE_PAM, 1, [Define if you want wdm  to be compiiled with pam support])
 		AC_CHECK_LIB(pam, main, [PASSWDLIB="-lpam -ldl"
-			AC_DEFINE_UNQUOTED(HAVE_PAM_LIB)],
+			AC_DEFINE_UNQUOTED(HAVE_PAM_LIB, 1, [Define if libpam is installed])],
 			[],-ldl)
 
 		AC_MSG_CHECKING(for pam directory $PAMDIR)
@@ -51,10 +53,10 @@ AC_ARG_ENABLE(pam,
 			AC_HELP_STRING([--enable-shadow],[enable shadow passwords]),
 			[
 				AC_MSG_RESULT(yes)
-				AC_DEFINE(USESHADOW)
+				AC_DEFINE(USESHADOW, 1, [Define if you wand wdm to be compiled with shadow support])
 				if test -z "$PASSWDLIB"; then
 					AC_CHECK_LIB(shadow, main, [PASSWDLIB="-lshadow"
-						AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB)])
+						AC_DEFINE_UNQUOTED(HAVE_SHADOW_LIB, 1, [Define if libshadow is installed])])
 				fi
 			],
 			[
@@ -387,10 +389,10 @@ AC_SUBST(RUNDIR)
 AC_MSG_RESULT($RUNDIR)
 
 AC_MSG_CHECKING(for defuserpath)
-AC_ARG_WITH(defuserpath,
+AC_ARG_WITH(defuserpath, 
 	AC_HELP_STRING([--with-defuserpath=PATHlist],[specify list of paths for user sessions]))
 if test "x$with_defuserpath" != "x"; then
-	AC_DEFINE_UNQUOTED(DEF_USER_PATH,"$with_defuserpath")
+	AC_DEFINE_UNQUOTED(DEF_USER_PATH,"$with_defuserpath", "Value is a list of paths for user sessions")
 	AC_MSG_RESULT($with_defuserpath)
 else
 	AC_DEFINE(DEF_USER_PATH,"/usr/local/bin:/bin:/usr/bin")
@@ -401,7 +403,7 @@ AC_MSG_CHECKING(for defsystempath)
 AC_ARG_WITH(defsystempath,
 	AC_HELP_STRING([--with-defsystempath=PATHlist],[specify list of paths for superuser sessions]))
 if test "x$with_defsystempath" != "x"; then
-	AC_DEFINE_UNQUOTED(DEF_SYSTEM_PATH,"$with_defsystempath")
+	AC_DEFINE_UNQUOTED(DEF_SYSTEM_PATH,"$with_defsystempath", "Value is a list of paths for superuser sessions")
 	AC_MSG_RESULT($with_defsystempath)
 else
 	AC_DEFINE(DEF_SYSTEM_PATH,"/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin")
@@ -421,10 +423,10 @@ else
 	DMDIR="$prefix/etc/wdm"
 	AC_MSG_RESULT([no, using $DMDIR])
 fi
-AC_DEFINE_UNQUOTED(WDMDIR,"$DMDIR")
-AC_DEFINE_UNQUOTED(DEF_XDM_CONFIG,"$DMDIR/wdm-config")
-AC_DEFINE_UNQUOTED(DEF_CHOOSER,"$DMDIR/chooser")
-AC_DEFINE_UNQUOTED(DEF_AUTH_DIR,"$DMDIR/authdir")
+AC_DEFINE_UNQUOTED(WDMDIR, "$DMDIR", [Value is a path to wdm directory])
+AC_DEFINE_UNQUOTED(DEF_XDM_CONFIG, "$DMDIR/wdm-config", [Value is a path to default wdm config file])
+AC_DEFINE_UNQUOTED(DEF_CHOOSER, "$DMDIR/chooser", [Value is a path to default chooser program])
+AC_DEFINE_UNQUOTED(DEF_AUTH_DIR, "$DMDIR/authdir", [Value is a path to default authdir])
 
 AC_SUBST(DMDIR)
 
@@ -562,20 +564,20 @@ AC_SUBST(SHELL_BASH)
 AC_SUBST(SHELL_SH)
 
 AC_PATH_PROG(XRDB_PATH,xrdb)
-AC_DEFINE_UNQUOTED(XRDB_PROGRAM,"$XRDB_PATH")
+AC_DEFINE_UNQUOTED(XRDB_PROGRAM, "$XRDB_PATH", [Value is a path for xrdb program])
 AC_SUBST(XRDB_PATH)
 
 AC_PATH_PROG(FAILSAFE_PATH,xterm)
-AC_DEFINE_UNQUOTED(DEF_FAILSAFE_CLIENT,"$FAILSAFE_PATH")
-AC_DEFINE_UNQUOTED(DEF_SESSION,"$FAILSAFE_PATH -ls")
+AC_DEFINE_UNQUOTED(DEF_FAILSAFE_CLIENT, "$FAILSAFE_PATH", [Value is a path for program used as failsafe client])
+AC_DEFINE_UNQUOTED(DEF_SESSION, "$FAILSAFE_PATH -ls", [Value is a command for default session])
 AC_SUBST(FAILSAFE_PATH)
 
 AC_PATH_PROG(DEF_SERVER,X)
-AC_DEFINE_UNQUOTED(DEF_SERVER_LINE,":0 local $DEF_SERVER :0")
+AC_DEFINE_UNQUOTED(DEF_SERVER_LINE, ":0 local $DEF_SERVER :0", [Value is default server line])
 AC_SUBST(DEF_SERVER)
 
 AC_PATH_PROG(SYSTEM_SHELL,sh)
-AC_DEFINE_UNQUOTED(DEF_SYSTEM_SHELL,"$SYSTEM_SHELL")
+AC_DEFINE_UNQUOTED(DEF_SYSTEM_SHELL, "$SYSTEM_SHELL", [Value is default system shell])
 
 AC_PATH_PROG(XCONSOLE,xconsole)
 AC_SUBST(XCONSOLE)
@@ -591,9 +593,10 @@ dnl ==========================================================
 
 
 
-AC_OUTPUT(Makefile
+AC_CONFIG_FILES([Makefile
 	  doc/Makefile
 	  src/Makefile
 	  src/config/Makefile
-	  src/pixmaps/Makefile )
+	  src/pixmaps/Makefile ])
+AC_OUTPUT
 
