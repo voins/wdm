@@ -177,7 +177,8 @@ struct verify_info	*verify;
 
 	if (!p || strlen (greet->name) == 0) {
 		Debug ("getpwnam() failed.\n");
-		bzero(greet->password, strlen(greet->password));
+		bzero(greet->password,strlen(greet->password));
+		strncpy(greet->name, "nobody", 9);
 		return 0;
 #ifndef USESHADOW
 	} else {

@@ -17,6 +17,7 @@ PASSWDLIB = @PASSWDLIB@;
 LIBSOCKET = @LIBSCOKET@;
 LIBUCB = @LIBUCB@;
 LIBUTIL = @LIBUTIL@;
+LIBXINERAMA = @LIBXINERAMA@;
 CC = @CC@;
 PACKAGE_NAME = @PACKAGE_NAME@;
 PACKAGE_VERSION = @PACKAGE_VERSION@;
@@ -29,7 +30,7 @@ libs = [LIBS];
 
 wdmLogin_cflags = [cflags] [XCFLAGS] [GFXCFLAGS];
 wdmLogin_ldflags = [ldflags] [XLDFLAGS] [GFXLDFLAGS];
-wdmLogin_libs = [libs] [XLIBS] [GFXLIBS];
+wdmLogin_libs = [libs] [XLIBS] [GFXLIBS] [LIBXINERAMA];
 
 TestLogin_cflags = [cflags];
 TestLogin_ldflags = [ldflags];

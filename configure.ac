@@ -156,6 +156,13 @@ GFXLDFLAGS=
 GFXLIBS=
 supported_gfx=
 
+AC_CHECK_LIB(Xinerama, XineramaIsActive,
+	[LIBXINERAMA=-lXinerama
+	AC_DEFINE(HAVE_XINERAMA, 1, Define if Xinerama library is installed)],
+	,
+	[$XLDFLAGS $XLIBS])
+AC_SUBST(LIBXINERAMA)
+
 dnl an option to handle /usr/local/{bin,include,lib}
 AC_MSG_CHECKING([for using /usr/local/{bin,include,lib} paths])
 AC_ARG_WITH(local,

@@ -24,6 +24,9 @@
 #include <X11/xpm.h>
 #include <X11/keysym.h>
 #include <X11/cursorfont.h>
+#ifdef HAVE_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 #include <WINGs/WINGs.h>
 #include <WINGs/WUtil.h>
 #include <limits.h>
@@ -180,7 +183,7 @@ static char  WmNoChange[]  = "NoChange";
 static char  WmFailSafe[]  = "failsafe";
 static char  WmDefault[]   = "wmaker:afterstep:xsession";
 static char *WmArg	   = NULL;
-static char *WmStr[16]	   = {WmNoChange,NULL,NULL,NULL,NULL};
+static char *WmStr[17]	   = {WmNoChange,NULL,NULL,NULL,NULL};
 
 static char *logoArg	   = NULL;
 static char *bgArg	   = NULL;
@@ -889,6 +892,7 @@ static void CreateHelpFrames(LoginPanel *panel)
     WMResizeWidget(panel->helpTextL,(P_WIDTH-60), 14 * nblines - 5); /* 615 */
 
     WMSetLabelText(panel->helpTextL,HelpFile);
+    WMSetLabelWraps(panel->helpTextL, True);
 }
 
 static LoginPanel *CreateLoginPanel(WMScreen *scr)
@@ -1187,6 +1191,10 @@ static void SignalTerm(int ignored)	/* all done */
 int main(int argc, char **argv)
 {
     WMScreen   *scr;
+    int xine_count; int c;
+#ifdef HAVE_XINERAMA
+    XineramaScreenInfo *xine;
+#endif
 
     ProgName = argv[0];
 
@@ -1202,8 +1210,28 @@ int main(int argc, char **argv)
     }
 
     screen_number = DefaultScreen(dpy);
-    screen_width = DisplayWidth(dpy,screen_number);
-    screen_heigth = DisplayHeight(dpy,screen_number);
+#ifdef HAVE_XINERAMA
+    if (XineramaIsActive(dpy)) {
+	xine = XineramaQueryScreens(dpy, &xine_count);
+		
+	if (xine != NULL) {
+		for (c = 0;c < xine_count;c++) {
+			if (xine[c].screen_number == 0) {
+    				screen_width = xine[c].width;
+				screen_heigth = xine[c].height;
+			}
+		}
+	} else {
+		screen_width = DisplayWidth(dpy, screen_number);
+		screen_heigth = DisplayHeight(dpy, screen_number);
+	}
+    } else {
+#endif
+	screen_width = DisplayWidth(dpy,screen_number);
+	screen_heigth = DisplayHeight(dpy,screen_number);
+#ifdef HAVE_XINERAMA
+    }
+#endif
     panel_X = (screen_width  - panel_width)/2;
     panel_Y = (screen_heigth - panel_heigth)/2;
 
