@@ -182,8 +182,8 @@ static char  WmOption[256] = "NoChange";
 static char  WmNoChange[]  = "NoChange";
 static char  WmFailSafe[]  = "failsafe";
 static char  WmDefault[]   = "wmaker:afterstep:xsession";
-static char *WmArg	   = NULL;
-static char *WmStr[17]	   = {WmNoChange,NULL,NULL,NULL,NULL};
+static char *WmArg	   = WmDefault;
+static char **WmStr        = NULL;
 
 static char *logoArg	   = NULL;
 static char *bgArg	   = NULL;
@@ -298,37 +298,33 @@ static void OutputAuth(char *user, char *pswd)
 
 static void SetupWm()
 {
-    char *p1, *p2;
-    int i;
+    int i = 0, n = 0;
+    char *ptr = WmArg;
 
-    if (WmArg!=NULL)
+    /* count number of items, skip empty items.
+       n = number of items - 1 */
+    while(*ptr) if (*ptr++ == ':' && *ptr != ':' && *ptr) ++n;
+    /* reserve one position fo NULL pointer, one for 'NoChange'
+       and one for 'FailSafe' */
+    WmStr = (char**)malloc(sizeof(char*) * (n + 4));
+    WmStr[i++] = WmNoChange;
+
+    if(strcasecmp(WmArg, "none") != 0) /* we explicitly don't want any
+					  choice */
     {
-	p1=WmArg;
-	if (! strcasecmp(WmArg, "none"))
-		return; /* we explicitly don't want any choice */
+	ptr = WmArg;
+	while(*ptr)
+	{
+	    while(*ptr == ':') ++ptr;
+	    if(!*ptr) break;
+	    WmStr[i++] = ptr;
+	    while(*ptr != ':' && *ptr) ++ptr;
+	    if(!*ptr) break;
+	    *ptr++ = '\0';
+	}
+	WmStr[i++] = WmFailSafe;
     }
-    else
-	p1=WmDefault;
-    i=1;
-    while ((i<14) && (*p1!='\0')) {
-	while (*p1 == ':')
-	   p1++;
-	if (*p1 == '\0')
-	   break;
-	WmStr[i] = p1;
-	p2 = strchr(p1,':');
-	if (p2==NULL)
-	   break;
-	*p2 = '\0';
-	p1 = p2+1;
-	i++;
-    }
-    if (*p1!='\0') {
-	WmStr[i] = p1;
-	i++;
-    }
-    WmStr[i] = WmFailSafe;
-    WmStr[i+1] = NULL;
+    WmStr[i] = NULL;
 }
 
 
