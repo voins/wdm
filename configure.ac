@@ -384,9 +384,12 @@ if test "x$XGETTEXT" != "x"; then
 	fi
 fi
 
+I18N=no
 if test "x$MSGFMT" != "x" -a "x$HAVEGETTEXT" != "x"; then
 	AC_DEFINE(I18N, 1, [Define if you want internationalization support])
+	I18N=yes
 fi
+AC_SUBST(I18N)
 
 AC_ARG_WITH(nlsdir,
 	AC_HELP_STRING([--with-nlsdir=PATH],[specify where locale stuff should go]))

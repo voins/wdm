@@ -167,9 +167,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	cat [resolve etc/Makefile.head] >> [target];
 
 	[make_line];
-	[make_line all\: all-bin all-doc all-config all-nls];
+	[make_line all\: all-bin all-doc all-config all-nls-[make_var I18N]];
 	[make_line];
-	[make_line install\: install-bin install-config install-doc install-gfx install-nls];
+	[make_line install\: install-bin install-config install-doc install-gfx
+		install-nls-[make_var I18N]];
 
 	[make_line];
 	[make_line all-bin\: [addprefix bin/ [program_list]]];
@@ -197,8 +198,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line all-doc\: [g_manfiles]];
 
 
-	echo >> [target];
-	[make_line all-nls\: [mo_files]];
+	[make_line];
+	[make_line all-nls-yes\: [mo_files]];
+	[make_line];
+	[make_line all-nls-no\:];
 
 
 	[make_line];
@@ -210,7 +213,10 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 
 
 	[make_line];
-	[make_line install-nls\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]]];
+	[make_line install-nls-yes\: [fromto po/%.mo [localedir]/%/LC_MESSAGES/wdm.mo [mo_files]]];
+	
+	[make_line];
+	[make_line install-nls-no\:];
 
 
 	[make_line];
