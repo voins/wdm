@@ -61,7 +61,6 @@
  * extension codes other than 0 or 1, and passing args to Login.
  */
 
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,6 +69,7 @@
 #include <malloc.h>
 #include <syslog.h>
 #include <wdmlib.h>
+#include <unistd.h>
 
 #define forever 1
 
@@ -271,12 +271,12 @@ int main (int argc, char *argv[])
                  (strcmp(userpswd,LoginPswd)==0)) ||
                 (extcode==4)) {
                     WDMInfo("success! Now terminate and exit\n");
-                    usleep(1000000);
+                    wusleep(1000000);
                     kill(pid, SIGTERM);
                     break; /* get out of forever loop */
             }
             WDMError(" bad name or password; go around again\n");
-            usleep(1000000);
+            wusleep(1000000);
             kill(pid, SIGUSR1);
 
             free(username);

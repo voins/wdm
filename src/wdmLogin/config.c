@@ -23,6 +23,7 @@
 #include <wdmlib.h>
 #include <wdmLogin.h>
 #include <stdlib.h>
+#include <string.h>
 
 static Bool WDMCheckPLGeometry(WMPropList *pl, void *def, void *target);
 
@@ -87,7 +88,6 @@ static Bool WDMCheckPLUInteger(WMPropList *pl, void *def, void *target)
 static Bool WDMCheckPLGeometry(WMPropList *pl, void *def, void *target)
 {
 	WMRect *rect_target = (WMRect *)target;
-	WMRect *rect_def = (WMRect *)def;
 
 	WDMDebug("WDMCheckPLGeometry(%p, %p, %p)\n", (void*)pl, def, target);
 

@@ -19,6 +19,7 @@
  * prefs.c: wdmPrefs program. configuration tool for wdm
  */
 #include <wdmlib.h>
+#include <stdlib.h>
 
 void
 closeAction(WMWidget *self, void *data)

@@ -85,7 +85,7 @@ extern const char *WDMGetEnv(const char **env, const char *name);
 extern char **WDMPutEnv(char **env, const char *string);
 extern char **WDMSetEnv(char **env, const char *name, const char *value);
 extern char **WDMUnsetEnv(char **env, const char *name);
-extern int WDMFreeEnv(char **env);
+extern void WDMFreeEnv(char **env);
 extern void WDMPrintEnv(char **env);
 
 

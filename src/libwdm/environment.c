@@ -176,7 +176,7 @@ WDMUnsetEnv(char **env, const char *name)
 	return wrealloc(env, (envsize + 1) * sizeof(char*));
 }
 
-int
+void
 WDMFreeEnv(char **env)
 {
 	char **ep = env;
@@ -184,7 +184,7 @@ WDMFreeEnv(char **env)
 	WDMDebug("WDMFreeEnv env=%p\n", (void *)env);
 	
 	if(env == NULL)
-		return 0;
+		return;
 	
 	while(*ep)
 	{

@@ -19,6 +19,7 @@
  * chooser.c: wdmChooser program. replacement for chooser from xdm
  */
 #include <wdmlib.h>
+#include <stdlib.h>
 
 void
 closeAction(WMWidget *self, void *data)
