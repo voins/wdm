@@ -17,15 +17,18 @@ install-sh: [install-sh]
 }
 
 configure: configure.ac etc/configure.cook install-sh
+	set ["if" [not [match [PACKAGE_VERSION] [version_short]]] "then" force]
 {
 	if [not [exists install-sh]] then
 		ln -s [resolve install-sh] install-sh
 			set clearstat;
 
 	rm -f [target];
-	[autoconf] [resolve configure.ac] > [target];
+	sed -e"'s/\\[0\\.0\\]/\\["[version_short]"\\]/'"
+		< [resolve configure.ac] >tmpfile;
+	[autoconf] tmpfile > [target];
 	chmod 755 [target];
-	rm -rf autom4te*.cache;
+	rm -rf autom4te*.cache tmpfile;
 }
 
 config.status : configure etc/configure.cook
