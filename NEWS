@@ -1,9 +1,10 @@
 See TODO, README, README.pam, and ChangeLog
-wdm-1.28 --
+wdm-1.28 -- Mar 27 2005
 	- problem with xdmcp not working properly if there's
 	  ipv6 network packet was fixed
 	  (thanks to Jennifer Elaan <jen@elaan.com>)
 	- welsh translation added (by Kevin Donnelly <kevin@dotmon.com>)
+	- several file-descriptor leaks were fixed
 
 wdm-1.27 -- Feb 28 2004
 	- french translation added (by Mathieu Roy <yeupou@gnu.org>)
