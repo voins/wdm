@@ -452,6 +452,9 @@ If true, user must be root to exit.
 If true, enable animations consisting of shaking the panel (if an
 error) and rolling up the panel (when closing it).  If false,
 animations are disabled.
+.IP "\fBDisplayManager.wdmLocale\fP"
+LANG environment variable will be set to value of this resource
+before starting wdmLogin.
 .SH "CONFIGURATION FILE"
 The default location of the 
 .I wdm
