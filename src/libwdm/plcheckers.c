@@ -132,7 +132,8 @@ WDMCheckPLDictionary(WMPropList *pl, void *def, void *target)
 		key = WMCreatePLString(fields->key);
 		value = plok?WMGetFromPLDictionary(pl, key):NULL;
 
-		(*fields->checker)(value, fields->data, *data + fields->offset);
+		(*fields->checker)(value, fields->data,
+				   (void *)((unsigned char*)*data + fields->offset));
 
 		WMReleasePropList(key);
 		key = NULL;

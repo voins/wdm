@@ -92,21 +92,21 @@ userEnv (struct display *d, int useSystemPath, char *user, char *home, char *she
     char	*str;
 
     env = defaultEnv ();
-    env = setEnv (env, "DISPLAY", d->name);
-    env = setEnv (env, "HOME", home);
-    env = setEnv (env, "LOGNAME", user); /* POSIX, System V */
-    env = setEnv (env, "USER", user);    /* BSD */
-    env = setEnv (env, "PATH", useSystemPath ? d->systemPath : d->userPath);
-    env = setEnv (env, "SHELL", shell);
+    env = WDMSetEnv(env, "DISPLAY", d->name);
+    env = WDMSetEnv(env, "HOME", home);
+    env = WDMSetEnv(env, "LOGNAME", user); /* POSIX, System V */
+    env = WDMSetEnv(env, "USER", user);    /* BSD */
+    env = WDMSetEnv(env, "PATH", useSystemPath ? d->systemPath : d->userPath);
+    env = WDMSetEnv(env, "SHELL", shell);
 #ifdef KERBEROS
     if (krbtkfile[0] != '\0')
-        env = setEnv (env, "KRBTKFILE", krbtkfile);
+        env = WDMSetEnv(env, "KRBTKFILE", krbtkfile);
 #endif
     for (envvar = envvars; *envvar; envvar++)
     {
 	str = getenv(*envvar);
 	if (str)
-	    env = setEnv (env, *envvar, str);
+	    env = WDMSetEnv(env, *envvar, str);
     }
     return env;
 }
@@ -496,10 +496,10 @@ done:
 	verify->userEnviron = userEnv (d, p->pw_uid == 0,
 				       greet->name, home, shell);
 	WDMDebug("user environment:\n");
-	printEnv (verify->userEnviron);
+	WDMPrintEnv (verify->userEnviron);
 	verify->systemEnviron = systemEnv (d, greet->name, home);
 	WDMDebug("system environment:\n");
-	printEnv (verify->systemEnviron);
+	WDMPrintEnv (verify->systemEnviron);
 	WDMDebug("end of environments\n");
 	return 1;
 }

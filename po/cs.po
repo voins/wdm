@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wdmLogin 1.23\n"
+"POT-Creation-Date: 2003-08-31 16:46+0400\n"
+"PO-Revision-Date: 2003-05-11 14:00+0100\n"
+"Last-Translator: Vladimir Nadvornik <nadvornik@suse.cz>\n"
+"Language-Team: Czech <CS@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: bl/src/wdmLogin/Login.c:70
+msgid "no help available."
+msgstr ""
+"wdm je grafické rozhraní pro přihlášení uživatele do systému.\n"
+"\n"
+"Zadejte své uživatelské jméno (userid) a stiskněte <enter>. Panel poté "
+"zobrazí výzvu k zadání hesla. Zadejte hesloa stiskněte <enter>.\n"
+"\n"
+"\n"
+"Dále se provede přihlášení a spustí se windowmanager.\n"
+"\n"
+"\n"
+"'Spustit WM' určuje, který windowmanager se spustí.\n"
+"\n"
+"\n"
+"'Předchozí' spustí stejný windowmanager jako v předchozí relaci.\n"
+"\n"
+"\n"
+"'Nouzový režim' spustí pouze xterm, ostatní volby jsou pro jednotlivé "
+"windowmanagery.\n"
+"\n"
+"\n"
+"'Volby' jsou následující:\n"
+"\n"
+"     Přihlášení - přihlášení do systému\n"
+"\n"
+"     Restartovat - restartuje systém\n"
+"\n"
+"     Ukončit - zastaví systém\n"
+"\n"
+"     Opustit - ukončí display manager\n"
+"\n"
+"\n"
+"Volby Přihlášení, Restartovat nebo Ukončit mohou vyžadovat platné "
+"uživatelské jméno a heslo nebo jméno a heslo uživatele root.\n"
+"\n"
+"\n"
+"POZNÁMKA: Volba Opustit je určena hlavně k testování wdm. Tato volba "
+"ukončípouze x-server a wdm musí být ukončen jiným způsobem\n"
+"\n"
+"\n"
+"Volba Opustit provede stejnou činnost jako ctrl-r v xdm.\n"
+"\n"
+"\n"
+"Vyčistit vymaže zadané informace a spustí přihlášení znovu.\n"
+"\n"
+"\n"
+"V manuálové strénce jsou popsány možnosti konfigurace wdm.Je mnoho možností "
+"pro výběr obrázků, barev pozadí a ověřování pro volby Přihlášení, "
+"Restartovat, Ukončit "
+
+#: bl/src/wdmLogin/Login.c:114
+msgid "Login"
+msgstr "Přihlášení"
+
+#: bl/src/wdmLogin/Login.c:114
+msgid "Reboot"
+msgstr "Restartovat"
+
+#: bl/src/wdmLogin/Login.c:114
+msgid "Halt"
+msgstr "Ukončit"
+
+#: bl/src/wdmLogin/Login.c:115
+msgid "ExitLogin"
+msgstr "Opustit"
+
+#: bl/src/wdmLogin/Login.c:118
+msgid "Login failed"
+msgstr "Přihlášení se nezdařilo"
+
+#: bl/src/wdmLogin/Login.c:118
+msgid "Reboot failed"
+msgstr "Restartování se nezdařilo"
+
+#: bl/src/wdmLogin/Login.c:119
+msgid "Halt failed"
+msgstr "Ukončení se nezdařilo"
+
+#: bl/src/wdmLogin/Login.c:119
+msgid "ExitLogin failed"
+msgstr "Opuštění se nezdařilo"
+
+#: bl/src/wdmLogin/Login.c:280
+msgid "NoChange"
+msgstr "Předchozí"
+
+#: bl/src/wdmLogin/Login.c:299
+msgid "failsafe"
+msgstr "nouzový režim"
+
+#: bl/src/wdmLogin/Login.c:381
+msgid "ERROR"
+msgstr "CHYBA"
+
+#: bl/src/wdmLogin/Login.c:440
+msgid "Password:"
+msgstr "Heslo:"
+
+#: bl/src/wdmLogin/Login.c:448 bl/src/wdmLogin/Login.c:777
+msgid "Login name:"
+msgstr "Uživatel:"
+
+#: bl/src/wdmLogin/Login.c:479
+msgid "invalid name"
+msgstr "neplatné jméno"
+
+#: bl/src/wdmLogin/Login.c:501
+msgid "validating"
+msgstr "potvrzování"
+
+#: bl/src/wdmLogin/Login.c:503 bl/src/wdmLogin/Login.c:534
+msgid "exiting"
+msgstr "končím"
+
+#: bl/src/wdmLogin/Login.c:552
+msgid "Close Help"
+msgstr "Zavřít"
+
+#: bl/src/wdmLogin/Login.c:559 bl/src/wdmLogin/Login.c:871
+msgid "Help"
+msgstr "Nápověda"
+
+#: bl/src/wdmLogin/Login.c:725
+msgid "Login Authentication"
+msgstr "Ověření pro přihlášení"
+
+#: bl/src/wdmLogin/Login.c:734
+msgid "Welcome to"
+msgstr "Vítejte na"
+
+#: bl/src/wdmLogin/Login.c:821
+msgid "Start WM"
+msgstr "Spustit WM"
+
+#: bl/src/wdmLogin/Login.c:839
+msgid "Options"
+msgstr "Volby"
+
+#: bl/src/wdmLogin/Login.c:879
+msgid "Start Over"
+msgstr "Vyčistit"
+
+#: bl/src/wdmLogin/Login.c:886
+msgid "Go!"
+msgstr "Start!"

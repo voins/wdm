@@ -90,7 +90,6 @@ static void	TerminateProcess (int pid, int signal);
 int		Rescan;
 static long	ServersModTime, ConfigModTime, AccessFileModTime;
 
-int nofork_session = 0;
 
 #ifndef NOXDMTITLE
 static char *Title;
@@ -110,6 +109,7 @@ main (int argc, char **argv)
 {
     int	oldpid, oldumask;
     char cmdbuf[1024];
+    int debugMode = 0;
 
     /* make sure at least world write access is disabled */
     if (((oldumask = umask(022)) & 002) == 002)
@@ -128,17 +128,17 @@ main (int argc, char **argv)
     /*
      * Only allow root to run in non-debug mode to avoid problems
      */
-    if (debugLevel == 0 && getuid() != 0)
+    debugMode = (debugLevel > WDM_LEVEL_WARNING);
+    if (!debugMode && getuid() != 0)
     {
 	fprintf (stderr, "Only root wants to run %s\n", argv[0]);
 	exit (1);
     }
-    if (debugLevel == 0 && daemonMode)
+    if (!debugMode && daemonMode)
+    {
 	BecomeOrphan ();
-    if (debugLevel >= 10)
-	nofork_session = 1;
-    if (debugLevel == 0 && daemonMode)
 	BecomeDaemon ();
+    }
     /* SUPPRESS 560 */
     if ((oldpid = StorePid ()))
     {
@@ -166,11 +166,9 @@ main (int argc, char **argv)
 	/* redirect any messages for stderr into standard logging functions. */
 	WDMRedirectStderr(WDM_LEVEL_ERROR);
 
-    if (nofork_session == 0) {
-	/* Clean up any old Authorization files */
-	sprintf(cmdbuf, "/bin/rm -f %s/authdir/authfiles/A*", authDir);
-	system(cmdbuf);
-    }
+    /* Clean up any old Authorization files */
+    sprintf(cmdbuf, "/bin/rm -f %s/authdir/authfiles/A*", authDir);
+    system(cmdbuf);
 
 #ifdef XDMCP
     init_session_id ();
@@ -662,17 +660,12 @@ StartDisplay (struct display *d)
 	if (d->authorizations)
 	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
     }
-    if (!nofork_session)
-	pid = fork ();
-    else
-	pid = 0;
+    pid = fork ();
     switch (pid)
     {
     case 0:
-	if (!nofork_session) {
-	    CleanUpChild ();
-	    (void) Signal (SIGPIPE, SIG_IGN);
-	}
+	CleanUpChild ();
+	(void) Signal (SIGPIPE, SIG_IGN);
 	LoadSessionResources (d);
 	SetAuthorization (d);
 	if (!WaitForServer (d))

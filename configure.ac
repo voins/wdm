@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.53)
-AC_INIT([wdm],[1.24],[voins@voins.program.ru])
+AC_INIT([wdm],[0.0],[voins@voins.program.ru])
 AC_CONFIG_SRCDIR(install-sh)
 AC_CONFIG_HEADERS(include/config.h)
 
@@ -57,7 +57,7 @@ AC_SUBST(SYSTEM_SHELL)
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h sys/param.h syslog.h libintl.h)
 
-AC_CHECK_DECLS([sys_siglist])
+AC_DECL_SYS_SIGLIST
 
 AC_C_CONST
 AC_TYPE_SIZE_T

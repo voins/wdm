@@ -1,0 +1,162 @@
+# translation of es.po to spanish
+# translation of wdm.po to spanish
+# Manuel Padron Martinez <manolopm@cip.es>, 2003.
+msgid ""
+msgstr ""
+"Project-Id-Version: es\n"
+"POT-Creation-Date: 2003-04-06 00:33+0400\n"
+"PO-Revision-Date: 2003-06-30 17:53+0100\n"
+"Last-Translator: Manuel Padron Martinez <manolopm@cip.es>\n"
+"Language-Team: spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.2beta3\n"
+
+#: src/wdmLogin/Login.c:79
+msgid "no help available."
+msgstr ""
+"wdm es una interfaz gráfica usada para autenticar a los usuarios en el sistema y "
+"realizar el proceso de login.\n"
+"\n"
+"\n"
+"Introduzca su nombre de usuario en el cuadro de dialogo y presione <enter>. El panel "
+" mostrara un cuadro de dialogo para que introduzca su clave.  Introduzca la clave y "
+"presione <enter>.\n"
+"\n"
+"\n"
+"Entonces se autenticara en el sistema y arrancara el gestor de ventanas seleccionado.\n"
+"\n"
+"\n"
+"El menú desplegable de \"Gestor de ventanas\" permite elegir con que gestor de ventanas "
+"arrancaran la sesión de las X."
+"\n"
+"\n"
+"\"Sin cambios\" arrancara con el ultimo gestor de ventanas que se uso.\n"
+"\n"
+"\n"
+"El \"modo seguro\" arrancara una sesión solo con un terminal x mientras que el resto de las "
+" opciones arrancaran el gestor seleccionado."
+"\n"
+"\n"
+"El menú desplegable de \"Opciones\" se compone de:\n"
+"\n"
+"     Login - Para autenticarse en el sistema.\n"
+"     Reiniciar - Cierra y reinicia el sistema.\n"
+"     Apagar - Cierra y apaga el sistema..\n"
+"     Salir - Sale de las X y vuelve al modo consola.\n"
+"\n"
+"\n"
+"La instalación requiere un nombre y una clave de usuario valida o el usuario root y la clave "
+"para realizar un reinicio, un apagado o para salir a la consola.\n"
+"\n"
+"\n"
+"NOTA:  Salir esta pensado para hacer pruebas en wdm. Salir cerrara el servidor de las X "
+"pero wdm tiene que ser cerrado por otros metodos. Si se a arrancado wdm como un proceso "
+"sin asociar al terminal (wdm&) resultara mas difícil de cerrar.\n"
+"\n"
+"\n"
+"Salir hace lo mismo que lo que hace ctrl-r en xdm.\n"
+"\n"
+"\n"
+"1.El botón limpiar borrara todos los datos del intento de autenticación actual.\n"
+"\n"
+"\n"
+"2. Para mas información sobre la configuración de este paquete consulte el manual(man). Hay numerosas opciones para establecer el color de fondo, la imagen en el panel, el gestor de ventanas para arrancar y la autenticación para reiniciar apagar y salir."
+
+#: src/wdmLogin/Login.c:163
+msgid "Login"
+msgstr "Login"
+
+#: src/wdmLogin/Login.c:163
+msgid "Reboot"
+msgstr "Reiniciar"
+
+#: src/wdmLogin/Login.c:163
+msgid "Halt"
+msgstr "Apagar"
+
+#: src/wdmLogin/Login.c:164
+msgid "ExitLogin"
+msgstr "Salir"
+
+#: src/wdmLogin/Login.c:167
+msgid "Login failed"
+msgstr "Fallo la autenticación."
+
+#: src/wdmLogin/Login.c:167
+msgid "Reboot failed"
+msgstr "Ocurrió un fallo al intentar reiniciar."
+
+#: src/wdmLogin/Login.c:168
+msgid "Halt failed"
+msgstr "Ocurrió un fallo al intentar apagar."
+
+#: src/wdmLogin/Login.c:168
+msgid "ExitLogin failed"
+msgstr "Ocurrió un fallo al intentar salir."
+
+#: src/wdmLogin/Login.c:325
+msgid "NoChange"
+msgstr "Sin cambios"
+
+#: src/wdmLogin/Login.c:344
+msgid "failsafe"
+msgstr "Modo seguro"
+
+#: src/wdmLogin/Login.c:417
+msgid "ERROR"
+msgstr "ERROR"
+
+#: src/wdmLogin/Login.c:470
+msgid "Password:"
+msgstr "Clave:"
+
+#: src/wdmLogin/Login.c:478 src/wdmLogin/Login.c:803
+msgid "Login name:"
+msgstr "Usuario:"
+
+#: src/wdmLogin/Login.c:511
+msgid "invalid name"
+msgstr "usuario incorrecto"
+
+#: src/wdmLogin/Login.c:533
+msgid "validating"
+msgstr "comprobando"
+
+#: src/wdmLogin/Login.c:535 src/wdmLogin/Login.c:568
+msgid "exiting"
+msgstr "saliendo"
+
+#: src/wdmLogin/Login.c:585
+msgid "Close Help"
+msgstr "Cerrar ayuda"
+
+#: src/wdmLogin/Login.c:591 src/wdmLogin/Login.c:897
+msgid "Help"
+msgstr "Ayuda"
+
+#: src/wdmLogin/Login.c:751
+msgid "Login Authentication"
+msgstr "Autenticación"
+
+#: src/wdmLogin/Login.c:760
+msgid "Welcome to"
+msgstr "Bienvenido a "
+
+#: src/wdmLogin/Login.c:847
+msgid "Start WM"
+msgstr "Gestor de ventanas"
+
+#: src/wdmLogin/Login.c:865
+msgid "Options"
+msgstr "Opciones"
+
+#: src/wdmLogin/Login.c:905
+msgid "Start Over"
+msgstr "Limpiar"
+
+#: src/wdmLogin/Login.c:912
+msgid "Go!"
+msgstr "Adelante!"
+

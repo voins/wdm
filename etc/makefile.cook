@@ -148,9 +148,9 @@ m_files =
 	[fromto %0% %0%.M [configs] [pam_configs] [i_configs]];
 
 clean_files = [fromto %0%.c %0%.o [match_mask src/%0%.c [source_files]]];
-dist_clean_files = [clean_files] [addprefix bin/ [program_list]] [g_manfiles] 
-	[g_configs] config.status config.log include/config.h include/gnuLogo.xpm
-	Makefile;
+dist_clean_files = [clean_files] [addprefix bin/ [program_list]]
+	[fromto % bin/%.a [libraries_list]] [g_manfiles] [g_configs] 
+	config.status config.log include/config.h include/gnuLogo.xpm Makefile;
 
 Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.cook
 	[m_files]
@@ -185,6 +185,7 @@ Makefile.in : etc/Howto.conf.in etc/Makefile.head etc/makefile.cook etc/Howto.co
 	[make_line install-config\: [fromto %0% [configdir]/% [configs] [i_configs]]
 			install-pam-[make_var USE_PAM]
 			[configdir]/authdir];
+	[make_action install -d -m 0700 [make_var DESTDIR][make_var FAKEHOME]];
 	[make_line];
 	[make_line install-pam-no\:];
 	[make_line];

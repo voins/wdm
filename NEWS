@@ -1,4 +1,22 @@
 See TODO, README, README.pam, and ChangeLog
+wdm-1.25 -- Jun 06 2003
+	- removed call to wstrndup function, that appeared only
+	  in post 0.80.1 cvs snapshots.
+	- fixed bug in Makefile.in, that caused generation of .mo files
+	  even without msgfmt program.
+	- added workaround for bug in libfontconfig, which caused wdmLogin
+	  to crash.
+	- added geometry option for wdmLogin. It was placed in wdmLogin-config
+	  file. see INSTALL for more info.
+	- added support for antialiaesed fonts. New options was placed
+	  in wdmLogin-config file.
+	
+	Note two new options for configure script: --with-fakeroot and
+	--enable-aafont.
+
+	If you enable antialiased fonts, then expect first run to be very
+	long. That's because fontconfig will build cache of fonts.
+	  
 wdm-1.24 -- Jun 01 2003
 	- pixmaps have been moved to /usr/share/pixmaps/wdm by default.
 	  You can always specify other locations with --with-gfxdir option

@@ -22,7 +22,7 @@
 #include <string.h>
 
 const char *
-WDMGetEnv(const char **env, const char *name)
+WDMGetEnv(char * const env[], const char *name)
 {
 	size_t len;
 	
@@ -176,7 +176,7 @@ WDMUnsetEnv(char **env, const char *name)
 	return wrealloc(env, (envsize + 1) * sizeof(char*));
 }
 
-int
+void
 WDMFreeEnv(char **env)
 {
 	char **ep = env;
@@ -184,7 +184,7 @@ WDMFreeEnv(char **env)
 	WDMDebug("WDMFreeEnv env=%p\n", (void *)env);
 	
 	if(env == NULL)
-		return 0;
+		return;
 	
 	while(*ep)
 	{
@@ -193,5 +193,14 @@ WDMFreeEnv(char **env)
 	}
 
 	wfree(env);
+}
+
+void
+WDMPrintEnv(char **env)
+{
+	WDMDebug("WDMPrintEnv env=%p\n", (void *)env);
+
+	while(env && *env)
+		WDMDebug("%s\n", *env++);
 }
 

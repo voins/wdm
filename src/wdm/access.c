@@ -367,11 +367,6 @@ ReadDisplayEntry (FILE *file)
 		display->connectionType = FamilyInternet;
 		break;
 #endif
-#ifdef AF_DECnet
-	    case AF_DECnet:
-	    	display->connectionType = FamilyDECnet;
-	    	break;
-#endif
 	    default:
 	    	display->connectionType = FamilyLocal;
 	    	break;

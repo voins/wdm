@@ -50,12 +50,8 @@ from The Open Group.
 
 #include <wdmlib.h>
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN)
 # include <dm_socket.h>
-#endif
-#ifdef DNETCONN
-# include <netdnet/dn.h>
-# include <netdnet/dnetdb.h>
 #endif
 
 #if (defined(_POSIX_SOURCE) && !defined(AIXV3) && !defined(__QNX__)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
@@ -755,30 +751,6 @@ ifioctl (int fd, int cmd, char *arg)
 #define ifioctl ioctl
 #endif /* SYSV_SIOCGIFCONF */
 
-#if defined(STREAMSCONN) && !defined(SYSV_SIOCGIFCONF) && !defined(NCR)
-
-#include <tiuser.h>
-
-/* Define this host for access control.  Find all the hosts the OS knows about 
- * for this fd and add them to the selfhosts list.
- * TLI version, written without sufficient documentation.
- */
-static void
-DefineSelf (int fd, FILE *file, Xauth *auth)
-{
-    struct netbuf	netb;
-    char		addrret[1024]; /* easier than t_alloc */
-    
-    netb.maxlen = sizeof(addrret);
-    netb.buf = addrret;
-    if (t_getname (fd, &netb, LOCALNAME) == -1)
-	t_error ("t_getname");
-    /* what a kludge */
-    writeAddr (FamilyInternet, 4, netb.buf+4, file, auth);
-}
-
-#else
-
 #ifdef WINTCP /* NCR with Wollongong TCP */
 
 #include <sys/un.h>
@@ -893,41 +865,28 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
     for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
     {
 	ifr = (struct ifreq *) cp;
-#ifdef DNETCONN
-	/*
-	 * this is ugly but SIOCGIFCONF returns decnet addresses in
-	 * a different form from other decnet calls
-	 */
-	if (ifr->ifr_addr.sa_family == AF_DECnet) {
-		len = sizeof (struct dn_naddr);
-		addr = (char *)ifr->ifr_addr.sa_data;
-		family = FamilyDECnet;
-	} else
-#endif
-	{
-	    if (ConvertAddr ((XdmcpNetaddr) &ifr->ifr_addr, &len, &addr) < 0)
+	if (ConvertAddr ((XdmcpNetaddr) &ifr->ifr_addr, &len, &addr) < 0)
 		continue;
-	    if (len == 0)
- 	    {
+	if (len == 0)
+	{
 		WDMDebug("Skipping zero length address\n");
 		continue;
-	    }
-	    /*
-	     * don't write out 'localhost' entries, as
-	     * they may conflict with other local entries.
-	     * DefineLocal will always be called to add
-	     * the local entry anyway, so this one can
-	     * be tossed.
-	     */
-	    if (len == 4 &&
+	}
+	/*
+	* don't write out 'localhost' entries, as
+	* they may conflict with other local entries.
+	* DefineLocal will always be called to add
+	* the local entry anyway, so this one can
+	* be tossed.
+	*/
+	if (len == 4 &&
 		addr[0] == 127 && addr[1] == 0 &&
 		addr[2] == 0 && addr[3] == 1)
-	    {
-		    WDMDebug("Skipping localhost address\n");
-		    continue;
-	    }
-	    family = FamilyInternet;
+	{
+		WDMDebug("Skipping localhost address\n");
+		continue;
 	}
+	family = FamilyInternet;
 	WDMDebug("DefineSelf: write network address, length %d\n", len);
 	writeAddr (family, len, addr, file, auth);
     }
@@ -978,7 +937,6 @@ DefineSelf (int fd, int file, int auth)
 
 #endif /* SIOCGIFCONF else */
 #endif /* WINTCP else */
-#endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
 
 
 static void
@@ -1016,20 +974,8 @@ writeLocalAuth (FILE *file, Xauth *auth, char *name)
 
     WDMDebug("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
-#ifdef STREAMSCONN
-    fd = t_open ("/dev/tcp", O_RDWR, 0);
-    t_bind(fd, NULL, NULL);
-    DefineSelf (fd, file, auth);
-    t_unbind (fd);
-    t_close (fd);
-#endif
 #ifdef TCPCONN
     fd = socket (AF_INET, SOCK_STREAM, 0);
-    DefineSelf (fd, file, auth);
-    close (fd);
-#endif
-#ifdef DNETCONN
-    fd = socket (AF_DECnet, SOCK_STREAM, 0);
     DefineSelf (fd, file, auth);
     close (fd);
 #endif
@@ -1070,7 +1016,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
     FILE	*old, *new;
     char	home_name[1024], backup_name[1024], new_name[1024];
     char	*name = 0;
-    char	*home;
+    const char	*home;
     char	*envname = 0;
     int	lockStatus;
     Xauth	*entry, **auths;
@@ -1083,7 +1029,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
     WDMDebug("SetUserAuthorization\n");
     auths = d->authorizations;
     if (auths) {
-	home = getEnv (verify->userEnviron, "HOME");
+	home = WDMGetEnv(verify->userEnviron, "HOME");
 	lockStatus = LOCK_ERROR;
 	if (home) {
 	    strcpy (home_name, home);
@@ -1204,9 +1150,9 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	    unlink (new_name);
 	}
 	if (setenv) {
-	    verify->userEnviron = setEnv (verify->userEnviron,
+	    verify->userEnviron = WDMSetEnv(verify->userEnviron,
 				    "XAUTHORITY", envname);
-	    verify->systemEnviron = setEnv (verify->systemEnviron,
+	    verify->systemEnviron = WDMSetEnv(verify->systemEnviron,
 				    "XAUTHORITY", envname);
 	}
 	XauUnlockAuth (name);
@@ -1219,7 +1165,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 void
 RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 {
-    char    *home;
+    const char    *home;
     Xauth   **auths, *entry;
     char    name[1024], new_name[1024];
     int	    lockStatus;
@@ -1229,7 +1175,7 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
 
     if (!(auths = d->authorizations))
 	return;
-    home = getEnv (verify->userEnviron, "HOME");
+    home = WDMGetEnv(verify->userEnviron, "HOME");
     if (!home)
 	return;
     WDMDebug("RemoveUserAuthorization\n");

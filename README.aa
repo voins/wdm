@@ -1,0 +1,26 @@
+How to enable font antialiasing in wdmLogin.
+-------------------------------------------
+
+1. You need post-0.80.2 cvs snapshot of WindowMaker for antialiased fonts.
+
+2. Recompile wdm with --enable-aafont and --with-fakehome=<path> options
+passed to configure script. <path> in --with-fakehome option should point
+to some directory where fontconfig library can create fonts cache file.
+It's better to use some empty directory that is safe to expose
+(in case there's some nasty bugs hiding in wdm). I usually use /var/run/wdm
+as <path> value.
+
+3. Create directory that was passed to --with-fakehome option.
+
+4. Create wdmLogin-config file in directory passed with --with-wdmdir
+option. Default value for this option is /usr/local/etc/wdm/.
+Put following lines in that file:
+{
+	aa = yes;
+	multibyte = yes;
+}
+In some encodings multibyte can be safely set to 'no'.
+
+5. Restart wdm. Note: first run after reconfiguration would be slow because
+fontconfig will create font cache.
+

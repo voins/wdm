@@ -67,10 +67,10 @@ struct dlfuncs {
     void (*_DeleteXloginResources)(struct display *d, Display *dpy);
     int (*_source)(char **environ, char *file);
     char **(*_defaultEnv)(void);
-    char **(*_setEnv)(char **e, char *name, char *value);
-    char **(*_putEnv)(const char *string, char **env);
+    char **(*_WDMSetEnv)(char **e, const char *name, const char *value);
+    char **(*_WDMPutEnv)(char **env, const char *string);
     char **(*_parseArgs)(char **argv, char *string);
-    void (*_printEnv)(char **e);
+    void (*_WDMPrintEnv)(char **e);
     char **(*_systemEnv)(struct display *d, char *user, char *home);
     SETGRENT_TYPE (*_setgrent)(void);		/* no longer used */
     struct group *(*_getgrent)(void);	/* no longer used */
@@ -162,10 +162,10 @@ extern	void    (*__xdm_SessionExit)(struct display *d, int status, int removeAut
 extern	void    (*__xdm_DeleteXloginResources)(struct display *d, Display *dpy);
 extern	int     (*__xdm_source)(char **environ, char *file);
 extern	char    **(*__xdm_defaultEnv)(void);
-extern	char    **(*__xdm_setEnv)(char **e, char *name, char *value);
-extern	char    **(*__xdm_putEnv)(const char *string, char **env);
+extern	char    **(*__xdm_WDMSetEnv)(char **env, char *name, char *value);
+extern	char    **(*__xdm_WDMPutEnv)(char **env, const char *string);
 extern	char    **(*__xdm_parseArgs)(char **argv, char *string);
-extern	void    (*__xdm_printEnv)(char **e);
+extern	void    (*__xdm_WDMPrintEnv)(char **e);
 extern	char    **(*__xdm_systemEnv)(struct display *d, char *user, char *home);
 extern	void    (*__xdm_LogOutOfMem)(char * fmt, ...);
 extern	void    (*__xdm_setgrent)(void);
@@ -202,10 +202,10 @@ extern  pam_handle_t    **(*__xdm_thepamhp)(void);
 #define	DeleteXloginResources	(*__xdm_DeleteXloginResources)
 #define	source		(*__xdm_source)
 #define	defaultEnv	(*__xdm_defaultEnv)
-#define	setEnv		(*__xdm_setEnv)
-#define putEnv		(*__xdm_putEnv)
+#define	WDMSetEnv	(*__xdm_WDMSetEnv)
+#define WDMPutEnv	(*__xdm_WDMPutEnv)
 #define	parseArgs	(*__xdm_parseArgs)
-#define	printEnv	(*__xdm_printEnv)
+#define	WDMPrintEnv	(*__xdm_WDMPrintEnv)
 #define	systemEnv	(*__xdm_systemEnv)
 #define	LogOutOfMem	(*__xdm_LogOutOfMem)
 #define	setgrent	(*__xdm_setgrent)

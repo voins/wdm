@@ -81,11 +81,12 @@ extern void *WDMSockaddrGetAddr(struct sockaddr *from, int *len);
 extern char *WDMGetHostName(struct sockaddr *from);
 extern char *WDMGetHostAddr(struct sockaddr *from);
 
-extern const char *WDMGetEnv(const char **env, const char *name);
+extern const char *WDMGetEnv(char * const env[], const char *name);
 extern char **WDMPutEnv(char **env, const char *string);
 extern char **WDMSetEnv(char **env, const char *name, const char *value);
 extern char **WDMUnsetEnv(char **env, const char *name);
-extern int WDMFreeEnv(char **env);
+extern void WDMFreeEnv(char **env);
+extern void WDMPrintEnv(char **env);
 
 
 #endif

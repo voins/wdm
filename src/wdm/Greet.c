@@ -213,16 +213,15 @@ static int InitGreet (struct display *d)
 	int argc = 1; /* argc = 0 is for command itself */
 
         close(pipe_filedes[0]);
-        dup2(pipe_filedes[1],3);
-        fcntl(3, F_SETFD, 0); /* Reset close-on-exec (just in case) */
+        fcntl(pipe_filedes[1], F_SETFD, 0); /* Reset close-on-exec (just in case) */
 
         env = (char **)systemEnv(d, (char*)NULL, FAKEHOME);
 
 	if(*wdmLocale)
-		env = setEnv(env, "LANG", wdmLocale);
+		env = WDMSetEnv(env, "LANG", wdmLocale);
 
 	if(*wdmCursorTheme)
-		env = setEnv(env, "XCURSOR_THEME", wdmCursorTheme);
+		env = WDMSetEnv(env, "XCURSOR_THEME", wdmCursorTheme);
 
 	if((argv[0] = strrchr(wdmLogin, '/')) == NULL)
 		argv[0] = wdmLogin;
@@ -250,6 +249,8 @@ static int InitGreet (struct display *d)
 					     converted to string, but it still a hack */
 		sprintf(argv[argc++], "-x%i", wdmXineramaHead);
 	}
+	argv[argc] = wmalloc(25); 
+	sprintf(argv[argc++], "-f%i", pipe_filedes[1]);
 
 	argv[argc++] = NULL;
         execve(wdmLogin, argv, env);

@@ -1,10 +1,25 @@
-/*###################################################################*/
-/*##                          LoginTest                            ##*/
-/*##                                                               ##*/
-/*##    This software is Copyright (C) 1998 by Gene Czarcinski.    ##*/
-/*## This software falls under the GNU Public License. Please read ##*/
-/*##              the COPYING file for more information            ##*/
-/*###################################################################*/
+/*
+ * wdm - WINGs display manager
+ * Copyright (C) 2003 Alexey Voinov <voins@voins.program.ru>
+ * Copyright (C) 1998 Gene Czarcinski
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * TestLogin.c: simple test for wdmLogin program
+ */
+
 
 /*
  * This is a simple test program to test the interface to
@@ -61,7 +76,6 @@
  * extension codes other than 0 or 1, and passing args to Login.
  */
 
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,6 +84,7 @@
 #include <malloc.h>
 #include <syslog.h>
 #include <wdmlib.h>
+#include <unistd.h>
 
 #define forever 1
 
@@ -82,16 +97,6 @@ static char     LoginPswd[] = "Testing";
 
 static char     *ExternalLogin = NULL;
 static char     *ExternalName  = NULL;
-
-static char     *Arg1 = "";
-static char     *Arg2 = "";
-static char     *Arg3 = "";
-static char     *Arg4 = "";
-static char     *Arg5 = "";
-static char     *Arg6 = "";
-static char     *Arg7 = "";
-static char     *Arg8 = "";
-static char     *Arg9 = "";
 
 /* this needs to be defined for the read routes */
 
@@ -150,6 +155,7 @@ int main (int argc, char *argv[])
 {
         int  pid, filedescriptor[2], extcode=0, notdone = 0, i;
         char *username, *userpswd, *xsession=NULL, *exitstr=NULL;
+	char **nargv;
 
 #if 0
 	FILE *f;
@@ -176,17 +182,7 @@ int main (int argc, char *argv[])
         else
             ExternalName++;
         WDMDebug("External Name: %s\n",ExternalName);
-
         WDMInfo("Testing: %s\n",ExternalLogin);
-
-        if (argc > 2) Arg1 = argv[2];
-        if (argc > 3) Arg2 = argv[3];
-        if (argc > 4) Arg3 = argv[4];
-        if (argc > 5) Arg4 = argv[5];
-        if (argc > 6) Arg5 = argv[6];
-        if (argc > 7) Arg6 = argv[7];
-        if (argc > 8) Arg7 = argv[8];
-        if (argc > 9) Arg8 = argv[9];
 
         pipe(filedescriptor);
 
@@ -198,13 +194,16 @@ int main (int argc, char *argv[])
                 break;
                 case 0: /* this is the child process */
                         close(filedescriptor[0]);
-                        dup2(filedescriptor[1], 3);
-                        fcntl(3, F_SETFD, 0); /*unset close-on-exec */
-                        execle(ExternalLogin,ExternalName,
-                                Arg1, Arg2, Arg3, Arg4, Arg5,
-                                Arg6, Arg7, Arg8, Arg9, NULL,
-                                environ);
-                        WDMPanic("Cannot exec %s\n",ExternalLogin);
+                        fcntl(filedescriptor[1], F_SETFD, 0); /*unset close-on-exec */
+
+			nargv = wmalloc(sizeof(char*) * (argc + 1));
+			memcpy(nargv, argv + 1, sizeof(char*) * (argc - 1));
+			nargv[argc - 1] = wmalloc(25);
+			sprintf(nargv[argc - 1], "-f%i", filedescriptor[1]);
+			nargv[argc] = NULL;
+
+                        execve(ExternalLogin, nargv, environ);
+                        WDMPanic("Cannot exec %s\n", ExternalLogin);
                 break;
         }
         WDMDebug("Continuing, child=%i\n",pid);
@@ -271,12 +270,12 @@ int main (int argc, char *argv[])
                  (strcmp(userpswd,LoginPswd)==0)) ||
                 (extcode==4)) {
                     WDMInfo("success! Now terminate and exit\n");
-                    usleep(1000000);
+                    wusleep(1000000);
                     kill(pid, SIGTERM);
                     break; /* get out of forever loop */
             }
             WDMError(" bad name or password; go around again\n");
-            usleep(1000000);
+            wusleep(1000000);
             kill(pid, SIGUSR1);
 
             free(username);

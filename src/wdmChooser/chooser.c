@@ -1,7 +1,6 @@
 /*
  * wdm - WINGs display manager
  * Copyright (C) 2003 Alexey Voinov <voins@voins.program.ru>
- * Copyright (C) 1998 Gene Czarcinski
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,25 +16,37 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * wdmLogin.h: header file for wdmLogin program
+ * chooser.c: wdmChooser program. replacement for chooser from xdm
  */
-#ifndef _WDMLOGIN_H
-#define _WDMLOGIN_H
-
-#include <wdmconfig.h>
 #include <wdmlib.h>
+#include <stdlib.h>
 
-typedef struct _WDMLoginConfig
+void
+closeAction(WMWidget *self, void *data)
 {
-	WMRect geometry;
-#ifdef USE_AA
-	Bool aaenabled;
-	Bool multibyte;
-#endif
-	Bool animations;
-} WDMLoginConfig;
+	WMDestroyWidget(self);
+	exit(0);
+}
 
-extern WDMLoginConfig *LoadConfiguration(char *configFile);
+int main(int argc, char *argv[])
+{
+	WMScreen *scr;
+	WMWindow *win;
 
-#endif /* _WDMLOGIN_H */
+	WMInitializeApplication("wdmChooser", &argc, argv);
+	scr = WMOpenScreen(NULL);
+	if(scr == NULL)
+		WDMPanic("could not initialize Screen");
 
+
+	win = WMCreateWindow(scr, "wdmChooser");
+	WMResizeWidget(win, 600, 300);
+	WMMoveWidget(win, 100, 100);
+	WMRealizeWidget(win);
+	WMMapWidget(win);
+	WMSetWindowCloseAction(win, closeAction, NULL);
+	WMSetWindowTitle(win, "wdmChooser");
+	WMScreenMainLoop(scr);
+
+	return 0;
+}

@@ -3,10 +3,19 @@ archive_files =
 	Makefile.in
 	include/config.h.in
 	ChangeLog
-	[source_files];
+	[filter_out xdm/%0% [source_files]];
 
 if [not [defined PACKAGE_VERSION]] then PACKAGE_VERSION=0;
-tarball: wdm-[PACKAGE_VERSION].tar.gz wdm-[PACKAGE_VERSION].tar.bz2;
+
+if [integration] then
+{
+	tarball: wdm-[PACKAGE_VERSION].tar.gz wdm-[PACKAGE_VERSION].tar.bz2;
+}
+else
+{
+	tarball: current;
+}
+current: wdm-current.tar.bz2;
 
 wdm-[PACKAGE_VERSION].tar.bz2 : wdm-[PACKAGE_VERSION].tar.gz
 {
@@ -20,6 +29,15 @@ wdm-[PACKAGE_VERSION].tar.gz : [archive_files]
 			-p wdm-[PACKAGE_VERSION] -ms 644 -mc 07022 -now
 			[prepost "-rp=" "" [search_list]]
 		| gzip -9 > [target];
+}
+
+wdm-current.tar.bz2 : [archive_files]
+{
+	tar --create --file - --dereference [resolve [archive_files]]
+		| tardy -unu 0 -gnu 0 -una Alexey -gna Voinov 
+			-p wdm-current -ms 644 -mc 07022 -now
+			[prepost "-rp=" "" [search_list]]
+		| bzip2 -9 > [target];
 }
 
 project_timestamp = [collect aereport -f [resolve etc/project_timestamp.rpt] -pl 30000 -p wdm | sed -e"'"1,6 d"'"];

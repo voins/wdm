@@ -25,6 +25,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <dm.h>
+
+/*
+ * I hate global variables. But I don't know other way to pass information to 
+ * signal handler... :(
+ */
+static pid_t childpid = 0;
 
 /*
  * Function that treats buffer as set of lines separated with '\n'
@@ -79,7 +87,7 @@ WDMRedirectFileToLog(int level, pid_t pid, int fd)
 	struct timeval tv;
 	char buf[1024];
 	int n;
-	
+
 	WDMDebug("logger started\n");
 	while(waitpid(pid, &status, WNOHANG) == 0)
 	{
@@ -102,11 +110,18 @@ WDMRedirectFileToLog(int level, pid_t pid, int fd)
 	return WEXITSTATUS(status);
 }
 
+void WDMRedirectSignals(int n)
+{
+	kill(childpid, n);
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
+	Signal(n, WDMRedirectSignals);
+#endif
+}
+
 void
 WDMRedirectStderr(int level)
 {
 	int errpipe[2];
-	pid_t childpid;
 	int exitstatus;
 
 	if(pipe(errpipe) == -1)
@@ -123,6 +138,9 @@ WDMRedirectStderr(int level)
 	{
 		/* parent, will read all messages from stderr and
 		 * redirect it to log */
+		Signal(SIGTERM, WDMRedirectSignals);
+		Signal(SIGINT, WDMRedirectSignals);
+		Signal(SIGHUP, WDMRedirectSignals);
 		close(errpipe[1]);
 		exitstatus = WDMRedirectFileToLog(WDM_LEVEL_ERROR, childpid, errpipe[0]);
 		close(errpipe[0]);

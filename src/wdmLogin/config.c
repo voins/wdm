@@ -23,6 +23,7 @@
 #include <wdmlib.h>
 #include <wdmLogin.h>
 #include <stdlib.h>
+#include <string.h>
 
 static Bool WDMCheckPLGeometry(WMPropList *pl, void *def, void *target);
 
@@ -33,11 +34,13 @@ static WDMDictionaryStruct wdmLogin_config_struct[] =
 	{"geometry", WDMCheckPLGeometry, &default_geometry,
 		offsetof(WDMLoginConfig, geometry)},
 #ifdef USE_AA
-	{"aa", WDMCheckPLBool, False,
+	{"aa", WDMCheckPLBool, (void*)False,
 		offsetof(WDMLoginConfig, aaenabled)},
-	{"multibyte", WDMCheckPLBool, True,
+	{"multibyte", WDMCheckPLBool, (void*)True,
 		offsetof(WDMLoginConfig, multibyte)},
 #endif
+	{"animations", WDMCheckPLBool, False,
+		offsetof(WDMLoginConfig, animations)},
 	{NULL, NULL, NULL, 0}
 };
 
@@ -85,7 +88,6 @@ static Bool WDMCheckPLUInteger(WMPropList *pl, void *def, void *target)
 static Bool WDMCheckPLGeometry(WMPropList *pl, void *def, void *target)
 {
 	WMRect *rect_target = (WMRect *)target;
-	WMRect *rect_def = (WMRect *)def;
 
 	WDMDebug("WDMCheckPLGeometry(%p, %p, %p)\n", (void*)pl, def, target);
 
