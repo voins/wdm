@@ -38,7 +38,7 @@ config.status : configure.ac
 		src/pixmaps/Makefile.in config.status
 		config.h.in acconfig.h;
 	[aclocal];
-	[autoheader] [resolve configure.ac];
+	[autoheader] [resolve configure.ac] > config.h.in;
 	[autoconf] [resolve configure.ac] > configure;
 	[automake] --add-missing;
 	sh configure;
@@ -46,6 +46,7 @@ config.status : configure.ac
 
 src/config/% : src/config/%.in config.status
 {
+	rm config.log;
 	CONFIG_FILES\=[target]\:[resolve src/config/%.in] CONFIG_HEADERS\=
 		sh [resolve config.status];
 }
