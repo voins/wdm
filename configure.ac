@@ -631,7 +631,7 @@ if test "x$XGETTEXT" != "x"; then
 	fi
 fi
 
-if test "x$XGETTEXT" != "x" -a "x$HAVEGETTEXT" != "x"; then
+if test "x$MSGFMT" != "x" -a "x$HAVEGETTEXT" != "x"; then
 	AC_DEFINE(I18N, 1, [Define if you want internationalization support])
 fi
 
