@@ -56,6 +56,7 @@ int	autoRescan;
 int	removeDomainname;
 char	*keyFile;
 char	*accessFile;
+char	*accessFilePL;
 char	**exportList;
 char	*randomFile;
 char	*greeterLib;
@@ -139,6 +140,9 @@ char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
 #ifndef DEF_ACCESS_FILE
 #define DEF_ACCESS_FILE	""
 #endif
+#ifndef DEF_ACCESS_FILE_PL
+#define DEF_ACCESS_FILE_PL	""
+#endif
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE "/dev/mem"
 #endif
@@ -194,6 +198,9 @@ char	*wdmLoginConfig;	/* this will be passed to wdmLogin with -c option */
 #ifndef DEF_ACCESS_FILE
 #define DEF_ACCESS_FILE	""
 #endif
+#ifndef DEF_ACCESS_FILE_PL
+#define DEF_ACCESS_FILE_PL	""
+#endif
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE ""
 #endif
@@ -235,6 +242,8 @@ struct dmResources {
 				DEF_KEY_FILE} ,
 { "accessFile",	"AccessFile",	DM_STRING,	&accessFile,
 				DEF_ACCESS_FILE} ,
+{ "accessFilePL","AccessFilePL",DM_STRING,	&accessFilePL,
+				DEF_ACCESS_FILE_PL} ,
 { "exportList",	"ExportList",	DM_ARGV,	(char **) &exportList,
 				""} ,
 { "randomFile",	"RandomFile",	DM_STRING,	&randomFile,
