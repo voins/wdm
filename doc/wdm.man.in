@@ -17,24 +17,24 @@ Except for \fB\-config\fP, all of these options can be specified as
 resources.
 .IP "\fB\-config\fP \fIconfiguration_file\fP"
 Names the configuration file, which specifies resources to control
-the behavior of \fIxdm\fP. \fI#configdir#/wdm-config\fP is the default.
+the behavior of \fIwdm\fP. \fI#configdir#/wdm-config\fP is the default.
 .IP "\fB\-nodaemon\fP"
 Specifies ``false'' as the value for the
 \fBDisplayManager.daemonMode\fP resource. This suppresses the normal
-daemon behavior, which is for \fIxdm\fP to close all file descriptors,
+daemon behavior, which is for \fIwdm\fP to close all file descriptors,
 disassociate itself from the controlling terminal, and put itself in
 the background when it first starts up.
 .IP "\fB\-debug\fP \fIdebug_level\fP"
 Specifies the numeric value for the \fBDisplayManager.debugLevel\fP
-resource.  A non-zero value causes \fIxdm\fP to print lots of
+resource.  A non-zero value causes \fIwdm\fP to print lots of
 debugging statements to the terminal; it also disables the
-\fBDisplayManager.daemonMode\fP resource, forcing \fIxdm\fP to run
+\fBDisplayManager.daemonMode\fP resource, forcing \fIwdm\fP to run
 synchronously.  To interpret these debugging messages, a copy of the
-source code for \fIxdm\fP is almost a necessity.  No attempt has been
+source code for \fIwdm\fP is almost a necessity.  No attempt has been
 made to rationalize or standardize the output.
 .IP "\fB\-error\fP \fIerror_log_file\fP"
 Specifies the value for the \fBDisplayManager.errorLogFile\fP
-resource.  This file contains errors from \fIxdm\fP as well as
+resource.  This file contains errors from \fIwdm\fP as well as
 anything written to stderr by the various scripts and programs run
 during the progress of the session.
 .IP "\fB\-resources\fP \fIresource_file\fP"
@@ -49,7 +49,7 @@ sets the port-number which
 .I wdm
 will monitor for XDMCP requests.  As XDMCP
 uses the registered well-known UDP port 177, this resource should
-not be changed except for debugging. If set to 0 xdm will not listen
+not be changed except for debugging. If set to 0 wdm will not listen
 for XDMCP or Chooser requests.
 .IP "\fB\-session\fP \fIsession_program\fP"
 Specifies the value for the \fBDisplayManager*session\fP resource.
@@ -61,11 +61,11 @@ applications.
 .SH RESOURCES
 .PP
 At many stages the actions of
-.I xdm
+.I wdm
 can be controlled through the use of its configuration file, which is in the
 X resource format.
 Some resources modify the behavior of
-.I xdm
+.I wdm
 on all displays,
 while others modify its behavior on a single display.  Where actions relate
 to a specific display,
@@ -77,7 +77,7 @@ For local displays, the resource name and class are as read from the
 .PP
 For remote displays, the resource name is what the network address of
 the display resolves to.  See the \fBremoveDomain\fP resource.  The
-name must match exactly; \fIxdm\fP is not aware of
+name must match exactly; \fIwdm\fP is not aware of
 all the network aliases that might reach a given display.
 If the name resolve fails, the address is
 used.  The resource class is as sent by the display in the XDMCP
@@ -86,7 +86,7 @@ Manage request.
 Because the resource
 manager uses colons to separate the name of the resource from its value and
 dots to separate resource name parts,
-.I xdm
+.I wdm
 substitutes underscores for both dots and colons when generating the resource
 name.
 For example, \fBDisplayManager.expo_x_org_0.startup\fP is the name of the 
@@ -98,7 +98,7 @@ line (if the value starts with a slash), or a single server entry.
 See the section \fBLocal Server Specification\fP for the details.
 .IP "\fBDisplayManager.requestPort\fP"
 This indicates the UDP port number which
-.I xdm
+.I wdm
 uses to listen for incoming XDMCP requests.  Unless you need to debug the
 system, leave this with its default value of 177.
 .IP "\fBDisplayManager.errorLogFile\fP"
@@ -117,11 +117,11 @@ reams of
 debugging information will be printed.  It also disables daemon mode, which
 would redirect the information into the bit-bucket, and
 allows non-root users to run
-.I xdm,
+.I wdm,
 which would normally not be useful.
 .IP "\fBDisplayManager.daemonMode\fP"
 Normally,
-.I xdm
+.I wdm
 attempts to make itself into a daemon process unassociated with any terminal.
 This is
 accomplished by forking and leaving the parent process to exit, then closing
@@ -131,7 +131,7 @@ this resource to ``false'' will disable this feature.
 .IP "\fBDisplayManager.pidFile\fP"
 The filename specified will be created to contain an ASCII
 representation of the process-id of the main
-.I xdm
+.I wdm
 process.
 .I Xdm
 also uses file locking on this file
@@ -139,41 +139,41 @@ to attempt to eliminate multiple daemons running on
 the same machine, which would cause quite a bit of havoc.
 .IP "\fBDisplayManager.lockPidFile\fP"
 This is the resource which controls whether
-.I xdm
+.I wdm
 uses file locking to keep multiple display managers from running amok.
 On System V, this
 uses the \fIlockf\fP library call, while on BSD it uses \fIflock.\fP
 .IP "\fBDisplayManager.authDir\fP"
 This names a directory under which
-.I xdm
+.I wdm
 stores authorization files while initializing the session.  The
 default value is \fI#configdir#.\fP
 Can be overridden for specific displays by
 DisplayManager.\fIDISPLAY\fP.authFile.
 .IP \fBDisplayManager.autoRescan\fP
 This boolean controls whether
-.I xdm
+.I wdm
 rescans the configuration, servers, access control and authentication keys
 files after a session terminates and the files have changed.  By default it
 is ``true.''  You can force
-.I xdm
+.I wdm
 to reread these files by sending a SIGHUP to the main process.
 .IP "\fBDisplayManager.removeDomainname\fP"
 When computing the display name for XDMCP clients, the name resolver will
 typically create a fully qualified host name for the terminal.  As this is
 sometimes confusing,
-.I xdm
+.I wdm
 will remove the domain name portion of the host name if it is the same as the
 domain name of the local host when this variable is set.  By default the
 value is ``true.''
 .IP "\fBDisplayManager.keyFile\fP"
 XDM-AUTHENTICATION-1 style XDMCP authentication requires that a private key
 be shared between
-.I xdm
+.I wdm
 and the terminal.  This resource specifies the file containing those
 values.  Each entry in the file consists of a display name and the shared
 key.  By default,
-.I xdm
+.I wdm
 does not include support for XDM-AUTHENTICATION-1, as it requires DES which
 is not generally distributable because of United States export restrictions.
 .IP \fBDisplayManager.accessFile\fP
@@ -236,7 +236,7 @@ redirected to the special host name CHOOSER.
 See the sections \fBXDMCP Access Control\fP and \fBChooser\fP.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.xrdb\fP"
 Specifies the program used to load the resources.  By default,
-.I xdm
+.I wdm
 uses \fI/usr/X11R6/bin/xrdb\fP.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.cpp\fP"
 This specifies the name of the C preprocessor which is used by \fIxrdb\fP.
@@ -270,7 +270,7 @@ See the section
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.openTimeout\fP"
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.startAttempts\fP"
 These numeric resources control the behavior of
-.I xdm
+.I wdm
 when attempting to open intransigent servers.  \fBopenDelay\fP is
 the length of the
 pause (in seconds) between successive attempts, \fBopenRepeat\fP is the
@@ -281,7 +281,7 @@ attempting the open (i.e., the maximum time spent in the
 system call) and \fBstartAttempts\fP is the number of times this entire process
 is done before giving up on the server.  After \fBopenRepeat\fP attempts have been made,
 or if \fBopenTimeout\fP seconds elapse in any particular attempt,
-.I xdm
+.I wdm
 terminates and restarts the server, attempting to connect again.
 This
 process is repeated \fBstartAttempts\fP times, at which point the display is
@@ -293,7 +293,7 @@ works quite well on most systems.  The default values are
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.pingInterval\fP"
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.pingTimeout\fP"
 To discover when remote displays disappear,
-.I xdm
+.I wdm
 occasionally pings them, using an X connection and \fIXSync\fP
 calls.  \fBpingInterval\fP specifies the time (in minutes) between each
 ping attempt, \fBpingTimeout\fP specifies the maximum amount of time (in
@@ -303,7 +303,7 @@ default, both are set to 5 minutes.  If you frequently use X terminals which
 can become isolated from the managing host, you may wish to increase this
 value.  The only worry is that sessions will continue to exist after the
 terminal has been accidentally disabled.
-.I xdm
+.I wdm
 will not ping local displays.  Although it would seem harmless, it is
 unpleasant when the workstation session is terminated as a result of the
 server hanging for NFS service and not responding to the ping.
@@ -337,7 +337,7 @@ sets the SHELL environment variable for the startup and reset scripts to the
 value of this resource.  It is \fI/bin/sh\fP by default.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.failsafeClient\fP"
 If the default session fails to execute,
-.I xdm
+.I wdm
 will fall back to this program.  This program is executed with no
 arguments, but executes using the same environment variables as
 the session would have had (see the section \fBSession Program\fP).
@@ -345,7 +345,7 @@ By default, \fI/usr/X11R6/bin/xterm\fP is used.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.grabServer\fP"
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.grabTimeout\fP"
 To improve security,
-.I xdm
+.I wdm
 grabs the server and keyboard while reading the login name and password.
 The
 \fBgrabServer\fP resource specifies if the server should be held for the
@@ -353,18 +353,18 @@ duration of the name/password reading.  When ``false,'' the server is ungrabbed
 after the keyboard grab succeeds, otherwise the server is grabbed until just
 before the session begins.  The default is ``false.''
 The \fBgrabTimeout\fP resource specifies the maximum time
-.I xdm
+.I wdm
 will wait for the grab to succeed.  The grab may fail if some other
 client has the server grabbed, or possibly if the network latencies
 are very high.  This resource has a default value of 3 seconds; you
 should be cautious when raising it, as a user can be spoofed by a
 look-alike window on the display.  If the grab fails,
-.I xdm
+.I wdm
 kills and restarts the server (if possible) and the session.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authorize\fP"
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authName\fP"
 \fBauthorize\fP is a boolean resource which controls whether
-.I xdm
+.I wdm
 generates and uses authorization for the local server connections.  If
 authorization is used, \fBauthName\fP is a list
 of authorization mechanisms to use, separated by white space.
@@ -377,7 +377,7 @@ is ``true.''  \fBauthName\fP is ``MIT-MAGIC-COOKIE-1,'' or, if
 XDM-AUTHORIZATION-1 is available, ``XDM-AUTHORIZATION-1\0MIT-MAGIC-COOKIE-1.''
 .IP \fBDisplayManager.\fP\fIDISPLAY\fP\fB.authFile\fP
 This file is used to communicate the authorization data from
-.I xdm
+.I wdm
 to the server, using the \fB\-auth\fP server command line option.
 It should be
 kept in a directory which is not world-writable as it could easily be
@@ -390,29 +390,29 @@ in the login window.
 See the section \fBAuthentication Widget.\fP
 The default is ``true.''
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resetSignal\fP"
-The number of the signal \fIxdm\fP sends to reset the server.
+The number of the signal \fIwdm\fP sends to reset the server.
 See the section \fBControlling the Server.\fP
 The default is 1 (SIGHUP).
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.termSignal\fP"
-The number of the signal \fIxdm\fP sends to terminate the server.
+The number of the signal \fIwdm\fP sends to terminate the server.
 See the section \fBControlling the Server.\fP
 The default is 15 (SIGTERM).
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resetForAuth\fP"
 The original implementation of authorization in the sample server reread the
 authorization file at server reset time, instead of when checking the
 initial connection.  As
-.I xdm
+.I wdm
 generates the authorization information just before connecting to the
 display, an old server would not get up-to-date authorization information.
 This resource causes
-.I xdm
+.I wdm
 to send SIGHUP to the server after setting up the file, causing an
 additional server reset to occur, during which time the new authorization
 information will be read.
 The default is ``false,'' which will work for all MIT servers.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.userAuthDir\fP"
 When
-.I xdm
+.I wdm
 is unable to write to the usual user authorization file ($HOME/.Xauthority),
 it creates a unique file name in this directory and points the environment
 variable XAUTHORITY at the created file.  It uses \fI/tmp\fP by default.
@@ -461,7 +461,7 @@ The default location of the
 configuration file is \fI#configdir#/wdm-config\fP
 .LP
 Here is a reasonable configuration file, which could be
-named \fIxdm-config\fP:
+named \fIwdm-config\fP:
 .nf
 
 .ta .5i 4i
@@ -494,7 +494,7 @@ match that entry to be excluded.
 .PP
 To only respond to Direct queries for a host or pattern,
 it can be followed by the optional ``NOBROADCAST'' keyword.
-This can be used to prevent an xdm server from appearing on
+This can be used to prevent an wdm server from appearing on
 menus based on Broadcast queries.
 .PP
 An Indirect entry also contains a host name or pattern,
@@ -507,7 +507,7 @@ the macro expands to.  To distinguish macros from hostnames, macro
 names start with a `%' character.  Macros may be nested.
 .PP
 Indirect entries
-may also specify to have \fIxdm\fP run \fIchooser\fP to offer a menu
+may also specify to have \fIwdm\fP run \fIchooser\fP to offer a menu
 of hosts to connect to.  See the section \fBChooser\fP.
 .PP
 When checking access for a particular display host, each entry is scanned in
@@ -602,7 +602,7 @@ the following environment variables are passed:
 	XAUTHORITY	may be set to an authority file
 .fi
 .PP
-Note that since \fIxdm\fP grabs the keyboard, any other windows will not be
+Note that since \fIwdm\fP grabs the keyboard, any other windows will not be
 able to receive keyboard input.  They will be able to interact with
 the mouse, however; beware of potential security holes here.
 If \fBDisplayManager.\fP\fIDISPLAY\fP\fB.grabServer\fP is set,
