@@ -1,0 +1,53 @@
+columns({left=0;right=0;});
+
+auto stack, stack_depth, pd, pdkey;
+auto cs;
+
+stack[0] = project_name();
+stack_depth = 1;
+
+while(stack_depth > 0)
+{
+	auto pn, ps, i;
+	
+	--stack_depth;
+	pn = stack[stack_depth];
+	ps = project[pn].state;
+
+	/* add branches to stack all */
+	for(i in keys(ps.branch.change))
+	{
+		cs = ps.branch.change[i];
+		if(count(cs.branch) > 0)
+		{
+			stack[stack_depth] = pn ## "." ## i;
+			++stack_depth;
+		}
+
+		auto  when, key;
+		when = cs.history[count(cs.history) - 1].when;
+		key = strftime("%y%m%d%H%M", when);
+		if(key > pdkey)
+		{
+			pd = when;
+			pdkey = key;
+		}
+	}
+
+	/* add change being_integrated to history */
+	if(ps.branch.currently_integrating_change > 0)
+	{
+		cs = ps.branch.change[ps.branch.currently_integrating_change];
+
+		when = cs.history[count(cs.history) - 1].when;
+		key = strftime("%y%m%d%H%M", when);
+		if(key > pdkey)
+		{
+			pd = when;
+			pdkey = key;
+		}
+	}
+}
+
+print(strftime("%s", pd));
+

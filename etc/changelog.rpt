@@ -1,0 +1,103 @@
+auto stack, stack_depth;
+auto history;
+
+stack[0] = project_name();
+stack_depth = 1;
+
+while(stack_depth > 0)
+{
+	auto pn, ps, i;
+
+	--stack_depth;
+	pn = stack[stack_depth];
+	ps = project[pn].state;
+
+	/* add comleted changes to history */
+	for(i in ps.branch.history)
+	{
+		auto cs;
+		cs = ps.branch.change[i.change_number];
+
+		auto developers, when, key, dn;
+		when = cs.history[count(cs.history) - 1].when;
+		key = strftime("%y%m%d%H%M", when);
+
+		if(count(i.name) > 0)
+		{
+			dn = "(" ## i.name[0] ## ") ";
+		}
+		else
+		{
+			dn = "";
+		}
+	
+		history[key] =
+		{
+			when = strftime("%d-%b-%Y %H:%M", when);
+			brief = "[" ## pn ## "] " ## dn ## cs.brief_description;
+			descr = cs.description;
+			branch = "";
+		};
+	}
+
+	/* add branches to stack all */
+	for(i in keys(ps.branch.change))
+	{
+		cs = ps.branch.change[i];
+		if(count(cs.branch) > 0)
+		{
+			stack[stack_depth] = pn ## "." ## i;
+			++stack_depth;
+		}
+	}
+
+	/* add change being_integrated to history */
+	if(ps.branch.currently_integrating_change > 0)
+	{
+		cs = ps.branch.change[ps.branch.currently_integrating_change];
+
+		when = cs.history[count(cs.history) - 1].when;
+		key = strftime("%y%m%d%H%M", when);
+	
+		history[key] =
+		{
+			when = strftime("%d-%b-%Y %H:%M", when);
+			brief = "[" ## pn ## "] " ## cs.brief_description;
+			descr = cs.description;
+			branch = "";
+		};
+	}
+}
+
+auto sk;
+/* reverse sorted keys to get descending order */
+sk = [];
+for(i in sort(keys(history)))
+{
+	sk = [i] ## sk;
+}
+
+
+for(key in sk)
+{
+	columns
+	(
+		{width=18;},
+		{right=79;}
+	);
+	auto rk;
+	rk = sprintf("0%d", key);
+	print(
+		history[rk].when,
+		history[rk].brief
+	);
+
+	columns
+	(
+		{left=24; right=79;}
+	);
+	print(history[rk].descr);
+	print("");
+	print("");
+}
+
