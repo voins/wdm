@@ -47,6 +47,7 @@
 #include <WINGs/WUtil.h>
 #include <limits.h>
 #include <locale.h>
+#include <time.h>
 
 #include <gnuLogo.xpm>
 
@@ -997,15 +998,21 @@ static void
 DestroyLoginPanel(LoginPanel * panel)
 {
 	int width = panel_width, heigth = panel_heigth;
+	struct timespec timeReq, timeRem;
 
 	/* roll up the window before destroying it */
 	if(animate)
 	{
+		timeReq.tv_sec = 0;
+		timeReq.tv_nsec = 400;
+		timeRem.tv_sec = 0;
+		timeRem.tv_sec = 0;
 		XSynchronize(WMScreenDisplay(panel->scr), True);	/* slow things up */
 		for(width = panel_width - 2, heigth = panel_heigth - 1;
-		    (heigth > 0 && width > 0); heigth -= 1, width -= 2)
+		    (heigth > 0 && width > 0); heigth -= 15, width -= 30)
 		{
 			WMResizeWidget(panel->win, width, heigth);
+			nanosleep(&timeReq, &timeRem);
 		}
 		XSynchronize(WMScreenDisplay(panel->scr), False);
 	}
