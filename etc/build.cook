@@ -1,5 +1,5 @@
 
-%0%.o : %0%.c etc/functions.cook
+%0%.o : %0%.c etc/functions.cook etc/Howto.conf
 {
 	[cc] -c [get_cflags [get_program %0]] [resolve %0%.c] -o [target];
 }
@@ -32,7 +32,7 @@
 #include-cooked-nowarn [fromto %0% %0%.dep [match_mask src/%0%.c [source_files]]]
 cascade include/wdmconfig.h = include/config.h;
 
-bin/% : [c_to_o [select_c %]]
+bin/% : [c_to_o [select_c %]] etc/Howto.conf
 {
 	[cc] [get_cflags %_] [get_ldflags %_]
 		[resolve [c_to_o [select_c %]]]
