@@ -22,6 +22,8 @@
 #include <WINGs/WINGs.h>
 #include <WINGs/WUtil.h>
 
+#define WDMUntype(f) ((void *(*)(void*, void*))(f))
+
 extern Bool WDMCheckPLBool(WMPropList *pl, Bool defval);
 extern char *WDMCheckPLString(WMPropList *pl, char *defval);
 extern WMArray *WDMCheckPLArray(
