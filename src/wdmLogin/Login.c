@@ -405,6 +405,7 @@ static void
 PrintErrMsg(LoginPanel * panel, char *msg)
 {
 	int i, x;
+	struct timespec timeReq;
 
 	XSynchronize(WMScreenDisplay(panel->scr), True);
 	ClearMsgs(panel);
@@ -417,14 +418,25 @@ PrintErrMsg(LoginPanel * panel, char *msg)
 	/* shake the panel like Login.app */
 	if(animate)
 	{
+		timeReq.tv_sec = 0;
+		timeReq.tv_nsec = 15;
 		for(i = 0; i < 3; i++)
 		{
-			for(x = 2; x <= 20; x += 2)
+			for(x = 2; x <= 30; x += 10)
+			{
 				WMMoveWidget(panel->win, panel_X + x, panel_Y);
-			for(x = 20; x >= -20; x -= 2)
+				nanosleep(&timeReq, NULL);
+			}
+			for(x = 30; x >= -30; x -= 10)
+			{
 				WMMoveWidget(panel->win, panel_X + x, panel_Y);
-			for(x = -18; x <= 0; x += 2)
+				nanosleep(&timeReq, NULL);
+			}
+			for(x = -28; x <= 0; x += 10)
+			{
 				WMMoveWidget(panel->win, panel_X + x, panel_Y);
+				nanosleep(&timeReq, NULL);
+			}
 			XFlush(WMScreenDisplay(panel->scr));
 		}
 	}
@@ -998,21 +1010,19 @@ static void
 DestroyLoginPanel(LoginPanel * panel)
 {
 	int width = panel_width, heigth = panel_heigth;
-	struct timespec timeReq, timeRem;
+	struct timespec timeReq;
 
 	/* roll up the window before destroying it */
 	if(animate)
 	{
 		timeReq.tv_sec = 0;
 		timeReq.tv_nsec = 400;
-		timeRem.tv_sec = 0;
-		timeRem.tv_sec = 0;
 		XSynchronize(WMScreenDisplay(panel->scr), True);	/* slow things up */
 		for(width = panel_width - 2, heigth = panel_heigth - 1;
 		    (heigth > 0 && width > 0); heigth -= 15, width -= 30)
 		{
 			WMResizeWidget(panel->win, width, heigth);
-			nanosleep(&timeReq, &timeRem);
+			nanosleep(&timeReq, NULL);
 		}
 		XSynchronize(WMScreenDisplay(panel->scr), False);
 	}
