@@ -1,0 +1,6 @@
+New directory structure:
+src/ -- Wdm sources, untared and uncompressed. All patches
+	applied.
+xdm/ -- Xdm sources, untared and uncompressed. 
+        Wdm is built on top of xdm. Working with untared sources
+        is much easier than working with tar.gz.
