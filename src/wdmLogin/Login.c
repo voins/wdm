@@ -164,6 +164,10 @@ static char *ExitStr[] = { N_("Login"), N_("Reboot"), N_("Halt"),
 	N_("ExitLogin"), NULL
 };
 
+static char *ExitFailStr[] = { N_("Login failed"), N_("Reboot failed"),
+	N_("Halt failed"), N_("ExitLogin failed"), NULL
+};
+
 static int WmOptionCode = 0;
 static char WmDefault[] = "wmaker:afterstep:xsession";
 static char *WmArg = WmDefault;
@@ -1254,12 +1258,8 @@ setBG(WMScreen * scr)
 static void
 SignalUsr1(int ignored)		/* oops, an error */
 {
-	char msg[64];
-
-	strcpy(msg, ExitStr[OptionCode]);
-	strcat(msg, " failed.");
 	InitializeLoginInput(panel);
-	PrintErrMsg(panel, msg);
+	PrintErrMsg(panel, gettext(ExitFailStr[OptionCode]));
 	signal(SIGUSR1, SignalUsr1);
 }
 

@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
-"POT-Creation-Date: 2003-03-16 19:24+0300\n"
-"PO-Revision-Date: 2003-03-17 17:04+0000\n"
+"POT-Creation-Date: 2003-04-06 00:33+0400\n"
+"PO-Revision-Date: 2003-04-06 14:36+0200\n"
 "Last-Translator: Michael Buesch <freesoftwaredeveloper@web.de>\n"
 "Language-Team: deutsch\n"
 "MIME-Version: 1.0\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.0\n"
 
-#: bl/src/wdmLogin/Login.c:78
+#: src/wdmLogin/Login.c:79
 msgid ""
 "wdm is a graphical interface used to authenticate a user to the system and "
 "perform the login process.\n"
@@ -74,23 +74,25 @@ msgstr ""
 "wdm ist eine grafische Oberfläche, um einen Benutzer am System anzumelden.\n"
 "\n"
 "\n"
-"Geben Sie ihren Benutzernamen (userid) an der Eingabeaufforderung ein und drücken Sie <enter>.  "
-"Danach wird eine Eingabeaufforderung für Ihr Paßwort angezeigt.  Geben Sie Ihr Paßwort ein "
-"und drücken Sie <enter>.\n"
+"Geben Sie ihren Benutzernamen (userid) an der Eingabeaufforderung ein und "
+"drücken Sie <enter>.  Danach wird eine Eingabeaufforderung für Ihr Paßwort "
+"angezeigt.  Geben Sie Ihr Paßwort ein und drücken Sie <enter>.\n"
 "\n"
 "\n"
-"Der Anmeldeprozess wird nun durchgeführt und Ihr Window-Manager wird gestartet.\n"
+"Der Anmeldeprozess wird nun durchgeführt und Ihr Window-Manager wird "
+"gestartet.\n"
 "\n"
 "\n"
-"Im \"Starte WM\"-Auswahlfeld können Sie den Parameter für Xsession wählen um den "
-"Window-Manager zu starten.\n"
+"Im \"Starte WM\"-Auswahlfeld können Sie den Parameter für Xsession wählen um "
+"den Window-Manager zu starten.\n"
 "\n"
 "\n"
 "\"Letzter\" startet den zuletzt benutzten Window-Manager.\n"
 "\n"
 "\n"
-"\"abgesichert\" startet eine einfache xterm Sitzung. Die anderen aufgelisteten Optionen "
-"starten den angegebenen (installations-spezifischen) Window-Manager.\n"
+"\"abgesichert\" startet eine einfache xterm Sitzung. Die anderen "
+"aufgelisteten Optionen starten den angegebenen (installations-spezifischen) "
+"Window-Manager.\n"
 "\n"
 "\n"
 "Im \"Optionen\"-Auswahlfeld können Sie wählen:\n"
@@ -101,103 +103,122 @@ msgstr ""
 "     Login beenden - Beendet den Display-Manager und wechselt zur Console.\n"
 "\n"
 "\n"
-"Möglicherweise wird ein gültiger Benutzername und Paßwort oder das "
-"Superuser-Paßwort benötigt, um das System herunterzufahren, neuzustarten oder WDM zu beenden.\n"
+"Möglicherweise wird ein gültiger Benutzername und Paßwort oder das Superuser-"
+"Paßwort benötigt, um das System herunterzufahren, neuzustarten oder WDM zu "
+"beenden.\n"
 "\n"
 "\n"
-"Anmerkung: \"Login beenden\" ist zum Testen des WDM gedacht. Es beendet den X-Server, aber WDM "
-"muss anders beendet werden. Wenn WDM \"detached\" gestartet wird, wird es sehr schwierig sein, "
-"den Display-Manager zu beenden.\n"
+"Anmerkung: \"Login beenden\" ist zum Testen des WDM gedacht. Es beendet den "
+"X-Server, aber WDM muss anders beendet werden. Wenn WDM \"detached\" "
+"gestartet wird, wird es sehr schwierig sein, den Display-Manager zu "
+"beenden.\n"
 "\n"
 "\n"
 "\"Login beenden\" macht das gleiche, wie Strg+r in XDM.\n"
 "\n"
 "\n"
-"1. Die \"Löschen\"-Schaltfläche löscht alle eingegebenen Login-Informationen und "
-"startet den Anmeldeprozess von Vorne.\n"
+"1. Die \"Löschen\"-Schaltfläche löscht alle eingegebenen Login-Informationen "
+"und startet den Anmeldeprozess von Vorne.\n"
 "\n"
 "\n"
-"2. Sehen Sie sich die man-pages für zusätzliche Informationen hinsichtlich der Konfiguration des "
-"WDM an. Es gibt viele Optionen um z.B. den Hintergrund, das Logo, die Window-Manager liste "
-"und das Verhalten bei \"Neustarten\" oder \"Herunterfahren\" einzustellen."
+"2. Sehen Sie sich die man-pages für zusätzliche Informationen hinsichtlich "
+"der Konfiguration des WDM an. Es gibt viele Optionen um z.B. den "
+"Hintergrund, das Logo, die Window-Manager liste und das Verhalten bei "
+"\"Neustarten\" oder \"Herunterfahren\" einzustellen."
 
-#: bl/src/wdmLogin/Login.c:162
+#: src/wdmLogin/Login.c:163
 msgid "Login"
 msgstr "Anmeldung"
 
-#: bl/src/wdmLogin/Login.c:162
+#: src/wdmLogin/Login.c:163
 msgid "Reboot"
 msgstr "Neustarten"
 
-#: bl/src/wdmLogin/Login.c:162
+#: src/wdmLogin/Login.c:163
 msgid "Halt"
 msgstr "Herunterfahren"
 
-#: bl/src/wdmLogin/Login.c:163
+#: src/wdmLogin/Login.c:164
 msgid "ExitLogin"
 msgstr "Login aus"
 
-#: bl/src/wdmLogin/Login.c:318
+#: src/wdmLogin/Login.c:167
+msgid "Login failed"
+msgstr "Login fehlgeschlagen"
+
+#: src/wdmLogin/Login.c:167
+msgid "Reboot failed"
+msgstr "Neustart fehlgeschlagen"
+
+#: src/wdmLogin/Login.c:168
+msgid "Halt failed"
+msgstr "Herunterfahren fehlgeschlagen"
+
+#: src/wdmLogin/Login.c:168
+msgid "ExitLogin failed"
+msgstr "Login beenden fehlgeschlagen"
+
+#: src/wdmLogin/Login.c:325
 msgid "NoChange"
 msgstr "Letzter WM"
 
-#: bl/src/wdmLogin/Login.c:337
+#: src/wdmLogin/Login.c:344
 msgid "failsafe"
 msgstr "abgesichert"
 
-#: bl/src/wdmLogin/Login.c:409
+#: src/wdmLogin/Login.c:417
 msgid "ERROR"
 msgstr "FEHLER"
 
-#: bl/src/wdmLogin/Login.c:451
+#: src/wdmLogin/Login.c:470
 msgid "Password:"
 msgstr "Paßwort:"
 
-#: bl/src/wdmLogin/Login.c:459 bl/src/wdmLogin/Login.c:784
+#: src/wdmLogin/Login.c:478 src/wdmLogin/Login.c:803
 msgid "Login name:"
 msgstr "Benutzer:"
 
-#: bl/src/wdmLogin/Login.c:492
+#: src/wdmLogin/Login.c:511
 msgid "invalid name"
 msgstr "ungültiger Benutzername"
 
-#: bl/src/wdmLogin/Login.c:514
+#: src/wdmLogin/Login.c:533
 msgid "validating"
 msgstr "prüfe"
 
-#: bl/src/wdmLogin/Login.c:516 bl/src/wdmLogin/Login.c:549
+#: src/wdmLogin/Login.c:535 src/wdmLogin/Login.c:568
 msgid "exiting"
 msgstr "beende"
 
-#: bl/src/wdmLogin/Login.c:566
+#: src/wdmLogin/Login.c:585
 msgid "Close Help"
 msgstr "Hilfe aus"
 
-#: bl/src/wdmLogin/Login.c:572 bl/src/wdmLogin/Login.c:878
+#: src/wdmLogin/Login.c:591 src/wdmLogin/Login.c:897
 msgid "Help"
 msgstr "Hilfe"
 
-#: bl/src/wdmLogin/Login.c:732
+#: src/wdmLogin/Login.c:751
 msgid "Login Authentication"
 msgstr "System-Anmeldung"
 
-#: bl/src/wdmLogin/Login.c:741
+#: src/wdmLogin/Login.c:760
 msgid "Welcome to"
 msgstr "Willkommen auf"
 
-#: bl/src/wdmLogin/Login.c:828
+#: src/wdmLogin/Login.c:847
 msgid "Start WM"
 msgstr "Starte WM"
 
-#: bl/src/wdmLogin/Login.c:846
+#: src/wdmLogin/Login.c:865
 msgid "Options"
 msgstr "Optionen"
 
-#: bl/src/wdmLogin/Login.c:886
+#: src/wdmLogin/Login.c:905
 msgid "Start Over"
 msgstr "Löschen"
 
-#: bl/src/wdmLogin/Login.c:893
+#: src/wdmLogin/Login.c:912
 msgid "Go!"
 msgstr "Los!"
 

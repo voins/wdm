@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: wdm 1.22\n"
-"POT-Creation-Date: 2003-02-08 20:59+0300\n"
-"PO-Revision-Date: 2003-02-06 23:59+0300\n"
+"Project-Id-Version: wdm 1.23\n"
+"POT-Creation-Date: 2003-04-06 00:09+0400\n"
+"PO-Revision-Date: 2003-04-06 23:59+0300\n"
 "Last-Translator: Grigory Batalov <bga@altlinux.ru>\n"
 "Language-Team: None\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/wdmLogin/Login.c:84
+#: src/wdmLogin/Login.c:79
 msgid ""
 "wdm is a graphical interface used to authenticate a user to the system and "
 "perform the login process.\n"
@@ -67,7 +67,7 @@ msgid ""
 "There are numerous options for setting the background color or pixmap, the "
 "LoginPanel logo, the selection of window managers to start, and the login "
 "verification for Reboot, halt and exit."
-msgstr
+msgstr ""
 "wdm - это графический интерфейс для аутентификации пользователя\n"
 "в системе и выполнения процесса входа в систему.\n"
 "\n"
@@ -125,82 +125,98 @@ msgstr
 "рисунка фона, заставки панели, выбора оконного менеджера и проверки\n"
 "пользователя перед перезагрузкой, выключением и выходом."
 
-#: src/wdmLogin/Login.c:166
+#: src/wdmLogin/Login.c:163
 msgid "Login"
 msgstr "Вход"
 
-#: src/wdmLogin/Login.c:166
+#: src/wdmLogin/Login.c:163
 msgid "Reboot"
 msgstr "Перезапуск"
 
-#: src/wdmLogin/Login.c:166
+#: src/wdmLogin/Login.c:163
 msgid "Halt"
 msgstr "Выключение"
 
-#: src/wdmLogin/Login.c:167
+#: src/wdmLogin/Login.c:164
 msgid "ExitLogin"
 msgstr "Выход"
 
-#: src/wdmLogin/Login.c:305
+#: src/wdmLogin/Login.c:167
+msgid "Login failed"
+msgstr "Войти не удалось"
+
+#: src/wdmLogin/Login.c:167
+msgid "Reboot failed"
+msgstr "Ошибка перезапуска"
+
+#: src/wdmLogin/Login.c:168
+msgid "Halt failed"
+msgstr "Ошибка выключения"
+
+#: src/wdmLogin/Login.c:168
+msgid "ExitLogin failed"
+msgstr "Выйти не удалось"
+
+#: src/wdmLogin/Login.c:325
 msgid "NoChange"
 msgstr "Тот же"
 
-#: src/wdmLogin/Login.c:320
+#: src/wdmLogin/Login.c:344
 msgid "failsafe"
 msgstr "безопасный"
 
-#: src/wdmLogin/Login.c:415
+#: src/wdmLogin/Login.c:417
 msgid "ERROR"
 msgstr "ОШИБКА"
 
-#: src/wdmLogin/Login.c:457
+#: src/wdmLogin/Login.c:470
 msgid "Password:"
 msgstr "Пароль:"
 
-#: src/wdmLogin/Login.c:464 src/wdmLogin/Login.c:745
+#: src/wdmLogin/Login.c:478 src/wdmLogin/Login.c:803
 msgid "Login name:"
 msgstr "Имя:"
 
-#: src/wdmLogin/Login.c:489
+#: src/wdmLogin/Login.c:511
 msgid "invalid name"
 msgstr "плохое имя"
 
-#: src/wdmLogin/Login.c:508
+#: src/wdmLogin/Login.c:533
 msgid "validating"
 msgstr "проверка"
 
-#: src/wdmLogin/Login.c:510 src/wdmLogin/Login.c:538
+#: src/wdmLogin/Login.c:535 src/wdmLogin/Login.c:568
 msgid "exiting"
 msgstr "выход"
 
-#: src/wdmLogin/Login.c:552
+#: src/wdmLogin/Login.c:585
 msgid "Close Help"
 msgstr "Убрать"
 
-#: src/wdmLogin/Login.c:557 src/wdmLogin/Login.c:832
+#: src/wdmLogin/Login.c:591 src/wdmLogin/Login.c:897
 msgid "Help"
 msgstr "Помощь"
 
-#: src/wdmLogin/Login.c:697
+#: src/wdmLogin/Login.c:751
 msgid "Login Authentication"
 msgstr "Проверка пароля"
 
-#: src/wdmLogin/Login.c:706
+#: src/wdmLogin/Login.c:760
 msgid "Welcome to"
 msgstr "Добро пожаловать на"
 
-#: src/wdmLogin/Login.c:787
+#: src/wdmLogin/Login.c:847
 msgid "Start WM"
 msgstr "Оконный менеджер"
 
-#: src/wdmLogin/Login.c:804
+#: src/wdmLogin/Login.c:865
 msgid "Options"
 msgstr "Действия"
 
-#: src/wdmLogin/Login.c:839
+#: src/wdmLogin/Login.c:905
 msgid "Start Over"
 msgstr "Стереть"
 
-#: src/wdmLogin/Login.c:846
+#: src/wdmLogin/Login.c:912
 msgid "Go!"
 msgstr "Вперёд!"

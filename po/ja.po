@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2003-02-08 22:32+0300\n"
+"POT-Creation-Date: 2003-04-06 00:41+0400\n"
 "PO-Revision-Date: 2003-02-07 19:59+0300\n"
 "Last-Translator: Hiroshi Miura <miura@da-cha.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=euc-jp\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/wdmLogin/Login.c:84
+#: src/wdmLogin/Login.c:79
 msgid ""
 "wdm is a graphical interface used to authenticate a user to the system and "
 "perform the login process.\n"
@@ -79,24 +79,29 @@ msgstr ""
 "\n"
 "\n"
 "\n"
-"%s はユーザのシステム認証を行うのに用いるグラフィカルインターフェースで、ログ\n"
+"%s はユーザのシステム認証を行うのに用いるグラフィカルインターフェースで、ロ"
+"グ\n"
 "イン処理を行います。\n"
 "\n"
 "\n"
 "\n"
-"あなたのユーザ名(userid)を欄へ入力し、<enter>を押してください。パネルには、あ\n"
-"なたのパスワードを入力するよう表示されます。パスワードを入力し、<enter>を押し\n"
+"あなたのユーザ名(userid)を欄へ入力し、<enter>を押してください。パネルには、"
+"あ\n"
+"なたのパスワードを入力するよう表示されます。パスワードを入力し、<enter>を押"
+"し\n"
 "てください。\n"
 "\n"
 "ログインが行われ、あなたの設定したウインドウマネージャが開始されます。\n"
 "\n"
 "\n"
-"開始WMポップアップを選択することで、Xsessionへ開始するウインドウマネージャの\n"
+"開始WMポップアップを選択することで、Xsessionへ開始するウインドウマネージャ"
+"の\n"
 "パラメータを指定することができます。\n"
 "\n"
 "変更なし は前回ユーザが使用したのと同じウインドウマネージャを開始させます。\n"
 "\n"
-"フェイルセーフは、単純なxtermセッションを開始します。また、残りは(インストー\n"
+"フェイルセーフは、単純なxtermセッションを開始します。また、残りは(インス"
+"トー\n"
 "ル時に決まる)それぞれのウインドウマネージャを開始させます。\n"
 "\n"
 "オプションポップアップは\n"
@@ -110,13 +115,17 @@ msgstr ""
 "      ログイン終了 - ディスプレーマネージャを終了します。\n"
 "\n"
 "\n"
-"インストール条件では、再起動や終了、ログイン終了の場合、有効なユーザ名とパス\n"
+"インストール条件では、再起動や終了、ログイン終了の場合、有効なユーザ名とパ"
+"ス\n"
 "ワードか、username=root とルートのパスワードが必要です。\n"
 "\n"
 "\n"
-"注意: ログイン終了 (または、時々は終了として扱われますが）は、一義的にはwdmの\n"
-"テストのために準備されています。これは、Xサーバを停止し、wdmが違う意味で終了\n"
-"します。独立したプロセスとしてwdmを開始することは、終了させることをとても難し\n"
+"注意: ログイン終了 (または、時々は終了として扱われますが）は、一義的にはwdm"
+"の\n"
+"テストのために準備されています。これは、Xサーバを停止し、wdmが違う意味で終"
+"了\n"
+"します。独立したプロセスとしてwdmを開始することは、終了させることをとても難"
+"し\n"
 "くするからだ。\n"
 "\n"
 "\n"
@@ -127,87 +136,106 @@ msgstr ""
 "う。\n"
 "\n"
 "\n"
-"2. このパッケージの設定について追加の情報を見たいときには、manページを見るこ\n"
-"と。バックグランドの色やpixmap、LoginPanel ロゴ、開始するウインドウマネージャ\n"
-"の選択肢の指定、再起動、終了、停止のログイン認証を設定するようなたくさんのオ\n"
+"2. このパッケージの設定について追加の情報を見たいときには、manページを見る"
+"こ\n"
+"と。バックグランドの色やpixmap、LoginPanel ロゴ、開始するウインドウマネー"
+"ジャ\n"
+"の選択肢の指定、再起動、終了、停止のログイン認証を設定するようなたくさんの"
+"オ\n"
 "プションがある。"
 
-#: src/wdmLogin/Login.c:166
+#: src/wdmLogin/Login.c:163
 msgid "Login"
 msgstr "ログイン"
 
-#: src/wdmLogin/Login.c:166
+#: src/wdmLogin/Login.c:163
 msgid "Reboot"
 msgstr "リブート"
 
-#: src/wdmLogin/Login.c:166
+#: src/wdmLogin/Login.c:163
 msgid "Halt"
 msgstr "終了"
 
-#: src/wdmLogin/Login.c:167
+#: src/wdmLogin/Login.c:164
 msgid "ExitLogin"
 msgstr "ログイン終了"
 
-#: src/wdmLogin/Login.c:305
+#: src/wdmLogin/Login.c:167
+msgid "Login failed"
+msgstr "ログイン失敗"
+
+#: src/wdmLogin/Login.c:167
+msgid "Reboot failed"
+msgstr "リブート失敗"
+
+#: src/wdmLogin/Login.c:168
+msgid "Halt failed"
+msgstr "終了失敗"
+
+#: src/wdmLogin/Login.c:168
+msgid "ExitLogin failed"
+msgstr "ログイン終了失敗"
+
+#: src/wdmLogin/Login.c:325
 msgid "NoChange"
 msgstr "変更なし"
 
-#: src/wdmLogin/Login.c:320
+#: src/wdmLogin/Login.c:344
 msgid "failsafe"
 msgstr "フェールセーフ"
 
-#: src/wdmLogin/Login.c:415
+#: src/wdmLogin/Login.c:417
 msgid "ERROR"
 msgstr "エラー"
 
-#: src/wdmLogin/Login.c:457
+#: src/wdmLogin/Login.c:470
 msgid "Password:"
 msgstr "パスワード:"
 
-#: src/wdmLogin/Login.c:464 src/wdmLogin/Login.c:745
+#: src/wdmLogin/Login.c:478 src/wdmLogin/Login.c:803
 msgid "Login name:"
 msgstr "ログイン名:"
 
-#: src/wdmLogin/Login.c:489
+#: src/wdmLogin/Login.c:511
 msgid "invalid name"
 msgstr "不正な名前"
 
-#: src/wdmLogin/Login.c:508
+#: src/wdmLogin/Login.c:533
 msgid "validating"
 msgstr "認証中"
 
-#: src/wdmLogin/Login.c:510 src/wdmLogin/Login.c:538
+#: src/wdmLogin/Login.c:535 src/wdmLogin/Login.c:568
 msgid "exiting"
 msgstr "終了します"
 
-#: src/wdmLogin/Login.c:552
+#: src/wdmLogin/Login.c:585
 msgid "Close Help"
 msgstr "へルプを閉じる"
 
-#: src/wdmLogin/Login.c:557 src/wdmLogin/Login.c:832
+#: src/wdmLogin/Login.c:591 src/wdmLogin/Login.c:897
 msgid "Help"
 msgstr "へルプ"
 
-#: src/wdmLogin/Login.c:697
+#: src/wdmLogin/Login.c:751
 msgid "Login Authentication"
 msgstr "ログイン認証中"
 
-#: src/wdmLogin/Login.c:706
+#: src/wdmLogin/Login.c:760
 msgid "Welcome to"
 msgstr "ようこそ"
 
-#: src/wdmLogin/Login.c:787
+#: src/wdmLogin/Login.c:847
 msgid "Start WM"
 msgstr "WMスタート"
 
-#: src/wdmLogin/Login.c:804
+#: src/wdmLogin/Login.c:865
 msgid "Options"
 msgstr "オプション"
 
-#: src/wdmLogin/Login.c:839
+#: src/wdmLogin/Login.c:905
 msgid "Start Over"
 msgstr "やりなおし"
 
-#: src/wdmLogin/Login.c:846
+#: src/wdmLogin/Login.c:912
 msgid "Go!"
 msgstr "開始！"
