@@ -15,18 +15,14 @@ This package requires the following:
 
 1. XFree86 installed (it was developed with 3.3.2)
 
-2. WindowMaker => 0.17.5 (for WINGs and wraster libraries and header files).
+2. WindowMaker >= 0.70.0 (for WINGs and wraster libraries and header files).
    There are no other dependencies on WindowMaker and wdm can run
    any other window manager such as AfterStep, icewm, BlackBox, etc.
 
 3. autoconf => 2.53 for maintenance (any building)...
    (automake is not used any more)
 
-4. libPropList is required if you are using WindowMaker >= 0.18.x since
-   WINGs will require it. (Note: libProplist is not needed if you are
-   using WindowMaker >= 0.65.1)
-
-5. libXft or libXft2 is required if you have compiled WINGs with Xft 
+4. libXft or libXft2 is required if you have compiled WINGs with Xft 
    support.
    
 
@@ -61,30 +57,13 @@ The simplest way to compile this package is:
      ./configure --help can be used to see what options are
      available.
 
-     Note that --with-gfx-libs and --with-gfx-incs can be used to specify
-     the paths for "non-standard" locations (one not expected by
-     ./configure).  For example, if you have tiff under /usr/local, try
-     ./configure --with-gfx-libs="-L/usr/local/lib -ltiff" \
-     --with-gfx-incs="-I/usr/local/include"
-
-     Note that if you have some library in a place such as /usr/local/lib
-     which supercedes the version in a place such as /usr/X11R6/lib, then
-     you will need to "play" with the options.
-
-     TIP:  On some systems it may be necessary to specify additional
-     include directories.  Besides specifying these with --with-gfx-incs,
-     you can use:
-
-     CPPFLAGS="-I/usr/local/include" ./configure <the rest of you options>
-
-     See information below about some of the configure options.
-
-     Under pam aware systems, like RedHat based Linux distros, don't forget
-     to run configure with the --enable-pam option
-
-     If your system don't use pam but uses shadow passwords, run configure
-     with --enable-shadow (e.g. Debian or SuSe Linux)
-
+     configure script will try to detect library to use for authentication.
+     First it checks for pam. If pam library was not found than it checks for
+     shadow. If shadow is not supported it falls back to looking in /etc/passwd.
+     Any check can be disabled with --disable-pam or --diable-shadow option.
+     Specifying --enable-pam or --enable-shadow will check only for requested
+     library.
+     
   2. Type `make' to compile the package.  A number of the configure options
      can be overriden (or just plain specified) on the make command line.
 
@@ -158,12 +137,11 @@ help me :-)
 	sets parameters for debugging and (if they exist) the non-standard
 	names for the debug versions of the WINGs libraries
 
---enable-shadow
-	use shadow passwords (default is regular passwords in /etc/passwd)
+--disable-pam
+	disable check for pam.
 
---enable-pam
-	use PAM (password) authentication; mutulally exclusive with
-	shadow
+--disable-shadow
+	disable check for shadow
 
 --with-pamdir=PAMDIR
 	if PAM is enabled, this specifies the path for the PAM directory
@@ -171,31 +149,6 @@ help me :-)
 
 --with-local
 	use /usr/local/{bin,include,lib} paths appropriately
-
---with-gfx-libs=PATH
-	can be used to specify "non-standard" paths for libraries
-
---with-gfx-incs=PATH
-	can be used to specify "non-standard" paths for header files.
-
---disable-xpm
-	disables use of the XPM library even if it is available on
-	your system ... same as for Windowmaker
-
---disable-jpeg
-	disables use of the jpeg library even if it is available on
-	your system ... same as for Windowmaker
-
---disable-png
-	disables use of the PNG library even if it is available on
-	your system ... same as for Windowmaker
-
---disable-tiff
-	disables use of the tiff library even if it is available on
-	your system ... same as for Windowmaker
-
---with-tiff-libs=LIB
-	specifies a special path for accessing the tiff library
 
 --with-logdir=PATH
 	specifies the directory where the logfile goes
@@ -212,6 +165,10 @@ help me :-)
 --with-wdmdir=PATH
 	specify the full directory pathname for wdm's configuration files
 	[/etc/X11/wdm]
+
+--with-gfxdir=PATH
+	specify the full directory pathname for pixmaps used for backgrounds
+	and Logos. [/usr/share/pixmaps/wdm]
 
 --with-Logo=PIXMAP_FILENAME
 	specify a file to be loaded as the "logo" from the pixmap directory
@@ -262,15 +219,14 @@ Authentication options
 
 wdm supports three options:
 
-   1. default: use the password in the passwd file
+   1. use pam if found and no --disable-pam option was specified in
+      command line.
 
-   2. --enable-shadow to use the password in the shadow file
+   2. use shadow if check for pam failed and no --disable-shadow
+      option was specified at command line.
 
-   3. --enable-pam to use the pam authentication
+   3. use passwords from /etc/passwd.
 
-   Note:  The patch implementing the pam interface is installed
-   automatically but --enable-pam must be specified when
-   running configure to pam to be compiled in.
 
 Window Manager Options
 ======================

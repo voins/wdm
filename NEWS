@@ -1,5 +1,17 @@
 See TODO, README, README.pam, and ChangeLog
-wdm-1.24 --
+wdm-1.24 -- Jun 01 2003
+	- pixmaps have been moved to /usr/share/pixmaps/wdm by default.
+	  You can always specify other locations with --with-gfxdir option
+	  to configure script (patch by Julio Merino <jmmv@menta.net>)
+	- logging functions rewritten. it is now possible to redirect
+	  all messages from wdm to syslog or to file.
+	- option to select on which display login panel will appear
+	  when using xinerama
+	  (with help from Carlos Torres <vlaadbrain@operamail.com>).
+	- configure.ac rewritten. It may stop working on some systems.
+	  Report me if you have such system. All graphics format
+	  detection code removed. wdm never uses this libraries directly
+	  only via libwraster.
 	- added basic support for xcursor_themes (for XFree86 4.3.0,
 	  see description of wdmCursorTheme resource in wdm man page).
 	- translations fixed. now all "... failed" messages displayed
